@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Chart, nearest, type PuntoSerie } from "@/components/charts/Chart";
 import { useApp } from "@/components/providers/AppProvider";
+import { EscenarioBanRep } from "./EscenarioBanRep";
 import { Aviso, Kpi, Panel } from "@/components/ui";
 import { TYPE_CLR, TYPE_LBL } from "@/lib/calculadora";
 import type { TipoBono } from "@/lib/engine";
@@ -262,6 +263,8 @@ function Cuerpo() {
           </p>
         </Panel>
       </div>
+
+      <EscenarioBanRep />
 
       <Panel titulo="Posiciones frente a la curva TES" src="Duración vs. TIR en pesos · encima de la curva = paga prima sobre el soberano">
         <Chart

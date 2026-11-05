@@ -1070,7 +1070,8 @@
     cursor: pointer;
     background: none;
   }
-  .clase-chips .chip[aria-selected="true"] {
+  .clase-chips .chip[aria-selected="true"],
+  .clase-chips .chip[aria-pressed="true"] {
     background: var(--engrave);
     border-color: var(--engrave);
     color: var(--sheet);

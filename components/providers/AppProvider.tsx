@@ -8,6 +8,7 @@ import {
   esError,
   pfMetrics,
   toN,
+  type DatosMercado,
   type Motor,
   type PosicionValorada,
   type TipoBono,
@@ -31,6 +32,8 @@ type EstadoCurva = "descargando" | "lista" | "error";
 interface App {
   snap: SnapshotMercado;
   motor: Motor;
+  /** Datos con los que se armó el motor (incluye las curvas FRAC ya descargadas). */
+  datosMotor: DatosMercado;
   mk: MercadoDerivado;
   /** Títulos de ejemplo valorados en la fecha de análisis. */
   defaults: Record<TipoBono, EntradasUI>;
@@ -98,14 +101,14 @@ export function AppProvider({ snap, children }: { snap: SnapshotMercado; childre
     [conocidas],
   );
 
-  const motor = useMemo(
-    () =>
-      crearMotor({
-        ...snap.datos,
-        curvasFrac: (snap.datos.curvasFrac ?? []).map((c) => ({ ...c, datos: descargadas[c.id] })),
-      }),
+  const datosMotor = useMemo<DatosMercado>(
+    () => ({
+      ...snap.datos,
+      curvasFrac: (snap.datos.curvasFrac ?? []).map((c) => ({ ...c, datos: descargadas[c.id] })),
+    }),
     [snap.datos, descargadas],
   );
+  const motor = useMemo(() => crearMotor(datosMotor), [datosMotor]);
   const mk = useMemo(() => derivarMercado(motor, snap), [motor, snap]);
 
   const [calc, setCalc] = useGuardado<EstadoCalculadora>("calc", calcInicial);
@@ -150,6 +153,7 @@ export function AppProvider({ snap, children }: { snap: SnapshotMercado; childre
   const valor: App = {
     snap,
     motor,
+    datosMotor,
     mk,
     defaults,
     pfEjemplo,
