@@ -8,6 +8,7 @@ import { createHash } from "node:crypto";
 import { Redis } from "@upstash/redis";
 import { BRAND } from "@/lib/brand";
 import { HORAS_CACHE_RESUMEN } from "./config";
+import { hayRedis } from "./redis";
 
 const TTL_S = HORAS_CACHE_RESUMEN * 3600;
 const memoria = new Map<string, { texto: string; vence: number }>();
@@ -15,7 +16,7 @@ const memoria = new Map<string, { texto: string; vence: number }>();
 let redis: Redis | null | undefined;
 function cliente(): Redis | null {
   if (redis !== undefined) return redis;
-  redis = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN ? Redis.fromEnv() : null;
+  redis = hayRedis() ? Redis.fromEnv() : null;
   return redis;
 }
 

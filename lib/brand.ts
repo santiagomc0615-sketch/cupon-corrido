@@ -14,12 +14,23 @@ export const BRAND = {
     "Calculadora académica de renta fija colombiana: valoración de bonos tasa fija, IBR, IPC y UVR, portafolio, curva TES y datos de mercado.",
   /** Identificador técnico (sin espacios): prefijos de caché y almacenamiento. */
   slug: "cupon-corrido",
-  /** Dominio público. Se toma de NEXT_PUBLIC_SITIO_URL al desplegar; en local, localhost. */
-  dominio: process.env.NEXT_PUBLIC_SITIO_URL || "http://localhost:3000",
+  /** Dominio público: NEXT_PUBLIC_SITIO_URL; si falta, la URL de producción que asigna Vercel; en local, localhost. */
+  dominio:
+    process.env.NEXT_PUBLIC_SITIO_URL ||
+    (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : "http://localhost:3000"),
   /** Ruta de inicio (a dónde lleva el logo). */
   inicio: "/mercado",
   /** Aviso legal visible en el riel y el pie. */
   avisoLegal: "Herramienta académica, no es asesoría financiera.",
+  /** Responsable del tratamiento de datos (Ley 1581 de 2012). Aparece en /privacidad y /terminos. */
+  responsable: {
+    nombre: "Santiago",
+    correo: "santiago.mc0615@gmail.com",
+    contexto: "proyecto académico del curso Portafolio de Renta Fija",
+    pais: "Colombia",
+  },
+  /** Fecha de la última actualización de /privacidad y /terminos. */
+  fechaLegal: "5 de noviembre de 2026",
   /** Logo: sello guilloché dibujado en canvas con el color --engrave del tema. */
   logo: {
     alt: `Sello guilloché de ${NOMBRE}`,

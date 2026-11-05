@@ -7,6 +7,7 @@ import "server-only";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import { BRAND } from "@/lib/brand";
+import { hayRedis } from "./redis";
 
 export const CONSULTAS_POR_HORA = 20;
 const HORA_MS = 60 * 60 * 1000;
@@ -42,14 +43,13 @@ export function limiteEnMemoria(id: string, ahora = Date.now(), max = CONSULTAS_
 let upstash: Ratelimit | null | undefined;
 function limitadorUpstash(max: number): Ratelimit | null {
   if (upstash !== undefined) return upstash;
-  upstash =
-    process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
-      ? new Ratelimit({
-          redis: Redis.fromEnv(),
-          limiter: Ratelimit.slidingWindow(max, "1 h"),
-          prefix: `${BRAND.slug}:asesor`,
-        })
-      : null;
+  upstash = hayRedis()
+    ? new Ratelimit({
+        redis: Redis.fromEnv(),
+        limiter: Ratelimit.slidingWindow(max, "1 h"),
+        prefix: `${BRAND.slug}:asesor`,
+      })
+    : null;
   return upstash;
 }
 

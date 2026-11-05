@@ -1100,6 +1100,42 @@
     text-transform: uppercase;
     color: var(--engrave);
   }
+  /* páginas legales */
+  .legal {
+    max-width: 74ch;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    color: var(--ink-2);
+    line-height: 1.65;
+  }
+  .legal h2 {
+    margin-top: 14px;
+    color: var(--ink);
+  }
+  .legal h3 {
+    margin-top: 4px;
+  }
+  .legal ul {
+    margin: 0;
+    padding-left: 20px;
+    list-style: disc;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .legal b {
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .site-foot nav {
+    display: flex;
+    gap: 14px;
+    margin-left: auto;
+  }
+  .site-foot a {
+    color: var(--ink-2);
+  }
   .demo-asesor {
     border-style: solid;
     border-color: color-mix(in srgb, var(--seal) 45%, var(--rule));

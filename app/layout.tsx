@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import Link from "next/link";
 import { AppProvider } from "@/components/providers/AppProvider";
 import { CintaMercado } from "@/components/shell/CintaMercado";
 import { Riel } from "@/components/shell/Riel";
@@ -50,6 +51,10 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
                       ? `Datos: BanRep (SDMX), datos.gov.co, DANE y series cargadas · actualizado ${snap.actualizado.replace(" ", " ")} (hora de Colombia).`
                       : "Datos: última carga del Excel del curso (las fuentes en vivo no respondieron)."}
                   </span>
+                  <nav aria-label="Información legal">
+                    <Link href="/privacidad">Privacidad</Link>
+                    <Link href="/terminos">Términos</Link>
+                  </nav>
                 </footer>
               </div>
             </main>
