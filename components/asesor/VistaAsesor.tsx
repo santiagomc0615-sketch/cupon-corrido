@@ -1,10 +1,10 @@
 "use client";
-/* Asesor de IA. La interfaz ya funciona; la conexión con la API de Anthropic (app/api/asesor,
-   con streaming y límite por IP) llega en la Fase 4. */
+/* Asesor de IA: envía la pregunta, el historial corto y el contexto (mercado + portafolio)
+   a /api/asesor y muestra la respuesta en streaming. */
 import { useEffect, useRef, useState } from "react";
 import { useApp } from "@/components/providers/AppProvider";
 import { Encabezado } from "@/components/ui";
-import { md, QUICK } from "@/lib/asesor/contexto";
+import { ctxSnapshot, md, QUICK } from "@/lib/asesor/contexto";
 import { F } from "@/lib/format";
 
 interface Mensaje {
@@ -12,6 +12,8 @@ interface Mensaje {
   texto: string;
   /** true si el texto lo generó el modelo (no un mensaje fijo de la página). */
   ia?: boolean;
+  /** Mensaje de error (no se envía como historial). */
+  error?: boolean;
 }
 
 const BIENVENIDA: Mensaje = {
@@ -20,27 +22,76 @@ const BIENVENIDA: Mensaje = {
     "Hola. Tengo cargados la tasa de política, la inflación del DANE, el IBR, la UVR, la curva TES y tu portafolio. Elige una consulta rápida o escríbeme tu pregunta.",
 };
 
-const SIN_CONEXION =
-  "Todavía no estoy conectado a Claude: la conexión segura con la API de Anthropic se agrega en la siguiente fase. Cuando esté lista, responderé usando solo los datos de mercado y de tu portafolio que ves en el panel de contexto.";
+/** Turnos anteriores que se envían como contexto de la conversación. */
+const TURNOS_HISTORIAL = 6;
 
 export function VistaAsesor() {
-  const { snap, mk, pfValorado } = useApp();
+  const { snap, mk, motor, pfValorado, pfMetricas } = useApp();
   const [msgs, setMsgs] = useState<Mensaje[]>([BIENVENIDA]);
   const [pregunta, setPregunta] = useState("");
+  const [ocupado, setOcupado] = useState(false);
+  const [restantes, setRestantes] = useState<number | null>(null);
   const lista = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     lista.current?.scrollTo({ top: lista.current.scrollHeight });
   }, [msgs]);
 
-  const preguntar = (q: string) => {
-    if (!q.trim()) return;
-    setMsgs((m) => [...m, { rol: "u", texto: q }, { rol: "a", texto: SIN_CONEXION }]);
+  /** Reemplaza el último mensaje (la respuesta en curso). */
+  const actualizarUltimo = (cambio: Partial<Mensaje>) =>
+    setMsgs((m) => [...m.slice(0, -1), { ...m[m.length - 1], ...cambio }]);
+
+  const preguntar = async (q: string) => {
+    if (ocupado || !q.trim()) return;
+    // pares pregunta–respuesta anteriores (solo los que tuvieron respuesta de IA)
+    const pares: { role: "user" | "assistant"; content: string }[] = [];
+    msgs.forEach((m, i) => {
+      const sig = msgs[i + 1];
+      if (m.rol === "u" && sig?.rol === "a" && sig.ia && !sig.error && sig.texto.trim())
+        pares.push({ role: "user", content: m.texto }, { role: "assistant", content: sig.texto });
+    });
+
+    setOcupado(true);
+    setMsgs((m) => [...m, { rol: "u", texto: q }, { rol: "a", texto: "", ia: true }]);
+    try {
+      const r = await fetch("/api/asesor", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          pregunta: q,
+          historial: pares.slice(-TURNOS_HISTORIAL),
+          contexto: ctxSnapshot(snap, mk, motor, pfValorado, pfMetricas),
+        }),
+      });
+      const quedan = r.headers.get("X-Consultas-Restantes");
+      if (quedan != null) setRestantes(Number(quedan));
+      if (!r.ok || !r.body) {
+        const j = await r.json().catch(() => ({}));
+        actualizarUltimo({ texto: j.error ?? `No se pudo completar el análisis (HTTP ${r.status}).`, ia: false, error: true });
+        return;
+      }
+      const lector = r.body.getReader();
+      const dec = new TextDecoder();
+      let texto = "";
+      for (;;) {
+        const { done, value } = await lector.read();
+        if (done) break;
+        texto += dec.decode(value, { stream: true });
+        actualizarUltimo({ texto });
+      }
+      texto += dec.decode();
+      actualizarUltimo({ texto: texto || "_No llegó respuesta. Intente de nuevo._", error: !texto });
+    } catch {
+      actualizarUltimo({ texto: "No hubo conexión con el servidor. Intente de nuevo.", ia: false, error: true });
+    } finally {
+      setOcupado(false);
+    }
   };
+
   const enviar = () => {
     const q = pregunta;
     setPregunta("");
-    preguntar(q);
+    void preguntar(q);
   };
 
   return (
@@ -53,7 +104,7 @@ export function VistaAsesor() {
       </Encabezado>
       <div className="advisor">
         <div className="panel chat">
-          <div className="msgs" ref={lista} aria-live="polite">
+          <div className="msgs" ref={lista} aria-live="polite" aria-busy={ocupado}>
             {msgs.map((m, i) =>
               m.rol === "u" ? (
                 <div key={i} className="msg u">
@@ -62,8 +113,12 @@ export function VistaAsesor() {
               ) : (
                 <div key={i} className="msg a">
                   <div className="who">Asesor · Cupón Corrido{m.ia ? " · Respuesta generada por IA" : ""}</div>
-                  {/* md() escapa el texto antes de convertirlo */}
-                  <div dangerouslySetInnerHTML={{ __html: md(m.texto) }} />
+                  {m.texto ? (
+                    // md() escapa el texto antes de convertirlo
+                    <div dangerouslySetInnerHTML={{ __html: md(m.texto) }} style={m.error ? { color: "var(--warn)" } : undefined} />
+                  ) : (
+                    <p className="src">Analizando datos…</p>
+                  )}
                 </div>
               ),
             )}
@@ -75,6 +130,7 @@ export function VistaAsesor() {
             <textarea
               id="ask"
               rows={2}
+              maxLength={2000}
               placeholder="Pregunta sobre la economía, la curva o tus posiciones…"
               value={pregunta}
               onChange={(e) => setPregunta(e.target.value)}
@@ -85,16 +141,21 @@ export function VistaAsesor() {
                 }
               }}
             />
-            <button type="button" className="btn primary" onClick={enviar}>
-              Enviar
+            <button type="button" className="btn primary" onClick={enviar} disabled={ocupado || !pregunta.trim()}>
+              {ocupado ? "Analizando…" : "Enviar"}
             </button>
           </div>
+          {restantes != null && (
+            <p className="src" style={{ marginTop: 8 }}>
+              Te quedan {restantes} consultas en esta hora.
+            </p>
+          )}
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           <h3>Consultas rápidas</h3>
           <div className="prompts">
             {QUICK.map(([t, d, q]) => (
-              <button key={t} type="button" onClick={() => preguntar(q)}>
+              <button key={t} type="button" disabled={ocupado} onClick={() => void preguntar(q)}>
                 <b>{t}</b>
                 <span>{d}</span>
               </button>
@@ -102,8 +163,8 @@ export function VistaAsesor() {
           </div>
           <div className="notice" style={{ fontSize: 12 }}>
             <span>
-              <b>Contexto que lee el asesor:</b> TPM {F.pct(snap.macro.tpm, 2)}, IPC {F.pct(mk.ipcLast.annual, 2)} (
-              {mk.ipcLast.f.slice(0, 7)}), IBR al {F.date(mk.ibrLast.f)}, curva TES del{" "}
+              <b>Contexto que lee el asesor:</b> TPM {F.pct(snap.macro.tpm, 2)} ({F.date(snap.macro.tpmFecha)}), IPC{" "}
+              {F.pct(mk.ipcLast.annual, 2)} ({mk.ipcLast.f.slice(0, 7)}), IBR al {F.date(mk.ibrLast.f)}, curva TES del{" "}
               {F.date(snap.datos.curveDate)} y {pfValorado.length} posiciones del portafolio.
             </span>
           </div>
@@ -112,7 +173,10 @@ export function VistaAsesor() {
               <span className="dot" />
               IA
             </span>
-            <span>Respuestas generadas por IA. Herramienta académica, no es asesoría financiera.</span>
+            <span>
+              Respuestas generadas por IA (Claude, de Anthropic). Herramienta académica, no es asesoría financiera. Límite:
+              20 consultas por hora.
+            </span>
           </div>
         </div>
       </div>
