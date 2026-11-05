@@ -1056,6 +1056,90 @@
     text-transform: uppercase;
     color: var(--engrave);
   }
+  /* modo clase */
+  .clase {
+    border-color: color-mix(in srgb, var(--engrave) 45%, var(--rule));
+  }
+  .clase-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+  .clase-chips .chip {
+    cursor: pointer;
+    background: none;
+  }
+  .clase-chips .chip[aria-selected="true"] {
+    background: var(--engrave);
+    border-color: var(--engrave);
+    color: var(--sheet);
+  }
+  .formula {
+    margin: 0 0 10px;
+    padding: 12px 14px;
+    border-radius: var(--r);
+    background: var(--engrave-soft);
+    color: var(--ink);
+    font: 500 13px/1.6 var(--f-mono);
+    white-space: pre-wrap;
+    overflow-x: auto;
+  }
+  .pasos {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: paso;
+    display: flex;
+    flex-direction: column;
+  }
+  .pasos li {
+    counter-increment: paso;
+    display: grid;
+    grid-template-columns: 22px minmax(0, 1fr) auto;
+    gap: 2px 10px;
+    align-items: baseline;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .pasos li::before {
+    content: counter(paso);
+    font: 500 11px var(--f-mono);
+    color: var(--engrave);
+    grid-row: span 2;
+  }
+  .pasos .lbl {
+    color: var(--ink-2);
+  }
+  .pasos code {
+    grid-column: 2;
+    grid-row: 2;
+    font: 12px var(--f-mono);
+    color: var(--ink-3);
+    overflow-wrap: anywhere;
+  }
+  .pasos b {
+    grid-column: 3;
+    grid-row: 1 / span 2;
+    align-self: center;
+    font-weight: 500;
+    text-align: right;
+    white-space: nowrap;
+  }
+  .headline button.kpi {
+    border: 0;
+    text-align: left;
+    cursor: pointer;
+    font: inherit;
+    color: inherit;
+  }
+  .headline button.kpi:hover .l {
+    text-decoration: underline;
+  }
+  .headline button.kpi[aria-pressed="true"] {
+    outline: 2px solid var(--engrave);
+    outline-offset: -2px;
+  }
   .titulares {
     list-style: none;
     margin: 0;

@@ -4,7 +4,7 @@ import { useApp, useCurvaNecesaria } from "@/components/providers/AppProvider";
 import { LAYOUT, OPTS, toEngine, type Campo, type EntradasUI } from "@/lib/calculadora";
 import { esError, toN, type TipoBono } from "@/lib/engine";
 import { F } from "@/lib/format";
-import { useHidratado } from "@/lib/storage";
+import { useGuardado, useHidratado } from "@/lib/storage";
 import { Resultados } from "./Resultados";
 
 const TIPOS: [TipoBono, string][] = [
@@ -17,6 +17,7 @@ const TIPOS: [TipoBono, string][] = [
 export function VistaCalculadora() {
   const { calc, setCalc, setEditingId, defaults } = useApp();
   const hidratado = useHidratado();
+  const [modoClase, setModoClase] = useGuardado<boolean>("modoClase", false);
   const cambiarTipo = (t: TipoBono) => {
     setEditingId(null);
     setCalc((c) => ({ ...c, type: t }));
@@ -30,18 +31,25 @@ export function VistaCalculadora() {
             Calculadora de <em>bonos</em>
           </h1>
         </div>
-        <div className="seg" role="group" aria-label="Tipo de título">
-          {TIPOS.map(([t, nombre]) => (
-            <button key={t} type="button" aria-pressed={hidratado && calc.type === t} onClick={() => cambiarTipo(t)}>
-              {nombre}
+        <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+          <div className="seg" role="group" aria-label="Tipo de título">
+            {TIPOS.map(([t, nombre]) => (
+              <button key={t} type="button" aria-pressed={hidratado && calc.type === t} onClick={() => cambiarTipo(t)}>
+                {nombre}
+              </button>
+            ))}
+          </div>
+          <div className="seg" role="group" aria-label="Modo clase">
+            <button type="button" aria-pressed={hidratado && modoClase} onClick={() => setModoClase(!modoClase)} title="Explica cada cifra con su fórmula">
+              Modo clase
             </button>
-          ))}
+          </div>
         </div>
       </div>
       {hidratado ? (
         <div className="calc">
           <Formulario />
-          <ResultadosDiferidos inputs={calc.inputs[calc.type] ?? defaults[calc.type]} />
+          <ResultadosDiferidos inputs={calc.inputs[calc.type] ?? defaults[calc.type]} clase={modoClase} />
         </div>
       ) : (
         <div className="panel empty">Cargando calculadora…</div>
@@ -50,7 +58,7 @@ export function VistaCalculadora() {
   );
 }
 
-function ResultadosDiferidos({ inputs }: { inputs: EntradasUI }) {
+function ResultadosDiferidos({ inputs, clase }: { inputs: EntradasUI; clase: boolean }) {
   const { motor, curvas, pedirCurva, snap } = useApp();
   // Mientras se escribe, React prioriza el formulario y recalcula con el valor diferido.
   const diferidas = useDeferredValue(inputs);
@@ -87,7 +95,7 @@ function ResultadosDiferidos({ inputs }: { inputs: EntradasUI }) {
     avisos.push(
       `Este título usa el IBR a 12 meses, que el BanRep no publica en su servicio SDMX: el último dato disponible es del ${F.date(hasta12)}. Cárguelo en «Cargar datos» para actualizarlo.`,
     );
-  return <Resultados b={b} o={o} avisosExtra={avisos} />;
+  return <Resultados b={b} o={o} avisosExtra={avisos} clase={clase} />;
 }
 
 function Formulario() {

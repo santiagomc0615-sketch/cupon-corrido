@@ -1,5 +1,7 @@
 "use client";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
+import type { ClaveClase } from "@/lib/clase";
+import { ETIQUETAS_CLASE, PasoAPaso } from "./PasoAPaso";
 import { Chart, nearest } from "@/components/charts/Chart";
 import { useApp, useCurvaNecesaria } from "@/components/providers/AppProvider";
 import type { EstadoCalculadora, ModoVenta } from "@/lib/calculadora";
@@ -20,7 +22,18 @@ import {
 } from "@/lib/engine";
 import { F, nf } from "@/lib/format";
 
-export function Resultados({ b, o, avisosExtra = [] }: { b: Bono; o: Valoracion; avisosExtra?: string[] }) {
+export function Resultados({
+  b,
+  o,
+  avisosExtra = [],
+  clase = false,
+}: {
+  b: Bono;
+  o: Valoracion;
+  avisosExtra?: string[];
+  /** Modo clase: las cifras explican su fórmula paso a paso. */
+  clase?: boolean;
+}) {
   if (esError(o)) {
     return (
       <div>
@@ -28,10 +41,14 @@ export function Resultados({ b, o, avisosExtra = [] }: { b: Bono; o: Valoracion;
       </div>
     );
   }
-  return <ResultadosOk b={b} o={o} avisosExtra={avisosExtra} />;
+  return <ResultadosOk b={b} o={o} avisosExtra={avisosExtra} clase={clase} />;
 }
 
-function ResultadosOk({ b, o, avisosExtra }: { b: Bono; o: ResultadoValoracion; avisosExtra: string[] }) {
+const CLAVES_HEAD: ClaveClase[] = ["dirty", "clean", "irr", "mod", "dv01"];
+
+function ResultadosOk({ b, o, avisosExtra, clase }: { b: Bono; o: ResultadoValoracion; avisosExtra: string[]; clase: boolean }) {
+  const [explicando, setExplicando] = useState<ClaveClase | null>(null);
+  const activa = clase ? explicando : null;
   const t = o.tipo,
     fx = o.fx;
 
@@ -104,14 +121,42 @@ function ResultadosOk({ b, o, avisosExtra }: { b: Bono; o: ResultadoValoracion; 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 18, minWidth: 0 }}>
       <div className="headline">
-        {head.map((h) => (
-          <div className="kpi" key={h[0]}>
-            <span className="l">{h[0]}</span>
-            <span className="v">{h[1]}</span>
-            <span className="s">{h[2]}</span>
+        {head.map((h, i) =>
+          clase ? (
+            <button
+              type="button"
+              className="kpi"
+              key={h[0]}
+              aria-pressed={activa === CLAVES_HEAD[i]}
+              title="Ver la fórmula paso a paso"
+              onClick={() => setExplicando(activa === CLAVES_HEAD[i] ? null : CLAVES_HEAD[i])}
+            >
+              <span className="l">{h[0]} ⓘ</span>
+              <span className="v">{h[1]}</span>
+              <span className="s">{h[2]}</span>
+            </button>
+          ) : (
+            <div className="kpi" key={h[0]}>
+              <span className="l">{h[0]}</span>
+              <span className="v">{h[1]}</span>
+              <span className="s">{h[2]}</span>
+            </div>
+          ),
+        )}
+      </div>
+      {clase &&
+        (activa ? (
+          <PasoAPaso b={b} o={o} clave={activa} onClave={setExplicando} />
+        ) : (
+          <div className="notice clase-chips" style={{ alignItems: "center" }}>
+            <span>Modo clase: toque una cifra para ver su fórmula, o elija:</span>
+            {ETIQUETAS_CLASE.map(([k, t]) => (
+              <button key={k} type="button" className="chip" onClick={() => setExplicando(k)}>
+                {t}
+              </button>
+            ))}
           </div>
         ))}
-      </div>
       {avisos.map((w) => (
         <div className="alert" key={w}>
           {w}
