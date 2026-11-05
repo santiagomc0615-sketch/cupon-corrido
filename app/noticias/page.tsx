@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import { VistaNoticias } from "@/components/noticias/VistaNoticias";
+import { obtenerNoticias } from "@/lib/noticias/obtener";
 
 export const metadata: Metadata = {
   title: "Noticias y fuentes",
-  description: "Fuentes oficiales y noticias de mercado de renta fija en Colombia.",
+  description: "Titulares de Bloomberg Línea (Colombia y mercados) y de fuentes oficiales, con fecha y enlace.",
 };
 
-export default function Pagina() {
-  return <VistaNoticias />;
+export default async function Pagina() {
+  const noticias = await obtenerNoticias();
+  return <VistaNoticias noticias={noticias} />;
 }

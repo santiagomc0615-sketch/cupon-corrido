@@ -2,6 +2,51 @@
 import { TablaFuentes } from "@/components/datos/EstadoFuentes";
 import { useApp } from "@/components/providers/AppProvider";
 import { Encabezado, Panel } from "@/components/ui";
+import { MESES } from "@/lib/format";
+import type { GrupoNoticias, Noticias } from "@/lib/noticias/obtener";
+
+/** "5·nov · 17:35" en hora de Colombia (igual en servidor y navegador). */
+const fechaHora = new Intl.DateTimeFormat("es-CO", {
+  timeZone: "America/Bogota",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false,
+});
+function cuando(iso: string): string {
+  const p = Object.fromEntries(fechaHora.formatToParts(new Date(iso)).map((x) => [x.type, x.value]));
+  return `${+p.day}·${MESES[+p.month - 1]} · ${p.hour}:${p.minute}`;
+}
+
+function Grupo({ g }: { g: GrupoNoticias }) {
+  return (
+    <Panel titulo={g.nombre} src={g.via}>
+      {g.titulares.length ? (
+        <ol className="titulares">
+          {g.titulares.map((t) => (
+            <li key={t.enlace}>
+              <a href={t.enlace} target="_blank" rel="noopener noreferrer">
+                {t.titulo}
+              </a>
+              <span className="src">
+                {t.fuente} · {cuando(t.fecha)}
+              </span>
+            </li>
+          ))}
+        </ol>
+      ) : (
+        <p className="src">
+          {g.error ? "No se pudo leer el RSS en este momento. " : "Sin titulares recientes. "}
+          <a href={g.portada} target="_blank" rel="noopener noreferrer">
+            Abrir la fuente ↗
+          </a>
+        </p>
+      )}
+    </Panel>
+  );
+}
 
 const ENLACES: [string, string, string, string][] = [
   ["Noticias", "Bloomberg Línea · Colombia", "Mercados, BanRep, inflación y deuda pública en español.", "https://www.bloomberglinea.com/latinoamerica/colombia/"],
@@ -13,16 +58,26 @@ const ENLACES: [string, string, string, string][] = [
   ["Noticias", "Noticias RCN · IPC septiembre 2026", "Inflación anual de 6,29 % en septiembre.", "https://www.noticiasrcn.com/economia/inflacion-anual-en-colombia-llego-al-6-29-en-septiembre-1069516"],
 ];
 
-export function VistaNoticias() {
+export function VistaNoticias({ noticias }: { noticias: Noticias }) {
   const { snap } = useApp();
   return (
     <section className="view">
       <Encabezado
         eyebrow="Monitor de información"
-        lede="Bloomberg Línea y los portales oficiales no permiten incrustarse dentro de otra página, así que aquí se abren en una pestaña nueva. Más adelante esta sección mostrará sus titulares (RSS) con fecha y enlace."
+        lede="Últimos titulares leídos desde el servidor por RSS (se actualizan cada 30 minutos). Cada enlace abre la nota original en una pestaña nueva."
       >
         Noticias y <em>fuentes</em>
       </Encabezado>
+      <div className="grid-c g3">
+        {noticias.grupos.map((g) => (
+          <Grupo key={g.id} g={g} />
+        ))}
+      </div>
+      <p className="src" style={{ marginTop: -10 }}>
+        Titulares leídos el {noticias.leidas.replace(" ", " a las ")} (hora de Colombia). Los portales del BanRep, el DANE y
+        MinHacienda no publican un RSS vigente; sus titulares vienen del RSS de Google Noticias limitado a cada sitio oficial.
+      </p>
+      <h3 style={{ marginTop: 6 }}>Portales y análisis</h3>
       <div className="links">
         {ENLACES.map(([tipo, titulo, desc, url]) => (
           <a key={url} className="link" href={url} target="_blank" rel="noopener noreferrer">
