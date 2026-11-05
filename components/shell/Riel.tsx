@@ -1,0 +1,83 @@
+"use client";
+/* Riel de navegación lateral (barra superior en celular). */
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import type { ReactNode } from "react";
+import { Guilloche, SELLO } from "./Guilloche";
+import { SelectorTema } from "./SelectorTema";
+
+const SECCIONES: { href: string; nombre: string; icono: ReactNode }[] = [
+  { href: "/mercado", nombre: "Mercado", icono: <path d="M3 20h18M5 16l4-5 4 3 6-8" /> },
+  {
+    href: "/calculadora",
+    nombre: "Calculadora",
+    icono: (
+      <>
+        <rect x="5" y="3" width="14" height="18" rx="2" />
+        <path d="M8 7h8M8 12h2M12 12h2M16 12h0M8 16h2M12 16h2" />
+      </>
+    ),
+  },
+  { href: "/portafolio", nombre: "Portafolio", icono: <path d="M3 8h18v12H3zM8 8V5h8v3M3 13h18" /> },
+  {
+    href: "/curva",
+    nombre: "Curva TES",
+    icono: (
+      <>
+        <path d="M3 19c3-8 7-11 18-13M3 21h18" />
+        <circle cx="8" cy="13" r="1" />
+        <circle cx="14" cy="8.5" r="1" />
+      </>
+    ),
+  },
+  {
+    href: "/asesor",
+    nombre: "Asesor IA",
+    icono: (
+      <>
+        <path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z" />
+        <path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z" />
+      </>
+    ),
+  },
+  {
+    href: "/noticias",
+    nombre: "Noticias y fuentes",
+    icono: <path d="M4 5h12v14H4zM16 9h4v8a2 2 0 0 1-4 0M7 9h6M7 12h6M7 15h4" />,
+  },
+];
+
+export function Riel() {
+  const ruta = usePathname();
+  return (
+    <aside className="rail">
+      <Link href="/mercado" className="brand" aria-label="Cupón Corrido, inicio">
+        <Guilloche opt={SELLO} size={88} />
+        <div>
+          <b>Cupón Corrido</b>
+          <small>Mesa de renta fija · COL</small>
+        </div>
+      </Link>
+      <nav className="nav" aria-label="Secciones">
+        {SECCIONES.map((s, i) => (
+          <Link
+            key={s.href}
+            href={s.href}
+            aria-current={ruta.startsWith(s.href) ? "page" : undefined}
+            title={s.nombre}
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              {s.icono}
+            </svg>
+            <span>{s.nombre}</span>
+            <i className="k">{String(i + 1).padStart(2, "0")}</i>
+          </Link>
+        ))}
+      </nav>
+      <div className="rail-foot">
+        <SelectorTema />
+        <div>Herramienta académica, no es asesoría financiera.</div>
+      </div>
+    </aside>
+  );
+}

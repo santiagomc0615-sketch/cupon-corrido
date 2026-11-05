@@ -65,6 +65,7 @@ export function crearMotor(datos: DatosMercado) {
 export type Motor = ReturnType<typeof crearMotor>;
 
 export { holding } from "./holding";
+export { pfMetrics, type PosicionValorada, type MetricasPortafolio } from "./portafolio";
 export { priceTF } from "./tf";
 export { priceIPC } from "./ipc";
 export { priceUVR } from "./uvr";
