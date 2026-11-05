@@ -1,0 +1,751 @@
+<title>Cupón Corrido</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Concepto: título valor grabado (guilloché de papel de seguridad) + terminal de mesa de dinero.
+   Riel lateral de navegación, cinta de mercado arriba, hojas de cálculo convertidas en "term sheets". */
+:root{
+  --paper:#E9EDE8; --sheet:#F8FAF7; --sheet-2:#F0F3EF; --ink:#0E1E19; --ink-2:#4B5C55; --ink-3:#7D8C85;
+  --rule:#C9D2CB; --engrave:#1C5A46; --engrave-soft:rgba(28,90,70,.10); --seal:#8C6A2A;
+  --pos:#1D7A4B; --neg:#B23F2E; --warn:#9C6B12;
+  --f-display:"Bodoni Moda", "Didot", "Bodoni 72", Georgia, serif;
+  --f-body:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --r:6px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0B1411; --sheet:#111D19; --sheet-2:#15231E; --ink:#E2EAE5; --ink-2:#9AAEA5; --ink-3:#6C7F77;
+  --rule:#23352E; --engrave:#72C6A3; --engrave-soft:rgba(114,198,163,.10); --seal:#D4B067;
+  --pos:#5DC58F; --neg:#EF836F; --warn:#E0B054; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0B1411; --sheet:#111D19; --sheet-2:#15231E; --ink:#E2EAE5; --ink-2:#9AAEA5; --ink-3:#6C7F77;
+  --rule:#23352E; --engrave:#72C6A3; --engrave-soft:rgba(114,198,163,.10); --seal:#D4B067;
+  --pos:#5DC58F; --neg:#EF836F; --warn:#E0B054; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{background:var(--paper);color:var(--ink);font:14px/1.5 var(--f-body);-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--paper)}
+a{color:var(--engrave)}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--engrave);outline-offset:2px}
+.num,.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.shell{display:grid;grid-template-columns:232px minmax(0,1fr);min-height:100%}
+/* ---------- riel ---------- */
+.rail{position:sticky;top:env(safe-area-inset-top,0px);height:100vh;border-right:1px solid var(--rule);background:var(--sheet);display:flex;flex-direction:column;padding:20px 14px 16px max(14px,env(safe-area-inset-left,0px))}
+.brand{display:flex;gap:10px;align-items:center;padding:0 6px 18px;border-bottom:1px solid var(--rule)}
+.brand canvas{width:44px;height:44px;flex:none}
+.brand b{font:700 21px/1 var(--f-display);letter-spacing:-.01em;display:block}
+.brand small{font:500 10px/1.3 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)}
+.nav{display:flex;flex-direction:column;gap:2px;margin-top:16px}
+.nav a{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--r);text-decoration:none;color:var(--ink-2);font-weight:500}
+.nav a svg{width:17px;height:17px;flex:none;stroke:currentColor;fill:none;stroke-width:1.6}
+.nav a:hover{background:var(--sheet-2);color:var(--ink)}
+.nav a[aria-current="page"]{background:var(--engrave-soft);color:var(--engrave)}
+.nav a .k{margin-left:auto;font:500 10px var(--f-mono);color:var(--ink-3)}
+.rail-foot{margin-top:auto;display:flex;flex-direction:column;gap:10px;font-size:12px;color:var(--ink-3)}
+.theme{display:flex;border:1px solid var(--rule);border-radius:var(--r);overflow:hidden}
+.theme button{flex:1;border:0;background:none;padding:6px 0;font-size:11px;cursor:pointer;color:var(--ink-2)}
+.theme button[aria-pressed="true"]{background:var(--ink);color:var(--sheet)}
+/* ---------- cinta ---------- */
+main{min-width:0}
+.tape{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--ink);color:var(--paper);overflow:hidden;white-space:nowrap;border-bottom:1px solid var(--rule)}
+.tape-track{display:inline-flex;gap:34px;padding:8px 0;animation:tape 60s linear infinite;font:500 12px var(--f-mono)}
+.tape:hover .tape-track{animation-play-state:paused}
+.tape span b{color:var(--seal);font-weight:500;margin-right:6px;letter-spacing:.06em}
+.tape .up{color:#7FD3A6}.tape .dn{color:#F2967F}
+@keyframes tape{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion:reduce){.tape-track{animation:none}}
+.wrap{padding-block:28px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));max-width:1320px;margin:0 auto}
+@media (min-width:900px){.wrap{padding-left:36px;padding-right:36px}}
+.view{display:flex;flex-direction:column;gap:22px}
+.eyebrow{font:500 11px var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--engrave)}
+h1,h2,h3{margin:0;text-wrap:balance}
+h1{font:500 clamp(30px,4vw,46px)/1.05 var(--f-display);letter-spacing:-.015em}
+h1 em{font-style:italic;color:var(--engrave)}
+h2{font:600 17px/1.3 var(--f-body);letter-spacing:-.005em}
+h3{font:600 13px/1.3 var(--f-body);text-transform:uppercase;letter-spacing:.08em;color:var(--ink-2)}
+p{margin:0}
+.lede{color:var(--ink-2);max-width:68ch}
+.panel{background:var(--sheet);border:1px solid var(--rule);border-radius:var(--r);padding:18px;min-width:0}
+.panel-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.src{font:400 11px var(--f-mono);color:var(--ink-3)}
+.grid{display:grid;gap:18px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
+/* ---------- héroe mercado ---------- */
+.hero{position:relative;overflow:hidden;border:1px solid var(--rule);border-radius:var(--r);background:var(--sheet);padding:28px 26px;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:24px;align-items:end}
+.hero canvas.gl{position:absolute;right:-90px;top:50%;transform:translateY(-50%);width:460px;height:460px;opacity:.5;pointer-events:none}
+.hero > *{position:relative}
+.hero .big{font:500 clamp(54px,8vw,96px)/.9 var(--f-display);letter-spacing:-.03em}
+.hero .big small{font-size:.4em;color:var(--ink-2);margin-left:4px}
+.stamp{display:inline-flex;gap:8px;align-items:center;border:1px solid var(--seal);color:var(--seal);border-radius:999px;padding:3px 10px;font:500 11px var(--f-mono);letter-spacing:.06em}
+@media (max-width:760px){.hero{grid-template-columns:1fr}}
+/* ---------- KPIs ---------- */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,160px),1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:var(--r);overflow:hidden}
+.kpis.k3{grid-template-columns:repeat(3,minmax(0,1fr))}.kpis.k4{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:700px){.kpis.k3,.kpis.k4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.kpi{background:var(--sheet);padding:14px 16px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.kpi .l{font-size:12px;color:var(--ink-2)}
+.kpi .v{font:500 24px/1.1 var(--f-mono);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.kpi .s{font:400 11px var(--f-mono);color:var(--ink-3)}
+.chip{display:inline-flex;align-items:center;gap:6px;font:500 11px var(--f-mono);padding:2px 8px;border-radius:999px;border:1px solid var(--rule);color:var(--ink-2);white-space:nowrap}
+.chip.pos{color:var(--pos);border-color:color-mix(in srgb,var(--pos) 40%,transparent)}
+.chip.neg{color:var(--neg);border-color:color-mix(in srgb,var(--neg) 40%,transparent)}
+.chip.warn{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 40%,transparent)}
+.dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+/* ---------- charts ---------- */
+.chart{position:relative;width:100%;min-height:220px}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart .ax{stroke:var(--rule);stroke-width:1}
+.chart .grid-l{stroke:var(--rule);stroke-width:1;stroke-dasharray:2 4}
+.chart text{fill:var(--ink-3);font:10.5px var(--f-mono)}
+.s-a{stroke:var(--engrave);fill:none;stroke-width:2}
+.s-b{stroke:var(--seal);fill:none;stroke-width:1.6}
+.s-c{stroke:var(--ink-2);fill:none;stroke-width:1.4;stroke-dasharray:4 3}
+.s-d{stroke:var(--neg);fill:none;stroke-width:1.4}
+.s-e{stroke:var(--ink-3);fill:none;stroke-width:1.2}
+.area-a{fill:var(--engrave-soft);stroke:none}
+.band{fill:var(--engrave-soft)}
+.pt-a{fill:var(--engrave)}.pt-b{fill:var(--seal)}.pt-d{fill:var(--neg)}
+.bar-pos{fill:var(--engrave)}.bar-neg{fill:var(--neg)}.bar-b{fill:var(--seal)}.bar-c{fill:var(--ink-3)}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--paper);font:11px/1.45 var(--f-mono);padding:6px 9px;border-radius:4px;white-space:nowrap;transform:translate(-50%,-110%);z-index:5}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--ink-2);margin-top:8px}
+.legend i{display:inline-block;width:14px;height:2px;vertical-align:middle;margin-right:6px;background:var(--engrave)}
+.legend i.b{background:var(--seal)}.legend i.c{background:repeating-linear-gradient(90deg,var(--ink-2) 0 4px,transparent 4px 7px)}.legend i.d{background:var(--neg)}.legend i.e{background:var(--ink-3)}
+/* ---------- calculadora ---------- */
+.seg{display:inline-flex;border:1px solid var(--rule);border-radius:var(--r);background:var(--sheet);padding:3px;gap:3px;flex-wrap:wrap}
+.seg button{border:0;background:none;padding:7px 14px;border-radius:4px;cursor:pointer;font-weight:500;color:var(--ink-2)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--sheet)}
+.calc{display:grid;grid-template-columns:minmax(0,360px) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:1000px){.calc{grid-template-columns:1fr}}
+.sheet{background:var(--sheet);border:1px solid var(--rule);border-radius:var(--r);position:relative}
+.sheet .perf{border-top:1px dashed var(--rule);margin:0 18px}
+.sheet fieldset{border:0;margin:0;padding:16px 18px;display:grid;grid-template-columns:1fr 1fr;gap:12px 12px}
+.sheet legend{font:500 11px var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--engrave);padding:0;margin-bottom:10px;float:left;width:100%}
+.f{display:flex;flex-direction:column;gap:4px;min-width:0}
+.f.w{grid-column:1/-1}
+.f label{font-size:12px;color:var(--ink-2)}
+.f input,.f select{width:100%;padding:8px 10px;border:1px solid var(--rule);border-radius:4px;background:var(--paper);font-family:var(--f-mono);font-size:13px;font-variant-numeric:tabular-nums}
+.f input:focus,.f select:focus{border-color:var(--engrave);outline:none;box-shadow:0 0 0 3px var(--engrave-soft)}
+.f .u{position:relative}
+.f .u span{position:absolute;right:10px;top:50%;transform:translateY(-50%);font:12px var(--f-mono);color:var(--ink-3);pointer-events:none}
+.sheet-foot{padding:14px 18px;display:flex;gap:8px;flex-wrap:wrap;border-top:1px solid var(--rule)}
+.btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--rule);background:var(--sheet);padding:8px 14px;border-radius:var(--r);cursor:pointer;font-weight:500}
+.btn:hover{border-color:var(--ink-3)}
+.btn.primary{background:var(--engrave);border-color:var(--engrave);color:var(--sheet)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.ghost{background:none}
+.btn.sm{padding:5px 10px;font-size:12px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.headline{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,112px),1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:var(--r);overflow:hidden}
+.headline .v{font-size:19px}
+.headline .kpi:first-child{background:var(--ink);color:var(--sheet)}
+.headline .kpi:first-child .l,.headline .kpi:first-child .s{color:color-mix(in srgb,var(--sheet) 70%,transparent)}
+.alert{padding:10px 14px;border-radius:var(--r);border:1px solid color-mix(in srgb,var(--warn) 45%,transparent);color:var(--warn);background:color-mix(in srgb,var(--warn) 8%,transparent);font-size:13px}
+.ok{color:var(--pos)}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{padding:7px 10px;text-align:right;border-bottom:1px solid var(--rule);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{font:500 11px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);background:var(--sheet-2);position:sticky;top:0}
+td{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+td.t{font-family:var(--f-body)}
+tr.paid td{color:var(--ink-3)}
+tr.curr td{background:var(--engrave-soft)}
+tr.zero td{font-weight:600}
+.tbl{overflow:auto;max-height:420px;border:1px solid var(--rule);border-radius:var(--r)}
+.kv{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:0;font-size:13px}
+.kv > div{padding:7px 0;border-bottom:1px solid var(--rule)}
+.kv .h{font:500 11px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);text-align:right;padding-left:14px}
+.kv .h:first-child{text-align:left;padding-left:0}
+.kv .n{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums;padding-left:14px}
+.kv .lbl{color:var(--ink-2)}
+details summary{cursor:pointer;font-weight:600;list-style:none;display:flex;align-items:center;gap:8px}
+details summary::before{content:"+";font-family:var(--f-mono);color:var(--engrave);width:12px}
+details[open] summary::before{content:"–"}
+/* ---------- portafolio ---------- */
+.pos-row td .tag{font:500 10px var(--f-mono);padding:2px 6px;border-radius:3px;background:var(--engrave-soft);color:var(--engrave)}
+.alloc{display:flex;height:34px;border-radius:4px;overflow:hidden;border:1px solid var(--rule)}
+.alloc div{display:flex;align-items:center;justify-content:center;font:500 11px var(--f-mono);color:var(--sheet);min-width:0;overflow:hidden}
+.empty{padding:30px;text-align:center;color:var(--ink-2)}
+.notice{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--ink-2);padding:12px 14px;border:1px dashed var(--rule);border-radius:var(--r)}
+/* ---------- asesor ---------- */
+.advisor{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:18px;align-items:start}
+@media (max-width:1000px){.advisor{grid-template-columns:1fr}}
+.chat{display:flex;flex-direction:column;min-height:520px}
+.msgs{flex:1;display:flex;flex-direction:column;gap:14px;padding:4px 2px 14px;overflow:auto;max-height:62vh}
+.msg{max-width:86%;padding:12px 15px;border-radius:var(--r);line-height:1.6}
+.msg.u{align-self:flex-end;background:var(--ink);color:var(--sheet)}
+.msg.a{align-self:flex-start;background:var(--sheet-2);border:1px solid var(--rule)}
+.msg.a h4{margin:10px 0 4px;font:600 14px var(--f-body)}
+.msg.a ul{margin:6px 0;padding-left:18px}
+.msg.a p+p{margin-top:8px}
+.msg .who{font:500 10px var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--engrave);margin-bottom:6px}
+.composer{display:flex;gap:8px;border-top:1px solid var(--rule);padding-top:14px}
+.composer textarea{flex:1;resize:none;min-height:46px;max-height:140px;padding:10px 12px;border:1px solid var(--rule);border-radius:var(--r);background:var(--paper);font:14px/1.45 var(--f-body);color:var(--ink)}
+.prompts{display:flex;flex-direction:column;gap:8px}
+.prompts button{text-align:left;border:1px solid var(--rule);background:var(--sheet);border-radius:var(--r);padding:10px 12px;cursor:pointer;font-size:13px}
+.prompts button:hover{border-color:var(--engrave)}
+.prompts button b{display:block;font-weight:600;margin-bottom:2px}
+.prompts button span{color:var(--ink-2);font-size:12px}
+/* ---------- fuentes ---------- */
+.links{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px}
+.link{display:flex;flex-direction:column;gap:6px;padding:16px;border:1px solid var(--rule);border-radius:var(--r);background:var(--sheet);text-decoration:none;color:var(--ink)}
+.link:hover{border-color:var(--engrave)}
+.link b{font-weight:600}
+.link span{font-size:12.5px;color:var(--ink-2)}
+.link em{font:normal 500 10px var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--engrave)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--sheet);padding:10px 16px;border-radius:var(--r);font-size:13px;z-index:50}
+/* ---------- móvil ---------- */
+@media (max-width:820px){
+  .shell{grid-template-columns:1fr}
+  .rail{position:sticky;height:auto;flex-direction:row;align-items:center;padding:8px max(16px,env(safe-area-inset-right,0px)) 8px max(16px,env(safe-area-inset-left,0px));border-right:0;border-bottom:1px solid var(--rule);z-index:25;gap:10px;overflow-x:auto}
+  .brand{border:0;padding:0}.brand small{display:none}.brand canvas{width:32px;height:32px}
+  .nav{flex-direction:row;margin:0}.nav a{padding:7px 9px}.nav a span,.nav a .k{display:none}
+  .rail-foot{display:none}
+  .tape{top:calc(env(safe-area-inset-top,0px) + 49px)}
+}
+</style>
+
+<div class="shell">
+  <aside class="rail">
+    <div class="brand"><canvas id="seal" width="88" height="88" aria-hidden="true"></canvas><div><b>Cupón Corrido</b><small>Mesa de renta fija · COL</small></div></div>
+    <nav class="nav" aria-label="Secciones">
+      <a href="#mercado"><svg viewBox="0 0 24 24"><path d="M3 20h18M5 16l4-5 4 3 6-8"/></svg><span>Mercado</span><i class="k">01</i></a>
+      <a href="#calculadora"><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 12h2M12 12h2M16 12h0M8 16h2M12 16h2"/></svg><span>Calculadora</span><i class="k">02</i></a>
+      <a href="#portafolio"><svg viewBox="0 0 24 24"><path d="M3 8h18v12H3zM8 8V5h8v3M3 13h18"/></svg><span>Portafolio</span><i class="k">03</i></a>
+      <a href="#curva"><svg viewBox="0 0 24 24"><path d="M3 19c3-8 7-11 18-13M3 21h18"/><circle cx="8" cy="13" r="1"/><circle cx="14" cy="8.5" r="1"/></svg><span>Curva TES</span><i class="k">04</i></a>
+      <a href="#asesor"><svg viewBox="0 0 24 24"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg><span>Asesor IA</span><i class="k">05</i></a>
+      <a href="#fuentes"><svg viewBox="0 0 24 24"><path d="M4 5h12v14H4zM16 9h4v8a2 2 0 0 1-4 0M7 9h6M7 12h6M7 15h4"/></svg><span>Noticias y fuentes</span><i class="k">06</i></a>
+    </nav>
+    <div class="rail-foot">
+      <div class="theme" role="group" aria-label="Tema"><button data-t="light">Claro</button><button data-t="system">Auto</button><button data-t="dark">Oscuro</button></div>
+      <div>Prototipo académico · No es asesoría financiera.</div>
+    </div>
+  </aside>
+
+  <main>
+    <div class="tape" aria-label="Cinta de mercado"><div class="tape-track" id="tape"></div></div>
+    <div class="wrap">
+
+      <!-- ============ MERCADO ============ -->
+      <section class="view" id="v-mercado" hidden>
+        <div class="hero">
+          <canvas class="gl" id="guilloche" width="1040" height="1040" aria-hidden="true"></canvas>
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <span class="eyebrow">Política monetaria · Banco de la República</span>
+            <div class="big num" id="h-tpm">12,25<small>%</small></div>
+            <p class="lede" id="h-lede"></p>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px;align-items:flex-start">
+            <span class="stamp">Decisión 30·oct·2026 · se mantiene</span>
+            <p class="lede" style="font-size:13px">Tasa de intervención vigente. La inflación anual sigue por encima del rango meta de 2–4 %, así que la tasa real ex post se mantiene alta. Eso favorece el carry de los títulos a tasa fija e IBR frente a duración larga.</p>
+          </div>
+        </div>
+        <div class="kpis k4" id="kpis"></div>
+        <div class="grid g2">
+          <div class="panel"><div class="panel-h"><h2>Inflación anual vs. rango meta</h2><span class="src" id="src-ipc"></span></div><div class="chart" id="c-ipc"></div><div class="legend"><span><i></i>IPC 12 meses</span><span><i class="b"></i>Expectativa cargada</span><span><i class="e" style="height:8px;opacity:.3"></i>Rango meta 2–4 %</span></div></div>
+          <div class="panel"><div class="panel-h"><h2>IBR por plazo</h2><span class="src" id="src-ibr"></span></div><div class="chart" id="c-ibr"></div><div class="legend"><span><i></i>Overnight</span><span><i class="b"></i>3 meses</span><span><i class="c"></i>12 meses</span></div></div>
+        </div>
+        <div class="grid g2">
+          <div class="panel"><div class="panel-h"><h2>Curva TES tasa fija</h2><a class="src" href="#curva">Ver análisis →</a></div><div class="chart" id="c-mini-curve"></div></div>
+          <div class="panel"><div class="panel-h"><h2>UVR diaria</h2><span class="src" id="src-uvr"></span></div><div class="chart" id="c-uvr"></div></div>
+        </div>
+        <div class="notice"><span class="chip warn"><span class="dot"></span>Datos</span><span>Este prototipo usa la última carga de tu Excel (IBR, IPC, UVR, curva TES) más la decisión de tasa y el IPC de septiembre verificados en prensa. En la versión desplegada estas series se actualizan solas desde la API del Banco de la República y de datos.gov.co (la guía explica cómo).</span></div>
+      </section>
+
+      <!-- ============ CALCULADORA ============ -->
+      <section class="view" id="v-calculadora" hidden>
+        <div style="display:flex;justify-content:space-between;align-items:end;gap:16px;flex-wrap:wrap">
+          <div><span class="eyebrow">Valoración de títulos</span><h1>Calculadora de <em>bonos</em></h1></div>
+          <div class="seg" role="group" aria-label="Tipo de título" id="typeSeg">
+            <button data-type="TF">Tasa fija</button><button data-type="IBR">IBR</button><button data-type="IPC">IPC</button><button data-type="UVR">UVR</button>
+          </div>
+        </div>
+        <div class="calc">
+          <form class="sheet" id="form" autocomplete="off" onsubmit="return false"></form>
+          <div style="display:flex;flex-direction:column;gap:18px;min-width:0" id="results"></div>
+        </div>
+      </section>
+
+      <!-- ============ PORTAFOLIO ============ -->
+      <section class="view" id="v-portafolio" hidden>
+        <div style="display:flex;justify-content:space-between;align-items:end;gap:16px;flex-wrap:wrap">
+          <div><span class="eyebrow">Gestión de posiciones</span><h1>Mi <em>portafolio</em></h1></div>
+          <div style="display:flex;gap:8px;align-items:end;flex-wrap:wrap">
+            <div class="f"><label for="pfDate">Fecha de valoración</label><input type="date" id="pfDate"></div>
+            <button class="btn" id="pfReset">Restaurar ejemplo</button>
+            <a class="btn primary" href="#calculadora">+ Agregar título</a>
+          </div>
+        </div>
+        <div id="pfBody"></div>
+      </section>
+
+      <!-- ============ CURVA ============ -->
+      <section class="view" id="v-curva" hidden>
+        <div><span class="eyebrow">Estructura temporal de tasas</span><h1>Curva <em>TES</em> tasa fija</h1></div>
+        <div id="curveBody"></div>
+      </section>
+
+      <!-- ============ ASESOR ============ -->
+      <section class="view" id="v-asesor" hidden>
+        <div><span class="eyebrow">Análisis con inteligencia artificial</span><h1>Asesor de <em>inversión</em></h1><p class="lede" style="margin-top:8px">Lee los datos de mercado cargados, la curva TES y tu portafolio, y responde con un análisis en español. Es una herramienta académica: verifica siempre las cifras y no la tomes como recomendación de inversión.</p></div>
+        <div class="advisor">
+          <div class="panel chat">
+            <div class="msgs" id="msgs" aria-live="polite"></div>
+            <div class="composer"><textarea id="ask" placeholder="Pregunta sobre la economía, la curva o tus posiciones…" rows="2"></textarea><button class="btn primary" id="send">Enviar</button></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <h3>Consultas rápidas</h3>
+            <div class="prompts" id="prompts"></div>
+            <div class="notice" id="aiCtx" style="font-size:12px"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ FUENTES ============ -->
+      <section class="view" id="v-fuentes" hidden>
+        <div><span class="eyebrow">Monitor de información</span><h1>Noticias y <em>fuentes</em></h1><p class="lede" style="margin-top:8px">Bloomberg Línea y los portales oficiales no permiten incrustarse dentro de otra página, así que aquí se abren en una pestaña nueva. En la versión desplegada, un servidor lee sus titulares (RSS) y los muestra en esta sección con fecha y enlace.</p></div>
+        <div id="srcBody"></div>
+      </section>
+    </div>
+  </main>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>/*__ENGINE__*/</script>
+<script>const DATA=/*__DATA__*/;</script>
+<script>
+(function(){
+const E=BondEngine; E.load(DATA);
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const nf=(d)=>new Intl.NumberFormat('es-CO',{minimumFractionDigits:d,maximumFractionDigits:d});
+const F={n:(x,d=3)=>x==null||!isFinite(x)?'—':nf(d).format(x), pct:(x,d=3)=>x==null||!isFinite(x)?'—':nf(d).format(x*100)+' %',
+  cop:x=>x==null||!isFinite(x)?'—':'$ '+nf(0).format(x), copM:x=>{if(x==null||!isFinite(x))return'—';const a=Math.abs(x);return (x<0?'−':'')+'$ '+(a>=1e12?nf(2).format(a/1e12)+' B':a>=1e9?nf(2).format(a/1e9)+' mil M':a>=1e6?nf(1).format(a/1e6)+' M':nf(0).format(a));},
+  bp:x=>x==null||!isFinite(x)?'—':(x>0?'+':'')+nf(1).format(x)+' pb', date:s=>{const [y,m,d]=s.split('-');return d+'·'+['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'][+m-1]+'·'+y}};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const store={get(k,d){try{const v=localStorage.getItem('cc_'+k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem('cc_'+k,JSON.stringify(v))}catch(e){}}};
+function toast(t){const el=$('#toast');el.textContent=t;el.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>el.hidden=true,2400)}
+const TODAY='2026-11-04';
+
+/* ---------------- Datos macro ---------------- */
+const MACRO={tpm:.1225,tpmFecha:'2026-10-30',tpmFuente:'BanRep vía BBVA Research',ipcSep:.0629,ipcFecha:'2026-09-30',ipcFuente:'DANE vía Noticias RCN',nucleo:.060,exp2y:.040};
+const ibrLast=DATA.ibr[DATA.ibr.length-1];
+const ipcV=DATA.ipcV, ipcLast=ipcV[ipcV.length-1];
+const uvrToday=E.uvrAt(E.toN(TODAY));
+const z=t=>E.spot(t);
+const tesSorted=DATA.tes.slice().sort((a,b)=>a[4]-b[4]);
+const tes2=tesSorted.find(r=>r[4]>=1.8)||tesSorted[0], tes10=tesSorted.slice().reverse().find(r=>r[4]<=10.5)||tesSorted[tesSorted.length-1];
+const realRate=(1+MACRO.tpm)/(1+ipcLast.annual)-1;
+
+/* ---------------- Guilloché ---------------- */
+function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim()}
+function guilloche(cv,opt){
+  const ctx=cv.getContext('2d'),W=cv.width,H=cv.height,cx=W/2,cy=H/2;ctx.clearRect(0,0,W,H);
+  ctx.strokeStyle=css('--engrave');ctx.lineWidth=opt.lw||1;
+  const R=opt.R*W/2;
+  for(let k=0;k<opt.lines;k++){
+    ctx.globalAlpha=opt.alpha;ctx.beginPath();
+    const ph=k/opt.lines*Math.PI*2/opt.n;
+    for(let i=0;i<=1440;i++){const th=i/1440*Math.PI*2;
+      const r=R*(1-opt.a)+R*opt.a*Math.sin(opt.n*th+ph)*Math.cos(opt.m*th-ph*2);
+      const x=cx+r*Math.cos(th),y=cy+r*Math.sin(th); i?ctx.lineTo(x,y):ctx.moveTo(x,y);}
+    ctx.stroke();
+  }
+  ctx.globalAlpha=1;
+}
+function drawOrnaments(){
+  guilloche($('#seal'),{R:.95,a:.32,n:9,m:2,lines:14,alpha:.7,lw:.8});
+  guilloche($('#guilloche'),{R:.92,a:.22,n:18,m:3,lines:46,alpha:.38,lw:1});
+}
+
+/* ---------------- Gráficos SVG ---------------- */
+function chart(el,o){
+  const W=Math.max(300,el.clientWidth||600),H=o.h||Math.round(Math.min(300,Math.max(210,W*.42)));
+  const P={l:o.pl||48,r:14,t:12,b:28};
+  const all=o.series.flatMap(s=>s.data);
+  if(o.bars){all.push(...o.bars.data.map(d=>[d[0],d[1]]),...o.bars.data.map(d=>[d[0],0]))}
+  let xs=all.map(d=>d[0]),ys=all.map(d=>d[1]);
+  if(o.band){ys.push(o.band[0],o.band[1])}
+  let x0=o.xmin??Math.min(...xs),x1=o.xmax??Math.max(...xs),y0=o.ymin??Math.min(...ys),y1=o.ymax??Math.max(...ys);
+  if(o.bars&&o.bars.cat){x0=-.5;x1=o.bars.data.length-.5}
+  const pad=(y1-y0)*.08||1;if(o.ymin==null)y0-=pad;if(o.ymax==null)y1+=pad;
+  const X=v=>P.l+(v-x0)/(x1-x0||1)*(W-P.l-P.r),Y=v=>H-P.b-(v-y0)/(y1-y0||1)*(H-P.t-P.b);
+  const nice=(a,b,n)=>{const st=Math.pow(10,Math.floor(Math.log10((b-a)/n)));const m=[1,2,2.5,5,10].find(m=>(b-a)/(st*m)<=n)*st;const out=[];for(let v=Math.ceil(a/m)*m;v<=b+1e-12;v+=m)out.push(+v.toFixed(10));return out};
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.label||'Gráfico')}">`;
+  if(o.band)s+=`<rect class="band" x="${P.l}" width="${W-P.l-P.r}" y="${Y(o.band[1])}" height="${Y(o.band[0])-Y(o.band[1])}"/>`;
+  nice(y0,y1,5).forEach(v=>{s+=`<line class="grid-l" x1="${P.l}" x2="${W-P.r}" y1="${Y(v)}" y2="${Y(v)}"/><text x="${P.l-6}" y="${Y(v)+3.5}" text-anchor="end">${o.yf(v)}</text>`});
+  if(y0<0&&y1>0)s+=`<line class="ax" x1="${P.l}" x2="${W-P.r}" y1="${Y(0)}" y2="${Y(0)}"/>`;
+  s+=`<line class="ax" x1="${P.l}" x2="${W-P.r}" y1="${H-P.b}" y2="${H-P.b}"/>`;
+  if(o.bars&&o.bars.cat){const bw=Math.max(3,(W-P.l-P.r)/o.bars.data.length*.62);const step=Math.ceil(o.bars.data.length/(W/70));
+    o.bars.data.forEach((d,i)=>{const v=d[1],y=Y(Math.max(0,v)),h=Math.abs(Y(v)-Y(0));s+=`<rect class="${d[2]||(v>=0?'bar-pos':'bar-neg')}" x="${X(i)-bw/2}" y="${y}" width="${bw}" height="${Math.max(1,h)}" rx="1.5" data-i="${i}"/>`;if(i%step===0)s+=`<text x="${X(i)}" y="${H-P.b+16}" text-anchor="middle">${esc(d[0])}</text>`});}
+  else{const xt=o.xticks?o.xticks(x0,x1):nice(x0,x1,Math.max(3,Math.floor(W/110)));xt.forEach(v=>{s+=`<text x="${X(v)}" y="${H-P.b+16}" text-anchor="middle">${o.xf(v)}</text>`})}
+  o.series.forEach(se=>{if(!se.data.length)return;const d=se.data.map((p,i)=>(i?'L':'M')+X(p[0]).toFixed(1)+' '+Y(p[1]).toFixed(1)).join('');
+    if(se.area)s+=`<path class="area-a" d="${d}L${X(se.data[se.data.length-1][0])} ${Y(Math.max(y0,0))}L${X(se.data[0][0])} ${Y(Math.max(y0,0))}Z"/>`;
+    if(!se.pointsOnly)s+=`<path class="${se.cls}" d="${d}"/>`;
+    if(se.points)se.data.forEach(p=>{s+=`<circle class="${se.points}" cx="${X(p[0])}" cy="${Y(p[1])}" r="${se.r||3.5}"/>`;if(p[2]&&se.labels)s+=`<text x="${X(p[0])+6}" y="${Y(p[1])-6}" style="fill:var(--ink-2)">${esc(p[2])}</text>`});
+    if(se.end){const p=se.data[se.data.length-1];s+=`<circle class="${se.end}" cx="${X(p[0])}" cy="${Y(p[1])}" r="4"/>`}});
+  s+=`<line id="xh" class="ax" y1="${P.t}" y2="${H-P.b}" x1="-10" x2="-10" style="stroke:var(--ink-3)"/></svg><div class="tip" hidden></div>`;
+  el.innerHTML=s;
+  const svg=el.querySelector('svg'),tip=el.querySelector('.tip'),xh=el.querySelector('#xh');
+  if(!o.tip)return;
+  svg.addEventListener('pointermove',ev=>{const r=svg.getBoundingClientRect(),px=(ev.clientX-r.left)*W/r.width;
+    let xv=x0+(px-P.l)/(W-P.l-P.r)*(x1-x0);const h=o.tip(xv);if(!h){tip.hidden=true;return}
+    tip.innerHTML=h.html;tip.hidden=false;const xx=X(h.x);xh.setAttribute('x1',xx);xh.setAttribute('x2',xx);
+    tip.style.left=Math.min(r.width-70,Math.max(70,xx*r.width/W))+'px';tip.style.top=(Y(h.y)*r.height/H)+'px'});
+  svg.addEventListener('pointerleave',()=>{tip.hidden=true;xh.setAttribute('x1',-10);xh.setAttribute('x2',-10)});
+}
+const nearest=(arr,x)=>{let b=arr[0],d=Infinity;for(const p of arr){const dd=Math.abs(p[0]-x);if(dd<d){d=dd;b=p}}return b};
+const dX=n=>{const s=E.toS(n);return ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'][+s.slice(5,7)-1]+" '"+s.slice(2,4)};
+const pctAx=d=>v=>nf(d).format(v*100)+'%';
+
+/* ---------------- Cinta ---------------- */
+function tape(){
+  const items=[['TPM',F.pct(MACRO.tpm,2),''],['IPC 12M',F.pct(ipcLast.annual,2),ipcLast.annual>ipcV[ipcV.length-2].annual?'up':'dn'],['IBR ON',nf(3).format(ibrLast[1])+'%',''],['IBR 3M',nf(3).format(ibrLast[3])+'%',''],['IBR 12M',nf(3).format(ibrLast[5])+'%',''],['UVR',nf(4).format(uvrToday.v),'up'],
+    ...tesSorted.map(r=>['TES '+r[1].slice(2,4)+'/'+r[1].slice(5,7),F.pct(r[3],3),'']),['TASA REAL',F.pct(realRate,2),'']];
+  const h=items.map(i=>`<span><b>${i[0]}</b><em class="${i[2]}" style="font-style:normal">${i[1]}</em></span>`).join('');
+  $('#tape').innerHTML=h+h;
+}
+
+/* ---------------- Mercado ---------------- */
+function renderMercado(){
+  $('#h-tpm').innerHTML=nf(2).format(MACRO.tpm*100)+'<small>%</small>';
+  $('#h-lede').textContent=`Inflación anual ${F.pct(ipcLast.annual,2)} a ${F.date(ipcLast[0])} (DANE). Tasa real ex post ${F.pct(realRate,2)}. Pendiente TES ${tes2[1].slice(0,4)}–${tes10[1].slice(0,4)}: ${F.bp((tes10[3]-tes2[3])*1e4)}.`;
+  const prev=ipcV[ipcV.length-2].annual;
+  const k=[
+    ['Tasa de política',F.pct(MACRO.tpm,2),'BanRep · '+F.date(MACRO.tpmFecha),''],
+    ['Inflación 12 meses',F.pct(ipcLast.annual,2),'DANE · '+ipcLast[0].slice(0,7),ipcLast.annual>prev?`<span class="chip neg">▲ ${F.bp((ipcLast.annual-prev)*1e4)}</span>`:`<span class="chip pos">▼ ${F.bp((ipcLast.annual-prev)*1e4)}</span>`],
+    ['Inflación núcleo',F.pct(MACRO.nucleo,1),'sin alimentos ni regulados',''],
+    ['Tasa real ex post',F.pct(realRate,2),'(1+TPM)/(1+IPC)−1',''],
+    ['IBR overnight',nf(3).format(ibrLast[1])+' %','N.A. · '+F.date(ibrLast[0]),''],
+    ['IBR 3 meses',nf(3).format(ibrLast[3])+' %','N.A. · '+F.date(ibrLast[0]),''],
+    ['UVR hoy',nf(4).format(uvrToday.v),'$/UVR · '+F.date(uvrToday.f),''],
+    ['TES '+tes10[1].slice(0,4),F.pct(tes10[3],3),'TIR E.A. · curva '+F.date(DATA.curveDate),''],
+  ];
+  $('#kpis').innerHTML=k.map(x=>`<div class="kpi"><span class="l">${x[0]}</span><span class="v">${x[1]}</span><span class="s">${x[2]}</span>${x[3]?'<span>'+x[3]+'</span>':''}</div>`).join('');
+  $('#src-ipc').textContent='DANE · índice base dic-2018';$('#src-ibr').textContent='BanRep · hasta '+F.date(ibrLast[0]);$('#src-uvr').textContent='BanRep · hasta '+F.date(DATA.uvr[DATA.uvr.length-1][0]);
+  const ipcS=ipcV.filter(r=>r[0]>='2022-01-01').map(r=>[r._n,r.annual]);
+  const expS=DATA.exp.map(r=>[r._n,r[1]]);
+  chart($('#c-ipc'),{series:[{data:ipcS,cls:'s-a',area:true,end:'pt-a'},{data:expS,cls:'s-b'}],band:[.02,.04],ymin:0,yf:pctAx(0),xf:dX,label:'Inflación anual',
+    tip:x=>{const p=nearest(ipcS.concat(expS),x);const isE=expS.includes(p);return{x:p[0],y:p[1],html:`${E.toS(p[0]).slice(0,7)}<br>${isE?'Expectativa':'IPC 12m'} ${F.pct(p[1],2)}`}}});
+  const ib=DATA.ibr.filter((r,i)=>i%3===0||i===DATA.ibr.length-1);
+  const s1=ib.map(r=>[r._n,r[1]/100]),s3=ib.map(r=>[r._n,r[3]/100]),s12=ib.map(r=>[r._n,r[5]/100]);
+  chart($('#c-ibr'),{series:[{data:s1,cls:'s-a',end:'pt-a'},{data:s3,cls:'s-b'},{data:s12,cls:'s-c'}],yf:pctAx(1),xf:dX,label:'IBR',
+    tip:x=>{const i=ib.indexOf(ib.reduce((b,r)=>Math.abs(r._n-x)<Math.abs(b._n-x)?r:b));const r=ib[i];return{x:r._n,y:r[1]/100,html:`${F.date(r[0])}<br>ON ${nf(3).format(r[1])}% · 3M ${nf(3).format(r[3])}% · 12M ${nf(3).format(r[5])}%`}}});
+  const uv=DATA.uvr.filter((r,i)=>i%4===0).map(r=>[r._n,r[1]]);
+  chart($('#c-uvr'),{series:[{data:uv,cls:'s-a',area:true,end:'pt-a'}],yf:v=>nf(0).format(v),xf:dX,label:'UVR',pl:44,
+    tip:x=>{const p=nearest(uv,x);return{x:p[0],y:p[1],html:`${E.toS(p[0])}<br>${nf(4).format(p[1])} $/UVR`}}});
+  miniCurve($('#c-mini-curve'));
+}
+function curveSeries(){
+  const zs=DATA.zero.map(r=>[r[0],r[1]]);
+  const mk=tesSorted.map(r=>[r[4],r[3],r[0].replace('TES TF ','')]);
+  const fw=[];for(let t=1;t<=Math.max(...zs.map(r=>r[0]));t+=.5){const a=z(t-1),b=z(t);fw.push([t,Math.pow(1+b,t)/Math.pow(1+a,t-1)-1])}
+  return{zs,mk,fw};
+}
+function miniCurve(el){const {zs,mk}=curveSeries();chart(el,{series:[{data:zs,cls:'s-a'},{data:mk,cls:'s-a',pointsOnly:true,points:'pt-b'}],yf:pctAx(1),xf:v=>v+'a',label:'Curva TES',
+  tip:x=>{const p=nearest(mk,x);return{x:p[0],y:p[1],html:`${p[2]}<br>${nf(2).format(p[0])} años · ${F.pct(p[1],3)}`}}})}
+
+/* ---------------- Calculadora ---------------- */
+const DEFAULTS={
+  TF:{tipo:'TF',nombre:'TES TF ejemplo 2031',nominal:1e10,emision:'2026-10-20',vencimiento:'2031-10-20',cupon:13.85,frecuencia:'Trimestral',base:'365/365',valoracion:TODAY,tasaCompra:13.6,tasaVenta:11.5,corrido:'Lineal'},
+  IBR:{tipo:'IBR',nombre:'Bono IBR+1,80 2028',nominal:5e9,emision:'2025-09-15',vencimiento:'2028-09-15',spread:1.8,frecuencia:'Trimestral',base:'30/360',valoracion:TODAY,spreadCompra:1.7,spreadVenta:1.9,metodologia:'IBR vigente',descuento:'TIR con IBR promedio',precioDado:''},
+  IPC:{tipo:'IPC',nombre:'Bono IPC+7,98 2036',nominal:1e10,emision:'2026-10-20',vencimiento:'2036-10-20',spread:7.98,frecuencia:'Trimestral',base:'365/365',valoracion:TODAY,spreadCompra:7.5,spreadVenta:6,modalidad:'Inicio (Previo)',proyeccion:'IPC vigente',corrido:'Lineal'},
+  UVR:{tipo:'UVR',nombre:'TES UVR 2029',nominal:1e10,emision:'2025-04-18',vencimiento:'2029-04-18',cupon:2.25,frecuencia:'Anual',base:'365/365',valoracion:TODAY,tasaCompra:5.11,tasaVenta:5.21,corrido:'Lineal',proyeccion:'IPC vigente'}
+};
+const PCT_KEYS=['cupon','tasaCompra','tasaVenta','spread','spreadCompra','spreadVenta'];
+const OPTS={frecuencia:['Mensual','Bimestral','Trimestral','Semestral','Anual'],base:['365/365','Real/365','30/360','Real/360'],corrido:['Lineal','Compuesto'],metodologia:['IBR vigente','Curva FRAC'],descuento:['TIR con IBR promedio','Encadenado por periodo'],modalidad:['Inicio (Previo)','Final (Actual)'],proyeccion:['IPC vigente','Expectativas']};
+const LAYOUT={
+  common1:[['nombre','Nombre del título','text','w'],['nominal','Valor nominal','num','w'],['emision','Emisión','date'],['vencimiento','Vencimiento','date'],['frecuencia','Frecuencia del cupón','sel'],['base','Base de intereses','sel']],
+  TF:{faciales:[['cupon','Cupón facial','pct','w','E.A.']],neg:[['tasaCompra','Tasa compra (offer)','pct','','E.A.'],['tasaVenta','Tasa venta (bid)','pct','','E.A.'],['corrido','Cupón corrido','sel','w']]},
+  IBR:{faciales:[['spread','Spread facial sobre IBR','pct','w','N.A.']],neg:[['spreadCompra','Spread compra','pct','','IBR+'],['spreadVenta','Spread venta','pct','','IBR+'],['metodologia','Proyección del IBR','sel'],['descuento','Método de descuento','sel'],['precioDado','Precio sucio dado (opcional)','num','w','%']]},
+  IPC:{faciales:[['spread','Spread facial sobre IPC','pct','w','E.A.']],neg:[['spreadCompra','Spread compra','pct','','IPC+'],['spreadVenta','Spread venta','pct','','IPC+'],['modalidad','Modalidad del IPC','sel'],['proyeccion','Proyección del IPC','sel'],['corrido','Cupón corrido','sel','w']]},
+  UVR:{faciales:[['cupon','Cupón facial real','pct','w','E.A.']],neg:[['tasaCompra','Tasa compra (offer)','pct','','real'],['tasaVenta','Tasa venta (bid)','pct','','real'],['proyeccion','Inflación para proyectar UVR','sel'],['corrido','Cupón corrido','sel']]}
+};
+let state=store.get('calc',null)||{type:'TF',inputs:JSON.parse(JSON.stringify(DEFAULTS))};
+let editingId=null;
+function field([k,lab,kind,w,unit]){
+  const v=state.inputs[state.type][k]??'';const id='in_'+k;
+  if(kind==='sel')return `<div class="f ${w||''}"><label for="${id}">${lab}</label><select id="${id}" data-k="${k}">${OPTS[k].map(o=>`<option${o===v?' selected':''}>${o}</option>`).join('')}</select></div>`;
+  const type=kind==='date'?'date':kind==='text'?'text':'number',step=kind==='pct'?'0.001':kind==='num'?'any':'';
+  return `<div class="f ${w||''}"><label for="${id}">${lab}</label><div class="u"><input id="${id}" data-k="${k}" type="${type}" ${step?'step="'+step+'"':''} value="${esc(v)}" inputmode="${kind==='text'?'text':'decimal'}">${unit||kind==='pct'?`<span>${unit?esc(unit):''}${kind==='pct'?' %':''}</span>`:''}</div></div>`;
+}
+function renderForm(){
+  const L=LAYOUT[state.type];
+  $('#form').innerHTML=`<fieldset><legend>1 · Datos faciales</legend>${LAYOUT.common1.map(field).join('')}${L.faciales.map(field).join('')}</fieldset><div class="perf"></div>
+  <fieldset><legend>2 · Negociación</legend>${field(['valoracion','Fecha de negociación / valoración','date','w'])}${L.neg.map(field).join('')}</fieldset>
+  <div class="sheet-foot"><button type="button" class="btn primary" id="addPf">${editingId?'Guardar cambios':'+ Agregar al portafolio'}</button><button type="button" class="btn ghost" id="resetEx">Restaurar ejemplo</button></div>`;
+  $$('#typeSeg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.type===state.type));
+  $('#form').oninput=e=>{const k=e.target.dataset.k;if(!k)return;state.inputs[state.type][k]=e.target.type==='number'?(e.target.value===''?'':+e.target.value):e.target.value;store.set('calc',state);clearTimeout(renderForm._t);renderForm._t=setTimeout(renderResults,120)};
+  $('#addPf').onclick=addToPortfolio;
+  $('#resetEx').onclick=()=>{state.inputs[state.type]=JSON.parse(JSON.stringify(DEFAULTS[state.type]));editingId=null;store.set('calc',state);renderForm();renderResults()};
+}
+function toEngine(inp){const b={...inp};PCT_KEYS.forEach(k=>{if(k in b)b[k]=(+b[k]||0)/100});b.nominal=+b.nominal||0;b.precioDado=+b.precioDado||0;return b}
+let lastCalc=null;
+function kv(rows,heads){return `<div class="kv">${heads?heads.map(h=>`<div class="h">${h}</div>`).join(''):''}${rows.map(r=>`<div class="lbl">${r[0]}</div><div class="n">${r[1]}</div><div class="n">${r[2]??''}</div>`).join('')}</div>`}
+function renderResults(){
+  const inp=state.inputs[state.type],b=toEngine(inp),o=E.price(b),R=$('#results');lastCalc={b,o};
+  if(o.error){R.innerHTML=`<div class="alert">${esc(o.error)}</div>`;return}
+  const t=b.tipo,fx=o.fx;
+  const head=[
+    ['Precio sucio',F.n(o.dirty,3)+' %','Compra · truncado a 3 dec.'],
+    ['Precio limpio',F.n(o.clean,3)+' %',o.cond],
+    ['TIR '+(t==='UVR'?'real':'E.A.'),F.pct(o.irr,3),t==='UVR'?'En pesos ≈ '+F.pct(o.tirPesos,2):'Nominal '+F.pct(o.nom,3)],
+    ['Duración mod.',F.n(o.mod,3),'Macaulay '+F.n(o.mac,3)+' años'],
+    ['DV01',F.copM(o.dv01),'por 1 pb de tasa'],
+  ];
+  const warn=[];if(o.aviso)warn.push(o.aviso);
+  if(t==='IBR'&&o.ibrStale)warn.push(`La fecha de valoración es posterior al último IBR cargado (${F.date(o.ibrFecha)}); se usa ese último dato publicado.`);
+  if(t==='IBR'&&o.fracStale)warn.push(`La curva FRAC cargada es del ${F.date(o.fracStart)}: actualízala para valorar en esta fecha.`);
+  if(t==='UVR'&&o.uvrExtrap)warn.push('La UVR de la fecha de valoración se extrapoló con el IPC vigente.');
+  let spec=[];
+  if(t==='TF')spec=[['Rendimiento corriente',F.pct(o.rendCorriente,3)],['Precio teórico con curva cero TES',F.n(o.pCurve,3)+' %'],['TIR equivalente al precio de curva',F.pct(o.irrCurve,3)],['Spread sobre curva TES',F.bp(o.spreadCurve)]];
+  if(t==='IPC')spec=[['IPC vigente ('+o.ipcMes.slice(0,7)+')',F.pct(o.ipcVig,3)],['Tasa de negociación (1+IPC)(1+s)−1',F.pct(o.tasaNeg,3),F.pct(o.tasaNegV,3)],['TIR real',F.pct(o.tirReal,3),F.pct(o.tirRealV,3)],['Tasa cupón periodo vigente',F.pct(o.tasaCupVig,3)]];
+  if(t==='IBR')spec=[[o.plazoIBR+' vigente ('+o.ibrFecha+')',F.pct(o.ibrVig,3)],['Tasa negociación IBR+spread (N.A.)',F.pct(o.tasaNeg,3),F.pct(o.tasaNegV,3)],['Equivalente E.A.',F.pct(o.tasaNegEA,3),F.pct(o.tasaNegEAV,3)],['IBR promedio proyectado',F.pct(o.ibrAvg,3)]];
+  if(t==='UVR')spec=[['UVR a la valoración ('+o.uvrFecha+')',F.n(o.uvr,4)],['TIR en pesos (UVR proyectada)',F.pct(o.tirPesos,3)],['Fisher (1+TIR)(1+IPC)−1',F.pct(o.fisher,3)],['Spread TIR UVR vs TES TF a su duración',F.bp(o.spreadUVR)],['Spread TIR pesos vs TES TF',F.bp(o.spreadPesos)]];
+  R.innerHTML=`
+  <div class="headline">${head.map(h=>`<div class="kpi"><span class="l">${h[0]}</span><span class="v">${h[1]}</span><span class="s">${h[2]}</span></div>`).join('')}</div>
+  ${warn.map(w=>`<div class="alert">${esc(w)}</div>`).join('')}
+  <div class="grid g2">
+    <div class="panel"><div class="panel-h"><h2>Valoración</h2><span class="src">${o.cupones} cupones · ${o.pendientes} pendientes · ${F.n(o.plazo,3)} años</span></div>
+      ${kv([['Tasa de negociación',F.pct(o.irr,3),F.pct(o.irrV,3)],['Precio sucio',F.n(o.dirty,3)+' %',F.n(o.dirtyV,3)+' %'],['Cupón corrido',F.n(o.accrued,4)+' %',F.n(o.accrued,4)+' %'],['Precio limpio',F.n(o.clean,3)+' %',F.n(o.cleanV,3)+' %'],['Valor de giro',F.cop(o.giro),F.cop(o.giroV)],['Cupón corrido $',F.cop(o.corridoCOP),''],['Condición',o.cond,o.condV],['Diferencia de giro venta − compra',F.cop(o.difGiro),'']],['','Compra','Venta'])}
+    </div>
+    <div class="panel"><div class="panel-h"><h2>Riesgo y rentabilidad</h2><span class="src">Último cupón ${F.date(o.ultimo)} · próximo ${F.date(o.proximo)}</span></div>
+      ${kv([['Duración Macaulay',F.n(o.mac,4)+' a',F.n(o.macDays,0)+' días'],['Duración modificada',F.n(o.mod,4),''],['Duración en pesos (pts por 100 pb)',F.n(o.durPesos,4),''],['Duración $ de la posición (100 pb)',F.copM(o.durPos),''],['DV01',F.cop(o.dv01),''],['Convexidad',F.n(o.conv,3),''],...spec])}
+    </div>
+  </div>
+  <div class="panel"><div class="panel-h"><h2>Sensibilidad precio–rendimiento</h2><span class="src">Real vs. aproximación por duración y por duración + convexidad</span></div>
+    <div class="chart" id="c-sens"></div><div class="legend"><span><i></i>Precio real</span><span><i class="c"></i>Solo D*</span><span><i class="b"></i>D* + convexidad</span></div>
+    <details style="margin-top:12px"><summary>Tabla de sensibilidad</summary><div class="tbl" style="margin-top:10px"><table><thead><tr><th>Δ tasa</th><th>Tasa</th><th>Precio real</th><th>Solo D*</th><th>D*+C</th><th>Error D*</th><th>Error D*+C</th><th>Δ valor posición</th></tr></thead><tbody>
+    ${o.sens.map(s=>`<tr class="${s.bp===0?'zero':''}"><td>${s.bp>0?'+':''}${s.bp} pb</td><td>${F.pct(s.r,3)}</td><td>${F.n(s.real,3)}</td><td>${F.n(s.eD,3)}</td><td>${F.n(s.eDC,3)}</td><td>${F.n(s.errD,4)}</td><td>${F.n(s.errDC,4)}</td><td style="color:var(--${s.dVal>=0?'pos':'neg'})">${F.copM(s.dVal)}</td></tr>`).join('')}</tbody></table></div></details>
+  </div>
+  <div class="grid g2">
+    <div class="panel"><div class="panel-h"><h2>Flujos pendientes</h2><span class="src">% del nominal · cupón y capital</span></div><div class="chart" id="c-flows"></div></div>
+    <div class="panel"><div class="panel-h"><h2>Simular venta antes del vencimiento</h2></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <div class="f"><label for="hvDate">Fecha de venta</label><input type="date" id="hvDate" value="${state.hv?.d||E.toS(E.edate(E.toN(b.valoracion),12))}"></div>
+        <div class="f"><label for="hvRate">Tasa de venta ${t==='IBR'?'(E.A. equivalente)':t==='UVR'?'(real E.A.)':'(E.A.)'}</label><div class="u"><input id="hvRate" type="number" step="0.01" value="${state.hv?.r??+(o.irr*100-1).toFixed(2)}"><span>%</span></div></div>
+      </div><div id="hvOut"></div></div>
+  </div>
+  <div class="panel"><details><summary>Cronograma de flujos (${o.rows.length} periodos)</summary><div class="tbl" style="margin-top:12px">${schedTable(o,t)}</div></details></div>`;
+  // sensibilidad
+  const sens=[];for(let bp=-300;bp<=300;bp+=10){const r=o.irr+bp/1e4,dy=bp/1e4;sens.push([bp,E.pvAt(o.flows,r),o.dirty*(1-o.mod*dy),o.dirty*(1-o.mod*dy+.5*o.conv*dy*dy)])}
+  chart($('#c-sens'),{series:[{data:sens.map(s=>[s[0],s[1]]),cls:'s-a'},{data:sens.map(s=>[s[0],s[2]]),cls:'s-c'},{data:sens.map(s=>[s[0],s[3]]),cls:'s-b'},{data:[[0,E.pvAt(o.flows,o.irr)]],cls:'s-a',pointsOnly:true,points:'pt-a',r:4.5}],
+    yf:v=>nf(0).format(v),xf:v=>(v>0?'+':'')+v,label:'Sensibilidad',xticks:()=>[-300,-200,-100,0,100,200,300],
+    tip:x=>{const s=nearest(sens,x);return{x:s[0],y:s[1],html:`${s[0]>0?'+':''}${s[0]} pb · TIR ${F.pct(o.irr+s[0]/1e4,2)}<br>Real ${F.n(s[1],3)} · D* ${F.n(s[2],3)} · D*+C ${F.n(s[3],3)}`}}});
+  const fut=o.rows.filter(r=>r.N>0);
+  const bars=fut.map(r=>[E.toS(r.pay).slice(2,7).replace('-','/'),r.L,r.last?'bar-b':'bar-pos']);
+  chart($('#c-flows'),{series:[],bars:{cat:true,data:bars},ymin:0,yf:v=>nf(0).format(v),label:'Flujos',
+    tip:x=>{const i=Math.round(x);const r=fut[i];if(!r)return null;return{x:i,y:r.L,html:`${F.date(E.toS(r.pay))}<br>Cupón ${F.n(r.K,4)}% · Flujo ${F.n(r.L,4)}%<br>${F.cop(r.L/100*b.nominal*fx)}`}}});
+  const hv=()=>{const d=$('#hvDate').value,r=+$('#hvRate').value/100;state.hv={d,r:+$('#hvRate').value};store.set('calc',state);const h=E.holding(b,o,d,r);
+    $('#hvOut').innerHTML=h.error?`<div class="alert">${esc(h.error)}</div>`:kv([['Precio sucio de venta',F.n(h.pVenta,3)+' %'],['Cupones recibidos',h.ncup+' · '+F.n(h.cupones,3)+' %'],['Días de tenencia',h.dias],['Retorno del periodo',F.pct(h.retorno,2)],['TIR de la inversión (E.A.)',`<b style="color:var(--${h.tir>=o.irr?'pos':'neg'})">${F.pct(h.tir,3)}</b>`],['Ganancia / pérdida',F.cop(h.gan)],['vs. TIR de compra',F.bp((h.tir-o.irr)*1e4)]])};
+  $('#hvDate').oninput=hv;$('#hvRate').oninput=hv;hv();
+}
+function schedTable(o,t){
+  const extra={TF:['Tasa cupón',r=>F.pct(r.tasa,3)],IBR:['IBR aplicado',r=>F.pct(r.H,3)+' <span class="src">'+r.fuente+'</span>'],IPC:['IPC aplicado',r=>F.pct(r.H,3)+' <span class="src">'+r.fuente+'</span>'],UVR:['UVR proyectada',r=>r.uvrP?F.n(r.uvrP,2):'—']}[t];
+  return `<table><thead><tr><th>#</th><th>Inicio</th><th>Pago</th><th>Días</th><th>Estado</th><th>${extra[0]}</th><th>Cupón %</th><th>CFt %</th><th>Flujo $</th><th>Días dcto</th><th>t</th><th>VP CF</th><th>t×VP</th></tr></thead><tbody>
+  ${o.rows.map(r=>`<tr class="${r.estado==='Pagado'?'paid':r.estado==='Vigente'?'curr':''}"><td>${r.i}</td><td>${E.toS(r.start)}</td><td>${E.toS(r.pay)}</td><td>${r.D}</td><td class="t">${r.estado}</td><td>${extra[1](r)}</td><td>${F.n(r.K,4)}</td><td>${F.n(r.L,4)}</td><td>${F.cop(r.COP*(t==='UVR'?1:1))}${t==='UVR'?' UVR':''}</td><td>${r.N}</td><td>${F.n(r.t,4)}</td><td>${F.n(r.vp,4)}</td><td>${F.n(r.t*r.vp,4)}</td></tr>`).join('')}</tbody></table>`;
+}
+
+/* ---------------- Portafolio ---------------- */
+const EX_PF=()=>[
+  {id:'p1',ejemplo:true,inputs:{...DEFAULTS.TF,nombre:'TES TF 2031 (ejemplo)',nominal:4e9}},
+  {id:'p2',ejemplo:true,inputs:{...DEFAULTS.IBR,nombre:'Bono IBR+1,80 2028 (ejemplo)',nominal:3e9}},
+  {id:'p3',ejemplo:true,inputs:{...DEFAULTS.IPC,nombre:'Bono IPC+7,98 2036 (ejemplo)',nominal:2e9}},
+  {id:'p4',ejemplo:true,inputs:{...DEFAULTS.UVR,nombre:'TES UVR 2029 (ejemplo)',nominal:5e6}},
+];
+let pf=store.get('pf',null)||EX_PF();
+let pfDate=store.get('pfDate',TODAY);
+function addToPortfolio(){
+  const inp=JSON.parse(JSON.stringify(state.inputs[state.type]));
+  const o=E.price(toEngine(inp));if(o.error){toast(o.error);return}
+  if(editingId){const p=pf.find(x=>x.id===editingId);if(p){p.inputs=inp;p.ejemplo=false}editingId=null;toast('Posición actualizada');}
+  else{pf.push({id:'p'+Date.now(),inputs:inp});toast('Agregado al portafolio: '+inp.nombre);}
+  store.set('pf',pf);renderForm();
+}
+function valuePf(){
+  return pf.map(p=>{const b=toEngine({...p.inputs,valoracion:pfDate});const o=E.price(b);return{p,b,o}}).filter(x=>!x.o.error);
+}
+const TYPE_LBL={TF:'Tasa fija',IBR:'IBR',IPC:'IPC',UVR:'UVR'};
+const TYPE_CLR={TF:'var(--engrave)',IBR:'var(--seal)',IPC:'var(--neg)',UVR:'var(--ink-3)'};
+function pfMetrics(V){
+  const mv=V.reduce((s,x)=>s+x.o.giro,0);
+  const w=x=>x.o.giro/mv;
+  const m={mv,n:V.length,ytm:V.reduce((s,x)=>s+w(x)*x.o.yieldCOP,0),mod:V.reduce((s,x)=>s+w(x)*x.o.mod,0),mac:V.reduce((s,x)=>s+w(x)*x.o.mac,0),conv:V.reduce((s,x)=>s+w(x)*x.o.conv,0),dv01:V.reduce((s,x)=>s+x.o.dv01,0)};
+  m.byType={};V.forEach(x=>{m.byType[x.b.tipo]=(m.byType[x.b.tipo]||0)+x.o.giro});
+  const shock=(fn)=>V.reduce((s,x)=>{const dy=fn(x.o.mac);const np=E.pvAt(x.o.flows,x.o.irr+dy);return s+(np-E.pvAt(x.o.flows,x.o.irr))/100*x.b.nominal*x.o.fx},0);
+  m.stress=[['−200 pb',shock(()=>-.02)],['−100 pb',shock(()=>-.01)],['−50 pb',shock(()=>-.005)],['+50 pb',shock(()=>.005)],['+100 pb',shock(()=>.01)],['+200 pb',shock(()=>.02)],['Empinamiento',shock(t=>(t-3)*.0015)],['Aplanamiento',shock(t=>-(t-3)*.0015)]];
+  const lad={};V.forEach(x=>x.o.cashCOP.forEach(c=>{const y=E.toS(c.n).slice(0,4);lad[y]=lad[y]||{TF:0,IBR:0,IPC:0,UVR:0};lad[y][x.b.tipo]+=c.cop}));
+  m.ladder=Object.keys(lad).sort().map(y=>[y,lad[y]]);
+  return m;
+}
+function renderPortfolio(){
+  $('#pfDate').value=pfDate;
+  const V=valuePf(),body=$('#pfBody');
+  if(!V.length){body.innerHTML=`<div class="panel empty"><h2 style="margin-bottom:6px">Tu portafolio está vacío</h2><p>Valora un título en la calculadora y pulsa «Agregar al portafolio».</p><p style="margin-top:14px"><a class="btn primary" href="#calculadora">Ir a la calculadora</a></p></div>`;return}
+  const m=pfMetrics(V);const types=Object.entries(m.byType);
+  const isEx=pf.some(p=>p.ejemplo);
+  const alerts=[];types.forEach(([k,v])=>{if(v/m.mv>.5)alerts.push(`Concentración: ${TYPE_LBL[k]} pesa ${F.pct(v/m.mv,1)} del portafolio.`)});
+  if(m.mod>5)alerts.push(`Duración modificada de ${F.n(m.mod,2)}: un alza de 100 pb restaría cerca de ${F.pct(m.mod/100,1)} del valor.`);
+  body.innerHTML=`
+  ${isEx?'<div class="notice"><span class="chip warn"><span class="dot"></span>Ejemplo</span><span>Posiciones de ejemplo con los títulos del Excel. Agrega las tuyas desde la calculadora o elimínalas aquí. Se guardan en este navegador.</span></div>':''}
+  <div class="kpis k3">
+    <div class="kpi"><span class="l">Valor de mercado</span><span class="v">${F.copM(m.mv)}</span><span class="s">${m.n} títulos · giro sucio</span></div>
+    <div class="kpi"><span class="l">TIR ponderada (pesos)</span><span class="v">${F.pct(m.ytm,2)}</span><span class="s">UVR convertida a pesos</span></div>
+    <div class="kpi"><span class="l">Duración modificada</span><span class="v">${F.n(m.mod,3)}</span><span class="s">Macaulay ${F.n(m.mac,2)} años</span></div>
+    <div class="kpi"><span class="l">DV01 total</span><span class="v">${F.copM(m.dv01)}</span><span class="s">por 1 pb paralelo</span></div>
+    <div class="kpi"><span class="l">Convexidad</span><span class="v">${F.n(m.conv,2)}</span><span class="s">ponderada por valor</span></div>
+    <div class="kpi"><span class="l">Spread vs. TES a su duración</span><span class="v">${F.bp((m.ytm-z(m.mac))*1e4)}</span><span class="s">TES cero ${F.pct(z(m.mac),2)}</span></div>
+  </div>
+  ${alerts.map(a=>`<div class="alert">${esc(a)}</div>`).join('')}
+  <div class="panel"><div class="panel-h"><h2>Posiciones</h2><span class="src">Valoradas al ${F.date(pfDate)} con su tasa de negociación</span></div>
+    <div class="tbl" style="max-height:none"><table><thead><tr><th>Título</th><th>Tipo</th><th>Nominal</th><th>Precio sucio</th><th>TIR</th><th>Peso</th><th>D. mod</th><th>DV01</th><th>Valor</th><th></th></tr></thead><tbody>
+    ${V.map(x=>`<tr class="pos-row"><td class="t">${esc(x.p.inputs.nombre)}</td><td><span class="tag">${x.b.tipo}</span></td><td>${F.copM(x.b.nominal)}${x.b.tipo==='UVR'?' UVR':''}</td><td>${F.n(x.o.dirty,3)}</td><td>${F.pct(x.o.irr,2)}${x.b.tipo==='UVR'?'<span class="src"> r</span>':''}</td><td>${F.pct(x.o.giro/m.mv,1)}</td><td>${F.n(x.o.mod,2)}</td><td>${F.copM(x.o.dv01)}</td><td>${F.copM(x.o.giro)}</td><td><button class="btn sm ghost" data-ed="${x.p.id}">Editar</button> <button class="btn sm ghost" data-rm="${x.p.id}" aria-label="Eliminar">✕</button></td></tr>`).join('')}
+    </tbody></table></div></div>
+  <div class="grid g2">
+    <div class="panel"><div class="panel-h"><h2>Composición por indexación</h2></div>
+      <div class="alloc">${types.map(([k,v])=>`<div style="flex:${v};background:${TYPE_CLR[k]}" title="${TYPE_LBL[k]}">${v/m.mv>.08?TYPE_LBL[k]+' '+nf(0).format(v/m.mv*100)+'%':''}</div>`).join('')}</div>
+      <div class="legend">${types.map(([k,v])=>`<span><i style="background:${TYPE_CLR[k]};height:8px"></i>${TYPE_LBL[k]} · ${F.pct(v/m.mv,1)}</span>`).join('')}</div>
+      <h3 style="margin:20px 0 8px">Escalera de flujos en pesos</h3><div class="chart" id="c-ladder"></div>
+    </div>
+    <div class="panel"><div class="panel-h"><h2>Pruebas de estrés de tasa</h2><span class="src">Revaloración completa · Δ valor</span></div><div class="chart" id="c-stress"></div>
+      <p class="src" style="margin-top:8px">Empinamiento: tasas cortas −, largas + (0,15 pb por cada año de duración frente a 3 años). Aplanamiento: lo contrario.</p></div>
+  </div>
+  <div class="panel"><div class="panel-h"><h2>Posiciones frente a la curva TES</h2><span class="src">Duración vs. TIR en pesos · encima de la curva = paga prima sobre el soberano</span></div><div class="chart" id="c-rv"></div></div>`;
+  body.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>{pf=pf.filter(p=>p.id!==b.dataset.rm);store.set('pf',pf);renderPortfolio();toast('Posición eliminada')});
+  body.querySelectorAll('[data-ed]').forEach(b=>b.onclick=()=>{const p=pf.find(x=>x.id===b.dataset.ed);state.type=p.inputs.tipo;state.inputs[state.type]=JSON.parse(JSON.stringify(p.inputs));editingId=p.id;store.set('calc',state);location.hash='calculadora'});
+  const ld=m.ladder.map(([y,v])=>[y,v.TF+v.IBR+v.IPC+v.UVR]);
+  chart($('#c-ladder'),{series:[],bars:{cat:true,data:ld.map(d=>[d[0],d[1]/1e9,'bar-pos'])},ymin:0,yf:v=>nf(1).format(v),label:'Escalera',h:200,
+    tip:x=>{const i=Math.round(x),r=m.ladder[i];if(!r)return null;return{x:i,y:ld[i][1]/1e9,html:`${r[0]} · ${F.copM(ld[i][1])}<br>${Object.entries(r[1]).filter(e=>e[1]).map(e=>TYPE_LBL[e[0]]+' '+F.copM(e[1])).join('<br>')}`}}});
+  chart($('#c-stress'),{series:[],bars:{cat:true,data:m.stress.map(s=>[s[0],s[1]/1e6])},yf:v=>nf(0).format(v)+'M',label:'Estrés',pl:56,
+    tip:x=>{const i=Math.round(x),s=m.stress[i];if(!s)return null;return{x:i,y:s[1]/1e6,html:`${s[0]}<br>${F.copM(s[1])} · ${F.pct(s[1]/m.mv,2)}`}}});
+  const {zs}=curveSeries();const pts=V.map(x=>[x.o.mac,x.o.yieldCOP,x.p.inputs.nombre.replace(' (ejemplo)','')]);
+  chart($('#c-rv'),{series:[{data:zs,cls:'s-a'},{data:pts,pointsOnly:true,points:'pt-b',labels:true,r:5}],xmin:0,yf:pctAx(0),xf:v=>v+'a',label:'Valor relativo',
+    tip:x=>{const p=nearest(pts,x);return{x:p[0],y:p[1],html:`${esc(p[2])}<br>Duración ${F.n(p[0],2)} · TIR ${F.pct(p[1],2)}<br>Spread ${F.bp((p[1]-z(p[0]))*1e4)}`}}});
+}
+
+/* ---------------- Curva ---------------- */
+function renderCurva(){
+  const {zs,mk,fw}=curveSeries();
+  const slope=(tes10[3]-tes2[3])*1e4;
+  const shape=slope>25?'Positiva (normal)':slope<-25?'Invertida':'Plana';
+  $('#curveBody').innerHTML=`
+  <div class="kpis">
+    <div class="kpi"><span class="l">Fecha de la curva</span><span class="v" style="font-size:20px">${F.date(DATA.curveDate)}</span><span class="s">TIR de cierre cargada</span></div>
+    <div class="kpi"><span class="l">Forma</span><span class="v" style="font-size:20px">${shape}</span><span class="s">pendiente ${F.bp(slope)}</span></div>
+    <div class="kpi"><span class="l">Spot 1 año</span><span class="v">${F.pct(z(1),2)}</span><span class="s">cero cupón E.A.</span></div>
+    <div class="kpi"><span class="l">Spot 10 años</span><span class="v">${F.pct(z(10),2)}</span><span class="s">cero cupón E.A.</span></div>
+    <div class="kpi"><span class="l">Prima vs. TPM</span><span class="v">${F.bp((z(10)-MACRO.tpm)*1e4)}</span><span class="s">spot 10a − tasa política</span></div>
+  </div>
+  <div class="panel"><div class="panel-h"><h2>Curva cero cupón, forwards y TIR de mercado</h2><span class="src">Bootstrapping de bonos par anuales (hoja Curva_Rendimiento)</span></div>
+    <div class="chart" id="c-curve"></div><div class="legend"><span><i></i>Spot cero cupón</span><span><i class="c"></i>Forward 1 año implícito</span><span><i class="b" style="height:8px;width:8px;border-radius:50%"></i>TES de mercado</span><span><i class="d"></i>Tasa de política</span></div></div>
+  <div class="grid g2">
+    <div class="panel"><div class="panel-h"><h2>Referencias TES</h2></div><div class="tbl"><table><thead><tr><th>Título</th><th>Vence</th><th>Cupón</th><th>TIR</th><th>Plazo</th><th>vs. spot</th></tr></thead><tbody>
+      ${tesSorted.map(r=>`<tr><td class="t">${r[0]}</td><td>${r[1]}</td><td>${F.pct(r[2],2)}</td><td>${F.pct(r[3],3)}</td><td>${F.n(r[4],2)}</td><td>${F.bp((r[3]-z(r[4]))*1e4)}</td></tr>`).join('')}</tbody></table></div></div>
+    <div class="panel"><div class="panel-h"><h2>Lectura de la curva</h2></div>
+      <div style="display:flex;flex-direction:column;gap:10px;color:var(--ink-2)">
+        <p>La curva arranca en ${F.pct(z(.25),2)} y llega a ${F.pct(zs[zs.length-1][1],2)} en ${zs[zs.length-1][0]} años. Con la tasa de política en ${F.pct(MACRO.tpm,2)}, el tramo corto de TES rinde ${F.bp((z(1)-MACRO.tpm)*1e4)} frente a la TPM: el mercado descuenta recortes futuros.</p>
+        <p>Los forwards implícitos muestran qué tasa a 1 año espera el mercado en cada punto. Si crees que las tasas bajarán más rápido que los forwards, alargar duración en tasa fija gana; si no, el carry de IBR e IPC compensa con menos riesgo.</p>
+        <p>Pide al <a href="#asesor">asesor IA</a> que contraste tu portafolio con esta curva.</p>
+      </div></div>
+  </div>`;
+  const pol=[[0,MACRO.tpm],[zs[zs.length-1][0],MACRO.tpm]];
+  chart($('#c-curve'),{series:[{data:zs,cls:'s-a',area:true},{data:fw,cls:'s-c'},{data:pol,cls:'s-d'},{data:mk,pointsOnly:true,points:'pt-b',r:4.5}],xmin:0,yf:pctAx(1),xf:v=>v+'a',label:'Curva TES',h:320,
+    tip:x=>{const zz=z(Math.max(.25,x));const f=nearest(fw,x);return{x:Math.max(.25,x),y:zz,html:`${F.n(Math.max(.25,x),2)} años<br>Spot ${F.pct(zz,3)} · Fwd ${F.pct(f[1],3)}`}}});
+}
+
+/* ---------------- Asesor IA ---------------- */
+let sampleP=null,history=[];
+function ctxSnapshot(){
+  const V=valuePf(),m=V.length?pfMetrics(V):null;
+  return {fecha_analisis:TODAY,
+    macro:{tasa_politica:MACRO.tpm,fecha_decision:MACRO.tpmFecha,inflacion_12m:ipcLast.annual,mes_inflacion:ipcLast[0],inflacion_nucleo:MACRO.nucleo,expectativa_inflacion_2a:MACRO.exp2y,tasa_real_ex_post:realRate,
+      ibr:{fecha:ibrLast[0],overnight:ibrLast[1]/100,m1:ibrLast[2]/100,m3:ibrLast[3]/100,m6:ibrLast[4]/100,m12:ibrLast[5]/100},uvr:uvrToday.v,
+      ipc_ultimos_12m:ipcV.slice(-12).map(r=>[r[0].slice(0,7),+r.annual.toFixed(4)]),expectativas_ipc:DATA.exp.slice(0,12).map(r=>[r[0].slice(0,7),+r[1].toFixed(4)])},
+    curva_tes:{fecha:DATA.curveDate,spot:[.5,1,2,3,5,7,10].map(t=>[t,+z(t).toFixed(4)]),referencias:tesSorted.map(r=>({titulo:r[0],tir:r[3],plazo:+r[4].toFixed(2)}))},
+    portafolio:m?{valor_mercado_cop:Math.round(m.mv),tir_ponderada_pesos:+m.ytm.toFixed(4),duracion_mod:+m.mod.toFixed(3),dv01_cop:Math.round(m.dv01),convexidad:+m.conv.toFixed(2),
+      composicion:Object.fromEntries(Object.entries(m.byType).map(([k,v])=>[k,+(v/m.mv).toFixed(3)])),estres_cop:Object.fromEntries(m.stress.map(s=>[s[0],Math.round(s[1])])),
+      posiciones:V.map(x=>({nombre:x.p.inputs.nombre,tipo:x.b.tipo,vencimiento:x.b.vencimiento,tir:+x.o.irr.toFixed(4),tir_pesos:+x.o.yieldCOP.toFixed(4),duracion_mod:+x.o.mod.toFixed(3),peso:+(x.o.giro/m.mv).toFixed(3),spread_vs_tes_pb:Math.round((x.o.yieldCOP-z(x.o.mac))*1e4)}))}:null};
+}
+const SYS=`Eres el asesor de una calculadora académica de renta fija colombiana (curso de portafolio de renta fija). Respondes en español de Colombia, con criterio de analista de mesa de dinero, claro y estructurado.
+Reglas: usa SOLO los datos del bloque CONTEXTO para cifras; si algo no está, dilo. Cita la fuente/fecha del dato (BanRep, DANE, curva cargada). Explica el porqué con conceptos del curso (duración, convexidad, carry, roll-down, spread vs. TES, tasa real, Fisher, riesgo de reinversión). Da escenarios y alternativas, no órdenes de compra/venta, y cierra con una línea recordando que es un ejercicio académico y no asesoría financiera.
+Formato: títulos cortos con "### ", viñetas con "- ", negritas con **. Máximo ~350 palabras salvo que pidan más.`;
+const QUICK=[['Resumen de la economía','Inflación, tasa del BanRep, IBR y lo que implica para la renta fija','Hazme un resumen de la situación económica de Colombia con estos datos: inflación, política monetaria, IBR, UVR y la curva TES. ¿Qué implica para un inversionista de renta fija?'],
+  ['Analiza mi portafolio','Riesgo, composición, valor relativo vs. curva','Analiza mi portafolio: composición por indexación, duración y DV01, resultados de estrés y spread de cada posición frente a la curva TES. ¿Tengo buenas posiciones para el contexto actual?'],
+  ['Estrategia de duración','¿Alargar o acortar? ¿Tasa fija o indexados?','Con la curva y las expectativas de inflación cargadas, ¿conviene alargar o acortar duración? Compara tasa fija vs. IBR vs. IPC vs. UVR y propón dos estrategias con sus riesgos.'],
+  ['Explica la curva','Forma, forwards y qué descuenta el mercado','Explícame la forma actual de la curva TES, qué descuentan los forwards implícitos y cómo se compara con la tasa de política.']];
+function md(t){const lines=esc(t).split('\n');let h='',inL=false;for(let l of lines){l=l.replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');
+  if(/^\s*[-•]\s+/.test(l)){if(!inL){h+='<ul>';inL=true}h+='<li>'+l.replace(/^\s*[-•]\s+/,'')+'</li>';continue}
+  if(inL){h+='</ul>';inL=false} if(/^#{1,4}\s/.test(l))h+='<h4>'+l.replace(/^#{1,4}\s/,'')+'</h4>';else if(l.trim())h+='<p>'+l+'</p>'}
+  if(inL)h+='</ul>';return h}
+function addMsg(role,html){const d=document.createElement('div');d.className='msg '+role;d.innerHTML=(role==='a'?'<div class="who">Asesor · Cupón Corrido</div>':'')+'<div class="b">'+html+'</div>';$('#msgs').appendChild(d);$('#msgs').scrollTop=1e9;return d.querySelector('.b')}
+let busy=false;
+async function ask(q){
+  if(busy||!q.trim())return;busy=true;$('#send').disabled=true;
+  addMsg('u',esc(q));const out=addMsg('a','<p class="src">Analizando datos…</p>');
+  if(!sampleP)if(!sampleP)if(!sampleP)sampleP=(window.claude&&window.claude.use)?window.claude.use('sample').catch(()=>null):Promise.resolve(null);const sample=await sampleP;
+  if(!sample){out.innerHTML='<p>El asesor necesita abrirse dentro de claude.ai para conectarse a Claude. En tu versión desplegada se conecta mediante tu propio servidor con la API de Anthropic (ver guía).</p>';busy=false;$('#send').disabled=false;return}
+  const ctx=JSON.stringify(ctxSnapshot());
+  const msgs=[...history.slice(-6),{role:'user',content:`${SYS}\n\nCONTEXTO (JSON, tasas en fracción decimal):\n${ctx}\n\nPREGUNTA: ${q}`}];
+  try{const r=await sample(msgs,{cache:false,modelTier:'default',onText:({text})=>{out.innerHTML=md(text);$('#msgs').scrollTop=1e9}});
+    out.innerHTML=md(r.text);history.push({role:'user',content:q},{role:'assistant',content:r.text});}
+  catch(e){out.innerHTML='<p>'+(e.code==='not_granted'?'No se concedió permiso para consultar a Claude. Puedes activarlo desde el menú de permisos de la página.':e.code==='rate_limited'?'Se alcanzó el límite de consultas por ahora. Intenta en unos minutos.':'No se pudo completar el análisis: '+esc(e.message||e.code))+'</p>'}
+  busy=false;$('#send').disabled=false;
+}
+function renderAsesor(){
+  if(!$('#prompts').childElementCount){
+    $('#prompts').innerHTML=QUICK.map((q,i)=>`<button data-q="${i}"><b>${q[0]}</b><span>${q[1]}</span></button>`).join('');
+    $('#prompts').onclick=e=>{const b=e.target.closest('button');if(b)ask(QUICK[+b.dataset.q][2])};
+    $('#send').onclick=()=>{const v=$('#ask').value;$('#ask').value='';ask(v)};
+    $('#ask').onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();$('#send').click()}};
+    addMsg('a',md('Hola. Tengo cargados la tasa de política, la inflación del DANE, el IBR, la UVR, la curva TES y tu portafolio. Elige una consulta rápida o escríbeme tu pregunta.'));
+  }
+  const V=valuePf();
+  $('#aiCtx').innerHTML=`<span><b>Contexto que lee el asesor:</b> TPM ${F.pct(MACRO.tpm,2)}, IPC ${F.pct(ipcLast.annual,2)} (${ipcLast[0].slice(0,7)}), IBR al ${F.date(ibrLast[0])}, curva TES del ${F.date(DATA.curveDate)} y ${V.length} posiciones del portafolio.</span>`;
+}
+
+/* ---------------- Fuentes ---------------- */
+function renderFuentes(){
+  const L=[
+    ['Noticias','Bloomberg Línea · Colombia','Mercados, BanRep, inflación y deuda pública en español.','https://www.bloomberglinea.com/latinoamerica/colombia/'],
+    ['Noticias','Bloomberg Línea · Mercados','Bonos, divisas y tasas de América Latina.','https://www.bloomberglinea.com/mercados/'],
+    ['Oficial','Banco de la República · Estadísticas','TPM, IBR, UVR, TRM, encuesta de expectativas.','https://www.banrep.gov.co/es/estadisticas'],
+    ['Oficial','DANE · Índice de precios al consumidor','Boletín mensual del IPC y series históricas.','https://www.dane.gov.co/index.php/estadisticas-por-tema/precios-y-costos/indice-de-precios-al-consumidor-ipc'],
+    ['Datos abiertos','datos.gov.co','Portal de datos abiertos con API (TRM, tasas, series del Estado).','https://www.datos.gov.co'],
+    ['Análisis','BBVA Research · Decisión BanRep oct-2026','Nota del 30-oct-2026: tasa en 12,25 %.','https://www.bbvaresearch.com/publicaciones/colombia-banrep-mantuvo-la-tasa-en-1225-en-su-reunion-de-octubre/'],
+    ['Noticias','Noticias RCN · IPC septiembre 2026','Inflación anual de 6,29 % en septiembre.','https://www.noticiasrcn.com/economia/inflacion-anual-en-colombia-llego-al-6-29-en-septiembre-1069516'],
+  ];
+  $('#srcBody').innerHTML=`<div class="links">${L.map(l=>`<a class="link" href="${l[3]}" target="_blank" rel="noopener"><em>${l[0]}</em><b>${l[1]} ↗</b><span>${l[2]}</span></a>`).join('')}</div>
+  <div class="panel"><div class="panel-h"><h2>Estado de los datos de la calculadora</h2></div><div class="tbl" style="max-height:none"><table><thead><tr><th>Serie</th><th>Fuente</th><th>Último dato</th><th>Valor</th><th>Actualización prevista</th></tr></thead><tbody>
+    <tr><td class="t">Tasa de política</td><td class="t">BanRep</td><td>${MACRO.tpmFecha}</td><td>${F.pct(MACRO.tpm,2)}</td><td class="t">Tras cada junta directiva</td></tr>
+    <tr><td class="t">IPC 12 meses</td><td class="t">DANE</td><td>${ipcLast[0]}</td><td>${F.pct(ipcLast.annual,2)}</td><td class="t">Mensual, ~5.º día hábil</td></tr>
+    <tr><td class="t">IBR (ON a 12M)</td><td class="t">BanRep</td><td>${ibrLast[0]}</td><td>${nf(3).format(ibrLast[1])}%</td><td class="t">Diaria</td></tr>
+    <tr><td class="t">UVR</td><td class="t">BanRep</td><td>${DATA.uvr[DATA.uvr.length-1][0]}</td><td>${nf(4).format(DATA.uvr[DATA.uvr.length-1][1])}</td><td class="t">Mensual (serie diaria)</td></tr>
+    <tr><td class="t">Curva TES</td><td class="t">SEN / proveedor de precios</td><td>${DATA.curveDate}</td><td>${tesSorted.length} referencias</td><td class="t">Diaria</td></tr>
+    <tr><td class="t">Expectativas de inflación</td><td class="t">Encuesta BanRep</td><td>${DATA.exp[0][0]}</td><td>${DATA.exp.length} meses</td><td class="t">Mensual</td></tr>
+  </tbody></table></div></div>`;
+}
+
+/* ---------------- Ruteo, tema ---------------- */
+const VIEWS=['mercado','calculadora','portafolio','curva','asesor','fuentes'];
+function route(keep){
+  const v=VIEWS.includes(location.hash.slice(1))?location.hash.slice(1):'mercado';
+  VIEWS.forEach(x=>$('#v-'+x).hidden=x!==v);
+  $$('.nav a').forEach(a=>a.toggleAttribute('aria-current',a.getAttribute('href')==='#'+v)),$$('.nav a').forEach(a=>{if(a.hasAttribute('aria-current'))a.setAttribute('aria-current','page')});
+  ({mercado:renderMercado,calculadora:()=>{renderForm();renderResults()},portafolio:renderPortfolio,curva:renderCurva,asesor:renderAsesor,fuentes:renderFuentes})[v]();
+  if(keep!==true)window.scrollTo(0,0);
+}
+function setTheme(t){if(t==='system')document.documentElement.removeAttribute('data-theme');else document.documentElement.setAttribute('data-theme',t);store.set('theme',t);$$('.theme button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.t===t));drawOrnaments()}
+$$('.theme button').forEach(b=>b.onclick=()=>setTheme(b.dataset.t));
+$('#typeSeg').onclick=e=>{const b=e.target.closest('button');if(!b)return;state.type=b.dataset.type;editingId=null;store.set('calc',state);renderForm();renderResults()};
+$('#pfDate').onchange=e=>{pfDate=e.target.value||TODAY;store.set('pfDate',pfDate);renderPortfolio()};
+$('#pfReset').onclick=()=>{pf=EX_PF();store.set('pf',pf);renderPortfolio();toast('Portafolio de ejemplo restaurado')};
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',drawOrnaments);
+let rz,lastW=innerWidth;addEventListener('resize',()=>{if(Math.abs(innerWidth-lastW)<40)return;lastW=innerWidth;clearTimeout(rz);rz=setTimeout(()=>route(true),200)});
+addEventListener('hashchange',route);
+setTheme(store.get('theme','system'));tape();route();
+
+})();
+</script>

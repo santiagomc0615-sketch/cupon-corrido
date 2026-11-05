@@ -1,0 +1,155 @@
+{
+  "nota": "Valores esperados del motor (fórmulas del Excel). TF_Real365 coincide con los valores guardados en el Excel original (que no estaba recalculado). Tolerancia sugerida: 1e-6 en tasas, 0.001 en precios.",
+  "casos": {
+    "TF": {
+      "entrada": {
+        "tipo": "TF",
+        "nominal": 10000000000,
+        "emision": "2026-10-20",
+        "vencimiento": "2031-10-20",
+        "cupon": 0.1385,
+        "frecuencia": "Trimestral",
+        "base": "365/365",
+        "valoracion": "2026-11-04",
+        "tasaCompra": 0.136,
+        "tasaVenta": 0.115,
+        "corrido": "Lineal"
+      },
+      "esperado": {
+        "dirty": 101.355,
+        "dirtyV": 108.658,
+        "accrued": 0.5418712150618529,
+        "clean": 100.81312878493816,
+        "cleanV": 108.11612878493816,
+        "irr": 0.136,
+        "irrV": 0.115,
+        "mac": 3.703772303996163,
+        "mod": 3.26056338028169,
+        "dv01": 3305186.5500000003,
+        "conv": 15.595955274150928
+      }
+    },
+    "TF_Real365": {
+      "entrada": {
+        "tipo": "TF",
+        "nominal": 10000000000,
+        "emision": "2026-10-20",
+        "vencimiento": "2031-10-20",
+        "cupon": 0.1385,
+        "frecuencia": "Trimestral",
+        "base": "Real/365",
+        "valoracion": "2026-11-04",
+        "tasaCompra": 0.136,
+        "tasaVenta": 0.115,
+        "corrido": "Lineal"
+      },
+      "esperado": {
+        "dirty": 101.356,
+        "dirtyV": 108.662,
+        "accrued": 0.5418712150618529,
+        "clean": 100.81412878493815,
+        "cleanV": 108.12012878493816,
+        "irr": 0.136,
+        "irrV": 0.115,
+        "mac": 3.7052723581965736,
+        "mod": 3.2614436619718306,
+        "dv01": 3305219.1599999997,
+        "conv": 15.60843878726515
+      }
+    },
+    "IPC": {
+      "entrada": {
+        "tipo": "IPC",
+        "nominal": 10000000000,
+        "emision": "2026-10-20",
+        "vencimiento": "2036-10-20",
+        "spread": 0.0798,
+        "frecuencia": "Trimestral",
+        "base": "365/365",
+        "valoracion": "2026-11-04",
+        "spreadCompra": 0.075,
+        "spreadVenta": 0.06,
+        "modalidad": "Inicio (Previo)",
+        "proyeccion": "IPC vigente",
+        "corrido": "Lineal"
+      },
+      "esperado": {
+        "dirty": 103.066,
+        "dirtyV": 111.541,
+        "accrued": 0.576152489352964,
+        "clean": 102.48984751064704,
+        "cleanV": 110.96484751064703,
+        "irr": 0.14261850645758753,
+        "irrV": 0.12667537665883616,
+        "mac": 5.536396584006869,
+        "mod": 4.845011671623479,
+        "dv01": 4993547.7,
+        "conv": 37.24991589272212,
+        "tirReal": 0.07500094689772063,
+        "ipcVig": 0.06290000000000018
+      }
+    },
+    "UVR": {
+      "entrada": {
+        "tipo": "UVR",
+        "nominal": 10000000000,
+        "emision": "2025-04-18",
+        "vencimiento": "2029-04-18",
+        "cupon": 0.0225,
+        "frecuencia": "Anual",
+        "base": "365/365",
+        "valoracion": "2026-11-04",
+        "tasaCompra": 0.0511,
+        "tasaVenta": 0.0521,
+        "corrido": "Lineal",
+        "proyeccion": "IPC vigente"
+      },
+      "esperado": {
+        "dirty": 94.78,
+        "dirtyV": 94.566,
+        "accrued": 1.2328767123287652,
+        "clean": 93.54712328767124,
+        "cleanV": 93.33312328767124,
+        "irr": 0.0511,
+        "irrV": 0.0521,
+        "mac": 2.3835527345008445,
+        "mod": 2.268100085624584,
+        "dv01": 904275962.0848799,
+        "conv": 7.399550365420084,
+        "tirPesos": 0.1171556818853685,
+        "ipcVig": 0.06290000000000018,
+        "uvr": 420.6697
+      }
+    },
+    "IBR": {
+      "entrada": {
+        "tipo": "IBR",
+        "nominal": 5000000000,
+        "emision": "2025-09-15",
+        "vencimiento": "2028-09-15",
+        "spread": 0.018,
+        "frecuencia": "Trimestral",
+        "base": "30/360",
+        "valoracion": "2026-11-04",
+        "spreadCompra": 0.017,
+        "spreadVenta": 0.019,
+        "metodologia": "IBR vigente",
+        "descuento": "TIR con IBR promedio"
+      },
+      "esperado": {
+        "dirty": 101.94,
+        "dirtyV": 101.614,
+        "accrued": 1.8102777777777779,
+        "clean": 100.12972222222221,
+        "cleanV": 99.80372222222222,
+        "irr": 0.1391860779518166,
+        "irrV": 0.14139302170572288,
+        "mac": 1.6522845061569247,
+        "mod": 1.4501581716748064,
+        "dv01": 739065,
+        "conv": 3.550042374399594,
+        "ibrVig": 0.11546
+      }
+    }
+  }
+}

@@ -1,0 +1,1045 @@
+<title>Cupón Corrido</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Concepto: título valor grabado (guilloché de papel de seguridad) + terminal de mesa de dinero.
+   Riel lateral de navegación, cinta de mercado arriba, hojas de cálculo convertidas en "term sheets". */
+:root{
+  --paper:#E9EDE8; --sheet:#F8FAF7; --sheet-2:#F0F3EF; --ink:#0E1E19; --ink-2:#4B5C55; --ink-3:#7D8C85;
+  --rule:#C9D2CB; --engrave:#1C5A46; --engrave-soft:rgba(28,90,70,.10); --seal:#8C6A2A;
+  --pos:#1D7A4B; --neg:#B23F2E; --warn:#9C6B12;
+  --f-display:"Bodoni Moda", "Didot", "Bodoni 72", Georgia, serif;
+  --f-body:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --r:6px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0B1411; --sheet:#111D19; --sheet-2:#15231E; --ink:#E2EAE5; --ink-2:#9AAEA5; --ink-3:#6C7F77;
+  --rule:#23352E; --engrave:#72C6A3; --engrave-soft:rgba(114,198,163,.10); --seal:#D4B067;
+  --pos:#5DC58F; --neg:#EF836F; --warn:#E0B054; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0B1411; --sheet:#111D19; --sheet-2:#15231E; --ink:#E2EAE5; --ink-2:#9AAEA5; --ink-3:#6C7F77;
+  --rule:#23352E; --engrave:#72C6A3; --engrave-soft:rgba(114,198,163,.10); --seal:#D4B067;
+  --pos:#5DC58F; --neg:#EF836F; --warn:#E0B054; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{background:var(--paper);color:var(--ink);font:14px/1.5 var(--f-body);-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--paper)}
+a{color:var(--engrave)}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--engrave);outline-offset:2px}
+.num,.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.shell{display:grid;grid-template-columns:232px minmax(0,1fr);min-height:100%}
+/* ---------- riel ---------- */
+.rail{position:sticky;top:env(safe-area-inset-top,0px);height:100vh;border-right:1px solid var(--rule);background:var(--sheet);display:flex;flex-direction:column;padding:20px 14px 16px max(14px,env(safe-area-inset-left,0px))}
+.brand{display:flex;gap:10px;align-items:center;padding:0 6px 18px;border-bottom:1px solid var(--rule)}
+.brand canvas{width:44px;height:44px;flex:none}
+.brand b{font:700 21px/1 var(--f-display);letter-spacing:-.01em;display:block}
+.brand small{font:500 10px/1.3 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)}
+.nav{display:flex;flex-direction:column;gap:2px;margin-top:16px}
+.nav a{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--r);text-decoration:none;color:var(--ink-2);font-weight:500}
+.nav a svg{width:17px;height:17px;flex:none;stroke:currentColor;fill:none;stroke-width:1.6}
+.nav a:hover{background:var(--sheet-2);color:var(--ink)}
+.nav a[aria-current="page"]{background:var(--engrave-soft);color:var(--engrave)}
+.nav a .k{margin-left:auto;font:500 10px var(--f-mono);color:var(--ink-3)}
+.rail-foot{margin-top:auto;display:flex;flex-direction:column;gap:10px;font-size:12px;color:var(--ink-3)}
+.theme{display:flex;border:1px solid var(--rule);border-radius:var(--r);overflow:hidden}
+.theme button{flex:1;border:0;background:none;padding:6px 0;font-size:11px;cursor:pointer;color:var(--ink-2)}
+.theme button[aria-pressed="true"]{background:var(--ink);color:var(--sheet)}
+/* ---------- cinta ---------- */
+main{min-width:0}
+.tape{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--ink);color:var(--paper);overflow:hidden;white-space:nowrap;border-bottom:1px solid var(--rule)}
+.tape-track{display:inline-flex;gap:34px;padding:8px 0;animation:tape 60s linear infinite;font:500 12px var(--f-mono)}
+.tape:hover .tape-track{animation-play-state:paused}
+.tape span b{color:var(--seal);font-weight:500;margin-right:6px;letter-spacing:.06em}
+.tape .up{color:#7FD3A6}.tape .dn{color:#F2967F}
+@keyframes tape{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion:reduce){.tape-track{animation:none}}
+.wrap{padding-block:28px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));max-width:1320px;margin:0 auto}
+@media (min-width:900px){.wrap{padding-left:36px;padding-right:36px}}
+.view{display:flex;flex-direction:column;gap:22px}
+.eyebrow{font:500 11px var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--engrave)}
+h1,h2,h3{margin:0;text-wrap:balance}
+h1{font:500 clamp(30px,4vw,46px)/1.05 var(--f-display);letter-spacing:-.015em}
+h1 em{font-style:italic;color:var(--engrave)}
+h2{font:600 17px/1.3 var(--f-body);letter-spacing:-.005em}
+h3{font:600 13px/1.3 var(--f-body);text-transform:uppercase;letter-spacing:.08em;color:var(--ink-2)}
+p{margin:0}
+.lede{color:var(--ink-2);max-width:68ch}
+.panel{background:var(--sheet);border:1px solid var(--rule);border-radius:var(--r);padding:18px;min-width:0}
+.panel-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.src{font:400 11px var(--f-mono);color:var(--ink-3)}
+.grid{display:grid;gap:18px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
+/* ---------- héroe mercado ---------- */
+.hero{position:relative;overflow:hidden;border:1px solid var(--rule);border-radius:var(--r);background:var(--sheet);padding:28px 26px;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:24px;align-items:end}
+.hero canvas.gl{position:absolute;right:-90px;top:50%;transform:translateY(-50%);width:460px;height:460px;opacity:.5;pointer-events:none}
+.hero > *{position:relative}
+.hero .big{font:500 clamp(54px,8vw,96px)/.9 var(--f-display);letter-spacing:-.03em}
+.hero .big small{font-size:.4em;color:var(--ink-2);margin-left:4px}
+.stamp{display:inline-flex;gap:8px;align-items:center;border:1px solid var(--seal);color:var(--seal);border-radius:999px;padding:3px 10px;font:500 11px var(--f-mono);letter-spacing:.06em}
+@media (max-width:760px){.hero{grid-template-columns:1fr}}
+/* ---------- KPIs ---------- */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,160px),1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:var(--r);overflow:hidden}
+.kpis.k3{grid-template-columns:repeat(3,minmax(0,1fr))}.kpis.k4{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:700px){.kpis.k3,.kpis.k4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.kpi{background:var(--sheet);padding:14px 16px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.kpi .l{font-size:12px;color:var(--ink-2)}
+.kpi .v{font:500 24px/1.1 var(--f-mono);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.kpi .s{font:400 11px var(--f-mono);color:var(--ink-3)}
+.chip{display:inline-flex;align-items:center;gap:6px;font:500 11px var(--f-mono);padding:2px 8px;border-radius:999px;border:1px solid var(--rule);color:var(--ink-2);white-space:nowrap}
+.chip.pos{color:var(--pos);border-color:color-mix(in srgb,var(--pos) 40%,transparent)}
+.chip.neg{color:var(--neg);border-color:color-mix(in srgb,var(--neg) 40%,transparent)}
+.chip.warn{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 40%,transparent)}
+.dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+/* ---------- charts ---------- */
+.chart{position:relative;width:100%;min-height:220px}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart .ax{stroke:var(--rule);stroke-width:1}
+.chart .grid-l{stroke:var(--rule);stroke-width:1;stroke-dasharray:2 4}
+.chart text{fill:var(--ink-3);font:10.5px var(--f-mono)}
+.s-a{stroke:var(--engrave);fill:none;stroke-width:2}
+.s-b{stroke:var(--seal);fill:none;stroke-width:1.6}
+.s-c{stroke:var(--ink-2);fill:none;stroke-width:1.4;stroke-dasharray:4 3}
+.s-d{stroke:var(--neg);fill:none;stroke-width:1.4}
+.s-e{stroke:var(--ink-3);fill:none;stroke-width:1.2}
+.area-a{fill:var(--engrave-soft);stroke:none}
+.band{fill:var(--engrave-soft)}
+.pt-a{fill:var(--engrave)}.pt-b{fill:var(--seal)}.pt-d{fill:var(--neg)}
+.bar-pos{fill:var(--engrave)}.bar-neg{fill:var(--neg)}.bar-b{fill:var(--seal)}.bar-c{fill:var(--ink-3)}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--paper);font:11px/1.45 var(--f-mono);padding:6px 9px;border-radius:4px;white-space:nowrap;transform:translate(-50%,-110%);z-index:5}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--ink-2);margin-top:8px}
+.legend i{display:inline-block;width:14px;height:2px;vertical-align:middle;margin-right:6px;background:var(--engrave)}
+.legend i.b{background:var(--seal)}.legend i.c{background:repeating-linear-gradient(90deg,var(--ink-2) 0 4px,transparent 4px 7px)}.legend i.d{background:var(--neg)}.legend i.e{background:var(--ink-3)}
+/* ---------- calculadora ---------- */
+.seg{display:inline-flex;border:1px solid var(--rule);border-radius:var(--r);background:var(--sheet);padding:3px;gap:3px;flex-wrap:wrap}
+.seg button{border:0;background:none;padding:7px 14px;border-radius:4px;cursor:pointer;font-weight:500;color:var(--ink-2)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--sheet)}
+.calc{display:grid;grid-template-columns:minmax(0,360px) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:1000px){.calc{grid-template-columns:1fr}}
+.sheet{background:var(--sheet);border:1px solid var(--rule);border-radius:var(--r);position:relative}
+.sheet .perf{border-top:1px dashed var(--rule);margin:0 18px}
+.sheet fieldset{border:0;margin:0;padding:16px 18px;display:grid;grid-template-columns:1fr 1fr;gap:12px 12px}
+.sheet legend{font:500 11px var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--engrave);padding:0;margin-bottom:10px;float:left;width:100%}
+.f{display:flex;flex-direction:column;gap:4px;min-width:0}
+.f.w{grid-column:1/-1}
+.f label{font-size:12px;color:var(--ink-2)}
+.f input,.f select{width:100%;padding:8px 10px;border:1px solid var(--rule);border-radius:4px;background:var(--paper);font-family:var(--f-mono);font-size:13px;font-variant-numeric:tabular-nums}
+.f input:focus,.f select:focus{border-color:var(--engrave);outline:none;box-shadow:0 0 0 3px var(--engrave-soft)}
+.f .u{position:relative}
+.f .u span{position:absolute;right:10px;top:50%;transform:translateY(-50%);font:12px var(--f-mono);color:var(--ink-3);pointer-events:none}
+.sheet-foot{padding:14px 18px;display:flex;gap:8px;flex-wrap:wrap;border-top:1px solid var(--rule)}
+.btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--rule);background:var(--sheet);padding:8px 14px;border-radius:var(--r);cursor:pointer;font-weight:500}
+.btn:hover{border-color:var(--ink-3)}
+.btn.primary{background:var(--engrave);border-color:var(--engrave);color:var(--sheet)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.ghost{background:none}
+.btn.sm{padding:5px 10px;font-size:12px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.headline{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,112px),1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:var(--r);overflow:hidden}
+.headline .v{font-size:19px}
+.headline .kpi:first-child{background:var(--ink);color:var(--sheet)}
+.headline .kpi:first-child .l,.headline .kpi:first-child .s{color:color-mix(in srgb,var(--sheet) 70%,transparent)}
+.alert{padding:10px 14px;border-radius:var(--r);border:1px solid color-mix(in srgb,var(--warn) 45%,transparent);color:var(--warn);background:color-mix(in srgb,var(--warn) 8%,transparent);font-size:13px}
+.ok{color:var(--pos)}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{padding:7px 10px;text-align:right;border-bottom:1px solid var(--rule);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{font:500 11px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);background:var(--sheet-2);position:sticky;top:0}
+td{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+td.t{font-family:var(--f-body)}
+tr.paid td{color:var(--ink-3)}
+tr.curr td{background:var(--engrave-soft)}
+tr.zero td{font-weight:600}
+.tbl{overflow:auto;max-height:420px;border:1px solid var(--rule);border-radius:var(--r)}
+.kv{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:0;font-size:13px}
+.kv > div{padding:7px 0;border-bottom:1px solid var(--rule)}
+.kv .h{font:500 11px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);text-align:right;padding-left:14px}
+.kv .h:first-child{text-align:left;padding-left:0}
+.kv .n{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums;padding-left:14px}
+.kv .lbl{color:var(--ink-2)}
+details summary{cursor:pointer;font-weight:600;list-style:none;display:flex;align-items:center;gap:8px}
+details summary::before{content:"+";font-family:var(--f-mono);color:var(--engrave);width:12px}
+details[open] summary::before{content:"–"}
+/* ---------- portafolio ---------- */
+.pos-row td .tag{font:500 10px var(--f-mono);padding:2px 6px;border-radius:3px;background:var(--engrave-soft);color:var(--engrave)}
+.alloc{display:flex;height:34px;border-radius:4px;overflow:hidden;border:1px solid var(--rule)}
+.alloc div{display:flex;align-items:center;justify-content:center;font:500 11px var(--f-mono);color:var(--sheet);min-width:0;overflow:hidden}
+.empty{padding:30px;text-align:center;color:var(--ink-2)}
+.notice{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--ink-2);padding:12px 14px;border:1px dashed var(--rule);border-radius:var(--r)}
+/* ---------- asesor ---------- */
+.advisor{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:18px;align-items:start}
+@media (max-width:1000px){.advisor{grid-template-columns:1fr}}
+.chat{display:flex;flex-direction:column;min-height:520px}
+.msgs{flex:1;display:flex;flex-direction:column;gap:14px;padding:4px 2px 14px;overflow:auto;max-height:62vh}
+.msg{max-width:86%;padding:12px 15px;border-radius:var(--r);line-height:1.6}
+.msg.u{align-self:flex-end;background:var(--ink);color:var(--sheet)}
+.msg.a{align-self:flex-start;background:var(--sheet-2);border:1px solid var(--rule)}
+.msg.a h4{margin:10px 0 4px;font:600 14px var(--f-body)}
+.msg.a ul{margin:6px 0;padding-left:18px}
+.msg.a p+p{margin-top:8px}
+.msg .who{font:500 10px var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--engrave);margin-bottom:6px}
+.composer{display:flex;gap:8px;border-top:1px solid var(--rule);padding-top:14px}
+.composer textarea{flex:1;resize:none;min-height:46px;max-height:140px;padding:10px 12px;border:1px solid var(--rule);border-radius:var(--r);background:var(--paper);font:14px/1.45 var(--f-body);color:var(--ink)}
+.prompts{display:flex;flex-direction:column;gap:8px}
+.prompts button{text-align:left;border:1px solid var(--rule);background:var(--sheet);border-radius:var(--r);padding:10px 12px;cursor:pointer;font-size:13px}
+.prompts button:hover{border-color:var(--engrave)}
+.prompts button b{display:block;font-weight:600;margin-bottom:2px}
+.prompts button span{color:var(--ink-2);font-size:12px}
+/* ---------- fuentes ---------- */
+.links{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px}
+.link{display:flex;flex-direction:column;gap:6px;padding:16px;border:1px solid var(--rule);border-radius:var(--r);background:var(--sheet);text-decoration:none;color:var(--ink)}
+.link:hover{border-color:var(--engrave)}
+.link b{font-weight:600}
+.link span{font-size:12.5px;color:var(--ink-2)}
+.link em{font:normal 500 10px var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--engrave)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--sheet);padding:10px 16px;border-radius:var(--r);font-size:13px;z-index:50}
+/* ---------- móvil ---------- */
+@media (max-width:820px){
+  .shell{grid-template-columns:1fr}
+  .rail{position:sticky;height:auto;flex-direction:row;align-items:center;padding:8px max(16px,env(safe-area-inset-right,0px)) 8px max(16px,env(safe-area-inset-left,0px));border-right:0;border-bottom:1px solid var(--rule);z-index:25;gap:10px;overflow-x:auto}
+  .brand{border:0;padding:0}.brand small{display:none}.brand canvas{width:32px;height:32px}
+  .nav{flex-direction:row;margin:0}.nav a{padding:7px 9px}.nav a span,.nav a .k{display:none}
+  .rail-foot{display:none}
+  .tape{top:calc(env(safe-area-inset-top,0px) + 49px)}
+}
+</style>
+
+<div class="shell">
+  <aside class="rail">
+    <div class="brand"><canvas id="seal" width="88" height="88" aria-hidden="true"></canvas><div><b>Cupón Corrido</b><small>Mesa de renta fija · COL</small></div></div>
+    <nav class="nav" aria-label="Secciones">
+      <a href="#mercado"><svg viewBox="0 0 24 24"><path d="M3 20h18M5 16l4-5 4 3 6-8"/></svg><span>Mercado</span><i class="k">01</i></a>
+      <a href="#calculadora"><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 12h2M12 12h2M16 12h0M8 16h2M12 16h2"/></svg><span>Calculadora</span><i class="k">02</i></a>
+      <a href="#portafolio"><svg viewBox="0 0 24 24"><path d="M3 8h18v12H3zM8 8V5h8v3M3 13h18"/></svg><span>Portafolio</span><i class="k">03</i></a>
+      <a href="#curva"><svg viewBox="0 0 24 24"><path d="M3 19c3-8 7-11 18-13M3 21h18"/><circle cx="8" cy="13" r="1"/><circle cx="14" cy="8.5" r="1"/></svg><span>Curva TES</span><i class="k">04</i></a>
+      <a href="#asesor"><svg viewBox="0 0 24 24"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg><span>Asesor IA</span><i class="k">05</i></a>
+      <a href="#fuentes"><svg viewBox="0 0 24 24"><path d="M4 5h12v14H4zM16 9h4v8a2 2 0 0 1-4 0M7 9h6M7 12h6M7 15h4"/></svg><span>Noticias y fuentes</span><i class="k">06</i></a>
+    </nav>
+    <div class="rail-foot">
+      <div class="theme" role="group" aria-label="Tema"><button data-t="light">Claro</button><button data-t="system">Auto</button><button data-t="dark">Oscuro</button></div>
+      <div>Prototipo académico · No es asesoría financiera.</div>
+    </div>
+  </aside>
+
+  <main>
+    <div class="tape" aria-label="Cinta de mercado"><div class="tape-track" id="tape"></div></div>
+    <div class="wrap">
+
+      <!-- ============ MERCADO ============ -->
+      <section class="view" id="v-mercado" hidden>
+        <div class="hero">
+          <canvas class="gl" id="guilloche" width="1040" height="1040" aria-hidden="true"></canvas>
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <span class="eyebrow">Política monetaria · Banco de la República</span>
+            <div class="big num" id="h-tpm">12,25<small>%</small></div>
+            <p class="lede" id="h-lede"></p>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px;align-items:flex-start">
+            <span class="stamp">Decisión 30·oct·2026 · se mantiene</span>
+            <p class="lede" style="font-size:13px">Tasa de intervención vigente. La inflación anual sigue por encima del rango meta de 2–4 %, así que la tasa real ex post se mantiene alta. Eso favorece el carry de los títulos a tasa fija e IBR frente a duración larga.</p>
+          </div>
+        </div>
+        <div class="kpis k4" id="kpis"></div>
+        <div class="grid g2">
+          <div class="panel"><div class="panel-h"><h2>Inflación anual vs. rango meta</h2><span class="src" id="src-ipc"></span></div><div class="chart" id="c-ipc"></div><div class="legend"><span><i></i>IPC 12 meses</span><span><i class="b"></i>Expectativa cargada</span><span><i class="e" style="height:8px;opacity:.3"></i>Rango meta 2–4 %</span></div></div>
+          <div class="panel"><div class="panel-h"><h2>IBR por plazo</h2><span class="src" id="src-ibr"></span></div><div class="chart" id="c-ibr"></div><div class="legend"><span><i></i>Overnight</span><span><i class="b"></i>3 meses</span><span><i class="c"></i>12 meses</span></div></div>
+        </div>
+        <div class="grid g2">
+          <div class="panel"><div class="panel-h"><h2>Curva TES tasa fija</h2><a class="src" href="#curva">Ver análisis →</a></div><div class="chart" id="c-mini-curve"></div></div>
+          <div class="panel"><div class="panel-h"><h2>UVR diaria</h2><span class="src" id="src-uvr"></span></div><div class="chart" id="c-uvr"></div></div>
+        </div>
+        <div class="notice"><span class="chip warn"><span class="dot"></span>Datos</span><span>Este prototipo usa la última carga de tu Excel (IBR, IPC, UVR, curva TES) más la decisión de tasa y el IPC de septiembre verificados en prensa. En la versión desplegada estas series se actualizan solas desde la API del Banco de la República y de datos.gov.co (la guía explica cómo).</span></div>
+      </section>
+
+      <!-- ============ CALCULADORA ============ -->
+      <section class="view" id="v-calculadora" hidden>
+        <div style="display:flex;justify-content:space-between;align-items:end;gap:16px;flex-wrap:wrap">
+          <div><span class="eyebrow">Valoración de títulos</span><h1>Calculadora de <em>bonos</em></h1></div>
+          <div class="seg" role="group" aria-label="Tipo de título" id="typeSeg">
+            <button data-type="TF">Tasa fija</button><button data-type="IBR">IBR</button><button data-type="IPC">IPC</button><button data-type="UVR">UVR</button>
+          </div>
+        </div>
+        <div class="calc">
+          <form class="sheet" id="form" autocomplete="off" onsubmit="return false"></form>
+          <div style="display:flex;flex-direction:column;gap:18px;min-width:0" id="results"></div>
+        </div>
+      </section>
+
+      <!-- ============ PORTAFOLIO ============ -->
+      <section class="view" id="v-portafolio" hidden>
+        <div style="display:flex;justify-content:space-between;align-items:end;gap:16px;flex-wrap:wrap">
+          <div><span class="eyebrow">Gestión de posiciones</span><h1>Mi <em>portafolio</em></h1></div>
+          <div style="display:flex;gap:8px;align-items:end;flex-wrap:wrap">
+            <div class="f"><label for="pfDate">Fecha de valoración</label><input type="date" id="pfDate"></div>
+            <button class="btn" id="pfReset">Restaurar ejemplo</button>
+            <a class="btn primary" href="#calculadora">+ Agregar título</a>
+          </div>
+        </div>
+        <div id="pfBody"></div>
+      </section>
+
+      <!-- ============ CURVA ============ -->
+      <section class="view" id="v-curva" hidden>
+        <div><span class="eyebrow">Estructura temporal de tasas</span><h1>Curva <em>TES</em> tasa fija</h1></div>
+        <div id="curveBody"></div>
+      </section>
+
+      <!-- ============ ASESOR ============ -->
+      <section class="view" id="v-asesor" hidden>
+        <div><span class="eyebrow">Análisis con inteligencia artificial</span><h1>Asesor de <em>inversión</em></h1><p class="lede" style="margin-top:8px">Lee los datos de mercado cargados, la curva TES y tu portafolio, y responde con un análisis en español. Es una herramienta académica: verifica siempre las cifras y no la tomes como recomendación de inversión.</p></div>
+        <div class="advisor">
+          <div class="panel chat">
+            <div class="msgs" id="msgs" aria-live="polite"></div>
+            <div class="composer"><textarea id="ask" placeholder="Pregunta sobre la economía, la curva o tus posiciones…" rows="2"></textarea><button class="btn primary" id="send">Enviar</button></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <h3>Consultas rápidas</h3>
+            <div class="prompts" id="prompts"></div>
+            <div class="notice" id="aiCtx" style="font-size:12px"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ FUENTES ============ -->
+      <section class="view" id="v-fuentes" hidden>
+        <div><span class="eyebrow">Monitor de información</span><h1>Noticias y <em>fuentes</em></h1><p class="lede" style="margin-top:8px">Bloomberg Línea y los portales oficiales no permiten incrustarse dentro de otra página, así que aquí se abren en una pestaña nueva. En la versión desplegada, un servidor lee sus titulares (RSS) y los muestra en esta sección con fecha y enlace.</p></div>
+        <div id="srcBody"></div>
+      </section>
+    </div>
+  </main>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>/* ===== Motor de valoración — réplica de la lógica del Excel ===== */
+(function (G) {
+  const DAY = 864e5;
+  const toN = s => Date.UTC(+s.slice(0, 4), +s.slice(5, 7) - 1, +s.slice(8, 10)) / DAY;
+  const toS = n => new Date(Math.round(n) * DAY).toISOString().slice(0, 10);
+  const ymd = n => { const d = new Date(Math.round(n) * DAY); return [d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()]; };
+  const wd = n => new Date(Math.round(n) * DAY).getUTCDay(); // 0 dom … 6 sáb
+  function edate(n, m) {
+    const [y, mo, d] = ymd(n); const t = mo + m;
+    const yy = y + Math.floor(t / 12), mm = ((t % 12) + 12) % 12;
+    const last = new Date(Date.UTC(yy, mm + 1, 0)).getUTCDate();
+    return Date.UTC(yy, mm, Math.min(d, last)) / DAY;
+  }
+  function feb29In(a, b) { // fechas 29-feb en (a, b]
+    let c = 0; const [y1] = ymd(a), [y2] = ymd(b);
+    for (let y = y1; y <= y2; y++) {
+      if ((y % 4 === 0 && y % 100 !== 0) || y % 400 === 0) { const f = Date.UTC(y, 1, 29) / DAY; if (f > a && f <= b) c++; }
+    }
+    return c;
+  }
+  function days(a, b, basis) {
+    if (basis === '30/360') { // DAYS360 europeo
+      let [y1, m1, d1] = ymd(a), [y2, m2, d2] = ymd(b);
+      d1 = Math.min(d1, 30); d2 = Math.min(d2, 30);
+      return (y2 - y1) * 360 + (m2 - m1) * 30 + (d2 - d1);
+    }
+    let r = b - a; if (basis === '365/365') r -= feb29In(a, b); return r;
+  }
+  const den = b => (b === '30/360' || b === 'Real/360') ? 360 : 365;
+  const FREQ = { Mensual: { p: 12, m: 1, col: 2 }, Bimestral: { p: 6, m: 2, col: 2 }, Trimestral: { p: 4, m: 3, col: 3 }, Semestral: { p: 2, m: 6, col: 4 }, Anual: { p: 1, m: 12, col: 5 } };
+  const trunc3 = x => Math.trunc(x * 1000 + 1e-9) / 1000;
+  const r3 = x => Math.round(x * 1000) / 1000;
+
+  /* ---------- Series de mercado ---------- */
+  let M = null;
+  function lastLE(arr, n, key = 0) { // arr ordenado asc por fecha (string en key)
+    let lo = 0, hi = arr.length - 1, ans = -1;
+    while (lo <= hi) { const mid = (lo + hi) >> 1; if (arr[mid]._n <= n) { ans = mid; lo = mid + 1; } else hi = mid - 1; }
+    return ans;
+  }
+  function addBizDays(n, k) { let d = n; while (k > 0) { d++; const w = wd(d); if (w !== 0 && w !== 6) k--; } return d; }
+  function load(D) {
+    M = D;
+    const prep = a => a.forEach(r => (r._n = toN(r[0])));
+    ['ibr', 'uvr', 'frac', 'exp', 'ipc'].forEach(k => prep(D[k]));
+    // IPC: variación anual y fecha de vigencia (5.º día hábil del mes siguiente + 1)
+    D.ipc.forEach((r, i) => {
+      r.annual = i >= 12 ? r[1] / D.ipc[i - 12][1] - 1 : null;
+      r.vig = addBizDays(r._n, 5) + 1;
+    });
+    D.ipcV = D.ipc.filter(r => r.annual != null);
+    D.zero.sort((a, b) => a[0] - b[0]);
+  }
+  function ipcVigente(n) { // IPC 12m vigente en la fecha n
+    const a = M.ipcV; let k = -1;
+    for (let i = 0; i < a.length; i++) if (a[i].vig <= n) k = i;
+    if (k < 0) k = 0; return { v: a[k].annual, mes: a[k][0] };
+  }
+  function expect(n) { const i = lastLE(M.exp, n); return M.exp[Math.max(0, i)][1]; }
+  function uvrAt(n) {
+    const a = M.uvr, i = lastLE(a, n);
+    if (i < 0) return { v: a[0][1], f: a[0][0], extrap: true };
+    if (i === a.length - 1 && n > a[i]._n) { // extrapola con IPC vigente
+      const inf = ipcVigente(n).v; return { v: a[i][1] * Math.pow(1 + inf, (n - a[i]._n) / 365), f: a[i][0], extrap: true };
+    }
+    return { v: a[i][1], f: a[i][0], extrap: false };
+  }
+  function ibrPub(n, col) { // último IBR publicado antes de n (día hábil anterior)
+    const a = M.ibr, i = lastLE(a, n - 1);
+    const k = Math.max(0, i); return { v: a[k][col] / 100, f: a[k][0] };
+  }
+  function frac(n) { const i = lastLE(M.frac, n); return M.frac[Math.max(0, i)][1]; }
+  function spot(t) { // curva cero cupón TES, interpolación lineal, plana fuera de rango
+    const z = M.zero; if (t <= z[0][0]) return z[0][1]; if (t >= z[z.length - 1][0]) return z[z.length - 1][1];
+    for (let i = 1; i < z.length; i++) if (t <= z[i][0]) { const [t0, r0] = z[i - 1], [t1, r1] = z[i]; return r0 + (r1 - r0) * (t - t0) / (t1 - t0); }
+  }
+
+  /* ---------- Utilidades financieras ---------- */
+  function pvAt(fl, y) { let s = 0; for (const f of fl) s += f.cf / Math.pow(1 + y, f.t); return s; }
+  function solveYield(fl, price, guess = 0.1) {
+    let r = guess;
+    for (let k = 0; k < 60; k++) {
+      let f = -price, d = 0;
+      for (const x of fl) { const v = x.cf / Math.pow(1 + r, x.t); f += v; d += -x.t * v / (1 + r); }
+      const nr = r - f / d; if (!isFinite(nr)) break; if (Math.abs(nr - r) < 1e-12) { r = nr; break; } r = nr;
+    }
+    return r;
+  }
+  function xirr(cfs) { // [{n, cf}] — base Real/365 como XIRR de Excel
+    const n0 = cfs[0].n; const fl = cfs.slice(1).map(c => ({ t: (c.n - n0) / 365, cf: c.cf }));
+    return solveYield(fl, -cfs[0].cf, 0.1);
+  }
+  function riskFrom(fl, y, dirty, nominal, fx = 1) {
+    let s = 0, st = 0, stt = 0;
+    for (const f of fl) { const v = f.cf / Math.pow(1 + y, f.t); s += v; st += f.t * v; stt += f.t * (f.t + 1) * v; }
+    const mac = st / s, mod = r3(mac) / (1 + y);
+    return { mac, macDays: mac * 365, mod, durPesos: r3(mod) * dirty / 100, durPos: r3(mod) * dirty / 100 * nominal / 100 * fx, dv01: r3(mod) * dirty / 100 * nominal * 1e-4 * fx, conv: stt / (s * Math.pow(1 + y, 2)) };
+  }
+  function sensitivity(fl, y, dirty, mod, conv, nominal, fx = 1) {
+    return [-300, -200, -150, -100, -50, -25, 0, 25, 50, 100, 150, 200, 300].map(bp => {
+      const r = y + bp / 1e4, real = pvAt(fl, r), dy = bp / 1e4;
+      const eD = dirty * (1 - mod * dy), eDC = dirty * (1 - mod * dy + 0.5 * conv * dy * dy);
+      return { bp, r, real, eD, eDC, errD: eD - real, errDC: eDC - real, dVal: (real - dirty) / 100 * nominal * fx };
+    });
+  }
+
+  /* ---------- Cronograma base ---------- */
+  function baseSchedule(b) {
+    const em = toN(b.emision), mat = toN(b.vencimiento), val = toN(b.valoracion), F = FREQ[b.frecuencia];
+    const rows = [];
+    for (let i = 1; i < 600; i++) {
+      if (edate(em, (i - 1) * F.m) >= mat) break;
+      const pay = Math.min(edate(em, i * F.m), mat), start = i === 1 ? em : rows[i - 2].pay;
+      const D = days(start, pay, b.base), N = pay <= val ? 0 : days(val, pay, b.base);
+      rows.push({ i, start, pay, D, N, t: N / den(b.base), estado: pay <= val ? 'Pagado' : (start <= val ? 'Vigente' : 'Futuro'), last: pay === mat });
+    }
+    const idx = Math.min(rows.length, rows.filter(r => r.pay <= val).length + 1) - 1;
+    const cur = rows[Math.max(0, idx)];
+    const dc = days(cur.start, val, b.base);
+    return { em, mat, val, F, rows, cur, dc, B: den(b.base), diasVto: mat > val ? days(val, mat, b.base) : 0 };
+  }
+  function validate(b) {
+    if (!b.emision || !b.vencimiento || !b.valoracion) return 'Completa las fechas';
+    const em = toN(b.emision), mat = toN(b.vencimiento), val = toN(b.valoracion);
+    if (mat <= em) return 'El vencimiento debe ser posterior a la emisión';
+    if (val < em) return '⚠ Valoración antes de la emisión';
+    if (val >= mat) return '⚠ El título ya venció';
+    return null;
+  }
+  function condicion(clean) { return Math.abs(clean - 100) < 5e-5 ? 'A la par' : clean > 100 ? 'Con prima' : 'Con descuento'; }
+  function finish(o, b, S, fx) {
+    o.cupones = S.rows.length; o.pendientes = S.rows.filter(r => r.N > 0).length;
+    o.plazo = S.diasVto / S.B; o.diasVto = S.diasVto;
+    o.ultimo = toS(S.cur.start); o.proximo = toS(S.cur.pay); o.diasCorridos = S.dc; o.diasPeriodo = S.cur.D;
+    o.cond = condicion(o.clean); o.condV = condicion(o.cleanV);
+    o.giro = o.dirty / 100 * b.nominal * fx; o.giroV = o.dirtyV / 100 * b.nominal * fx;
+    o.corridoCOP = o.accrued / 100 * b.nominal * fx; o.limpioCOP = o.clean / 100 * b.nominal * fx;
+    o.difGiro = o.giroV - o.giro;
+    Object.assign(o, riskFrom(o.flows, o.irr, o.dirty, b.nominal, fx));
+    o.sens = sensitivity(o.flows, o.irr, o.dirty, o.mod, o.conv, b.nominal, fx);
+    o.fx = fx;
+    // flujos en pesos con fecha (para portafolio y escalera)
+    o.cashCOP = o.cashCOP || S.rows.filter(r => r.N > 0).map(r => ({ n: r.pay, cop: r.L / 100 * b.nominal * fx }));
+    // TIR en pesos comparable (para portafolio)
+    o.yieldCOP = o.yieldCOP != null ? o.yieldCOP : o.irr;
+    return o;
+  }
+
+  /* ---------- Tasa fija ---------- */
+  function priceTF(b) {
+    const S = baseSchedule(b), c = b.cupon;
+    S.rows.forEach(r => { r.saldo = 100; r.tasa = c; r.J = Math.pow(1 + c, r.D / S.B) - 1; r.K = 100 * r.J; r.amort = r.last ? 100 : 0; r.L = r.K + r.amort; r.COP = r.L / 100 * b.nominal; });
+    const fl = S.rows.filter(r => r.N > 0).map(r => ({ t: r.t, cf: r.L, n: r.pay }));
+    const pv = y => pvAt(fl, y);
+    const dirty = trunc3(pv(b.tasaCompra)), dirtyV = trunc3(pv(b.tasaVenta));
+    const accrued = b.corrido === 'Lineal' ? S.cur.K * S.dc / S.cur.D : 100 * (Math.pow(1 + c, S.dc / S.B) - 1);
+    S.rows.forEach(r => { r.vp = r.N > 0 ? r.L / Math.pow(1 + b.tasaCompra, r.t) : 0; r.vpV = r.N > 0 ? r.L / Math.pow(1 + b.tasaVenta, r.t) : 0; r.z = r.N > 0 ? spot(r.t) : 0; r.vpZ = r.N > 0 ? r.L / Math.pow(1 + r.z, r.t) : 0; });
+    const pCurve = S.rows.reduce((s, r) => s + r.vpZ, 0), irrCurve = solveYield(fl, pCurve, b.tasaCompra);
+    const p = S.F.p;
+    const o = {
+      tipo: 'TF', rows: S.rows, flows: fl, dirty, dirtyV, accrued, clean: dirty - accrued, cleanV: dirtyV - accrued,
+      irr: b.tasaCompra, irrV: b.tasaVenta, nom: p * (Math.pow(1 + b.tasaCompra, 1 / p) - 1), nomV: p * (Math.pow(1 + b.tasaVenta, 1 / p) - 1),
+      rendCorriente: c * 100 / (dirty - accrued), pCurve, irrCurve, spreadCurve: (b.tasaCompra - irrCurve) * 1e4,
+      notas: [['Tasa cupón facial', c, 'pct']]
+    };
+    return finish(o, b, S, 1);
+  }
+
+  /* ---------- IPC ---------- */
+  function priceIPC(b) {
+    const S = baseSchedule(b), vig = ipcVigente(S.val);
+    S.rows.forEach(r => {
+      r.ref = b.modalidad === 'Inicio (Previo)' ? r.start : r.pay;
+      r.H = r.ref <= S.val ? ipcVigente(r.ref).v : (b.proyeccion === 'IPC vigente' ? vig.v : expect(r.ref));
+      r.fuente = r.ref <= S.val ? 'Publicado' : (b.proyeccion === 'IPC vigente' ? 'IPC vigente' : 'Expectativa');
+      r.saldo = 100; r.tasa = (1 + r.H) * (1 + b.spread) - 1; r.K = 100 * (Math.pow(1 + r.tasa, r.D / S.B) - 1); r.amort = r.last ? 100 : 0; r.L = r.K + r.amort; r.COP = r.L / 100 * b.nominal;
+    });
+    const disc = (spr) => { let R = 0, first = true, tot = 0; S.rows.forEach(r => { if (r.N <= 0) { r['_' + spr] = 0; return; } const q = (1 + (b.proyeccion === 'IPC vigente' ? vig.v : r.H)) * (1 + spr) - 1; R = first ? Math.pow(1 + q, -r.t) : R * Math.pow(1 + q, -r.D / S.B); first = false; tot += r.L * R; r['_' + spr] = r.L * R; }); return tot; };
+    const dirty = trunc3(disc(b.spreadCompra)), dirtyV = trunc3(disc(b.spreadVenta));
+    S.rows.forEach(r => { r.vp = r['_' + b.spreadCompra] || 0; r.vpV = r['_' + b.spreadVenta] || 0; });
+    const fl = S.rows.filter(r => r.N > 0).map(r => ({ t: r.t, cf: r.L, n: r.pay }));
+    const irr = solveYield(fl, dirty, (1 + vig.v) * (1 + b.spreadCompra) - 1), irrV = solveYield(fl, dirtyV, (1 + vig.v) * (1 + b.spreadVenta) - 1);
+    const accrued = b.corrido === 'Lineal' ? S.cur.K * S.dc / S.cur.D : 100 * (Math.pow(1 + S.cur.tasa, S.dc / S.B) - 1);
+    const p = S.F.p;
+    const o = {
+      tipo: 'IPC', rows: S.rows, flows: fl, dirty, dirtyV, accrued, clean: dirty - accrued, cleanV: dirtyV - accrued, irr, irrV,
+      nom: p * (Math.pow(1 + irr, 1 / p) - 1), nomV: p * (Math.pow(1 + irrV, 1 / p) - 1),
+      tasaNeg: (1 + vig.v) * (1 + b.spreadCompra) - 1, tasaNegV: (1 + vig.v) * (1 + b.spreadVenta) - 1,
+      ipcVig: vig.v, ipcMes: vig.mes, tirReal: (1 + irr) / (1 + vig.v) - 1, tirRealV: (1 + irrV) / (1 + vig.v) - 1,
+      tasaCupVig: S.cur.tasa, notas: [['IPC vigente (' + vig.mes.slice(0, 7) + ')', vig.v, 'pct']]
+    };
+    return finish(o, b, S, 1);
+  }
+
+  /* ---------- UVR ---------- */
+  function priceUVR(b) {
+    const S = baseSchedule(b), c = b.cupon, u0 = uvrAt(S.val), vig = ipcVigente(S.val);
+    S.rows.forEach(r => { r.saldo = 100; r.tasa = c; r.J = Math.pow(1 + c, r.D / S.B) - 1; r.K = 100 * r.J; r.amort = r.last ? 100 : 0; r.L = r.K + r.amort; r.COP = r.L / 100 * b.nominal; });
+    const fl = S.rows.filter(r => r.N > 0).map(r => ({ t: r.t, cf: r.L, n: r.pay }));
+    const dirty = trunc3(pvAt(fl, b.tasaCompra)), dirtyV = trunc3(pvAt(fl, b.tasaVenta));
+    const accrued = b.corrido === 'Lineal' ? S.cur.K * S.dc / S.cur.D : 100 * (Math.pow(1 + c, S.dc / S.B) - 1);
+    // UVR proyectada y flujos en pesos
+    let prev = null; const cash = [];
+    S.rows.forEach(r => {
+      r.vp = r.N > 0 ? r.L / Math.pow(1 + b.tasaCompra, r.t) : 0; r.vpV = r.N > 0 ? r.L / Math.pow(1 + b.tasaVenta, r.t) : 0;
+      if (r.N <= 0) { r.uvrP = 0; r.cop = 0; return; }
+      r.infl = b.proyeccion === 'IPC vigente' ? vig.v : expect(r.pay);
+      r.uvrP = prev == null ? u0.v * Math.pow(1 + r.infl, (r.pay - S.val) / 365) : prev * Math.pow(1 + r.infl, (r.pay - r.start) / 365);
+      prev = r.uvrP; r.cop = r.L / 100 * b.nominal * r.uvrP; cash.push({ n: r.pay, cop: r.cop });
+    });
+    const giroCOP = dirty / 100 * b.nominal * u0.v;
+    const tirPesos = xirr([{ n: S.val, cf: -giroCOP }, ...cash.map(c => ({ n: c.n, cf: c.cop }))]);
+    const p = S.F.p, z = spot(0);
+    const o = {
+      tipo: 'UVR', rows: S.rows, flows: fl, dirty, dirtyV, accrued, clean: dirty - accrued, cleanV: dirtyV - accrued,
+      irr: b.tasaCompra, irrV: b.tasaVenta, nom: p * (Math.pow(1 + b.tasaCompra, 1 / p) - 1), nomV: p * (Math.pow(1 + b.tasaVenta, 1 / p) - 1),
+      uvr: u0.v, uvrFecha: u0.f, uvrExtrap: u0.extrap, ipcVig: vig.v, tirPesos, fisher: (1 + b.tasaCompra) * (1 + vig.v) - 1,
+      rendCorriente: c * 100 / (dirty - accrued), nominalCOP: b.nominal * u0.v, cashCOP: cash, yieldCOP: tirPesos,
+      notas: [['UVR a la valoración', u0.v, 'num4']]
+    };
+    finish(o, b, S, u0.v);
+    o.tesDur = spot(o.mac); o.spreadUVR = (o.irr - o.tesDur) * 1e4; o.spreadPesos = (tirPesos - o.tesDur) * 1e4;
+    return o;
+  }
+
+  /* ---------- IBR ---------- */
+  function priceIBR(b) {
+    const S = baseSchedule(b), col = S.F.col, lastIBR = M.ibr[M.ibr.length - 1], lastN = lastIBR._n;
+    const vig = ibrPub(S.val, col);
+    const vigStale = S.val - 1 > lastN;
+    S.rows.forEach(r => {
+      if (r.start <= S.val) { r.H = ibrPub(r.start, col).v; r.fuente = 'Publicado'; }
+      else if (b.metodologia === 'IBR vigente') { r.H = vig.v; r.fuente = 'IBR vigente'; }
+      else { r.H = frac(r.start); r.fuente = 'FRAC'; }
+      r.saldo = 100; r.tasa = r.H + b.spread; r.K = 100 * r.tasa * r.D / S.B; r.amort = r.last ? 100 : 0; r.L = r.K + r.amort; r.COP = r.L / 100 * b.nominal;
+    });
+    const fut = S.rows.filter(r => r.N > 0), p = S.F.p;
+    const ibrAvg = b.metodologia === 'IBR vigente' ? vig.v : fut.reduce((s, r) => s + r.H, 0) / fut.length;
+    const tirProm = spr => Math.pow(1 + (ibrAvg + spr) / p, p) - 1;
+    const disc = spr => {
+      let R = 0, first = true, tot = 0;
+      S.rows.forEach(r => {
+        r['_' + spr] = 0; if (r.N <= 0) return;
+        if (b.descuento === 'TIR con IBR promedio') R = Math.pow(1 + tirProm(spr), -(r.pay - S.val) / 365);
+        else { const q = (b.metodologia === 'IBR vigente' ? vig.v : r.H) + spr; R = first ? Math.pow(1 + q * r.D / S.B, -r.N / r.D) : R / (1 + q * r.D / S.B); }
+        first = false; tot += r.L * R; r['_' + spr] = r.L * R;
+      });
+      return tot;
+    };
+    const calc = trunc3(disc(b.spreadCompra)), dirtyV = trunc3(disc(b.spreadVenta));
+    const dirty = (b.precioDado && b.precioDado > 0) ? b.precioDado : calc;
+    S.rows.forEach(r => { r.vp = r['_' + b.spreadCompra] || 0; r.vpV = r['_' + b.spreadVenta] || 0; });
+    const fl = fut.map(r => ({ t: r.t, cf: r.L, n: r.pay }));
+    const irr = (b.precioDado > 0 || b.descuento !== 'TIR con IBR promedio') ? solveYield(fl, dirty, tirProm(b.spreadCompra)) : tirProm(b.spreadCompra);
+    const irrV = b.descuento === 'TIR con IBR promedio' ? tirProm(b.spreadVenta) : solveYield(fl, dirtyV, tirProm(b.spreadVenta));
+    const accrued = S.cur.K * S.dc / S.cur.D;
+    const fracStart = M.frac[0][0];
+    const o = {
+      tipo: 'IBR', rows: S.rows, flows: fl, dirty, dirtyV, accrued, clean: dirty - accrued, cleanV: dirtyV - accrued, irr, irrV,
+      nom: p * (Math.pow(1 + irr, 1 / p) - 1), nomV: p * (Math.pow(1 + irrV, 1 / p) - 1),
+      ibrVig: vig.v, ibrFecha: vig.f, ibrStale: vigStale, ibrAvg, plazoIBR: ['', '', 'IBR 1 mes', 'IBR 3 meses', 'IBR 6 meses', 'IBR 12 meses'][col],
+      tasaNeg: vig.v + b.spreadCompra, tasaNegV: vig.v + b.spreadVenta,
+      tasaNegEA: Math.pow(1 + (vig.v + b.spreadCompra) / p, p) - 1, tasaNegEAV: Math.pow(1 + (vig.v + b.spreadVenta) / p, p) - 1,
+      fracStart, fracStale: b.metodologia === 'Curva FRAC' && Math.abs(S.val - toN(fracStart)) > 10,
+      notas: [[vig.v ? 'IBR vigente (' + vig.f + ')' : 'IBR', vig.v, 'pct']]
+    };
+    return finish(o, b, S, 1);
+  }
+
+  function price(b) {
+    const err = validate(b); if (err && !err.startsWith('⚠ Valoración')) return { error: err };
+    const fn = { TF: priceTF, IPC: priceIPC, UVR: priceUVR, IBR: priceIBR }[b.tipo];
+    try { const o = fn(b); o.aviso = err; return o; } catch (e) { return { error: 'No se pudo valorar: ' + e.message }; }
+  }
+
+  /* ---------- Rentabilidad con venta anticipada ---------- */
+  function holding(b, o, ventaS, tasaVenta) {
+    const val = toN(b.valoracion), sv = toN(ventaS);
+    if (!(sv > val)) return { error: 'La fecha de venta debe ser posterior a la compra' };
+    const mat = toN(b.vencimiento); if (sv >= mat) return { error: 'La venta debe ser antes del vencimiento' };
+    const B = den(b.base), fx = o.fx || 1;
+    const rec = o.rows.filter(r => r.pay > val && r.pay <= sv), rest = o.rows.filter(r => r.pay > sv);
+    const pv = rest.reduce((s, r) => s + r.L / Math.pow(1 + tasaVenta, days(sv, r.pay, b.base) / B), 0);
+    const pVenta = trunc3(pv);
+    const cfs = [{ n: val, cf: -o.dirty }, ...rec.map(r => ({ n: r.pay, cf: r.L })), { n: sv, cf: pVenta }];
+    const merged = []; cfs.forEach(c => { const m = merged.find(x => x.n === c.n); if (m && c !== cfs[0]) m.cf += c.cf; else merged.push({ ...c }); });
+    const tir = xirr(merged);
+    const cup = rec.reduce((s, r) => s + r.L, 0);
+    const gan = (pVenta + cup - o.dirty) / 100 * b.nominal * fx;
+    return { pVenta, cupones: cup, ncup: rec.length, tir, gan, dias: sv - val, retorno: (pVenta + cup) / o.dirty - 1 };
+  }
+
+  G.BondEngine = { load, price, holding, spot, ipcVigente, uvrAt, ibrPub, expect, toN, toS, edate, days, pvAt, solveYield, FREQ };
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>const DATA={"curveDate":"2026-10-16","tes":[["TES TF 03/11/2027","2027-11-03",0.0575,0.1035,1.0493150684931507],["TES TF 28/04/2028","2028-04-28",0.06,0.106,1.5342465753424657],["TES TF 22/08/2029","2029-08-22",0.11,0.1095,2.852054794520548],["TES TF 18/09/2030","2030-09-18",0.0775,0.1125,3.926027397260274],["TES TF 26/03/2031","2031-03-26",0.07,0.114,4.443835616438356],["TES TF 30/06/2032","2032-06-30",0.07,0.1165,5.7095890410958905],["TES TF 09/02/2033","2033-02-09",0.1325,0.118,6.323287671232877],["TES TF 18/10/2034","2034-10-18",0.0725,0.12,8.01095890410959],["TES TF 09/07/2036","2036-07-09",0.0625,0.1215,9.736986301369862],["TES TF 28/05/2042","2042-05-28",0.0925,0.124,15.624657534246575],["TES TF 25/07/2046","2046-07-25",0.115,0.1245,19.786301369863015],["TES TF 26/10/2050","2050-10-26",0.0725,0.125,24.043835616438358]],"zero":[[0.25,0.10349999999999993],[0.5,0.10350000000000015],[0.75,0.10349999999999993],[1,0.10349999999999993],[2,0.10743811225696742],[3,0.11035790729559491],[4,0.11357338000100259],[5,0.11642952824809183],[6,0.11908651696447792],[7,0.12115541865934154],[8,0.12273585232055595],[9,0.12391871045753833],[10,0.12499802592801523],[11,0.12553419556827827],[12,0.12615411724375192],[13,0.1268571762543902],[14,0.12764609952160355],[15,0.1285265347647826],[16,0.12916000409188189],[17,0.12925161637807703],[18,0.12939517776634624],[19,0.1295898723199438],[20,0.1298337318963465],[21,0.13012087181702992],[22,0.13046324418511768],[23,0.1308647181939493],[24,0.13133046878320953],[25,0.13111072939351942],[26,0.1308750887331187],[27,0.13065694670714234],[28,0.13045442393238504],[29,0.13026590085506684],[30,0.13008997434844694]],"ibr":[["2023-01-02",11.115,11.238,11.695,12.108,12.315],["2023-01-03",11.09,11.313,11.75,12.12,12.342],["2023-01-04",11.099,11.365,11.845,12.19,12.395],["2023-01-05",11.11,11.427,12.011,12.48,12.75],["2023-01-06",11.113,11.478,12.045,12.53,12.921],["2023-01-10",11.12,11.51,12.021,12.515,12.9],["2023-01-11",11.126,11.505,12.006,12.42,12.805],["2023-01-12",11.104,11.498,11.946,12.38,12.61],["2023-01-13",11.125,11.5,11.9,12.345,12.57],["2023-01-16",11.085,11.538,11.92,12.3,12.58],["2023-01-17",11.099,11.588,11.94,12.318,12.605],["2023-01-18",11.12,11.618,11.996,12.346,12.638],["2023-01-19",11.12,11.715,12.03,12.4,12.673],["2023-01-20",11.121,11.7,12.04,12.441,12.745],["2023-01-23",11.139,11.7,12.03,12.43,12.77],["2023-01-24",11.15,11.763,12.09,12.449,12.787],["2023-01-25",11.161,11.757,12.045,12.403,12.663],["2023-01-26",11.177,11.78,12.085,12.373,12.654],["2023-01-27",11.176,11.823,12.12,12.377,12.58],["2023-01-30",11.846,11.879,12.076,12.37,12.485],["2023-01-31",11.815,11.881,12.082,12.325,12.4],["2023-02-01",11.836,11.878,12.101,12.37,12.428],["2023-02-02",11.847,11.879,12.09,12.337,12.3],["2023-02-03",11.838,11.876,12.09,12.315,12.255],["2023-02-06",11.847,11.886,12.121,12.315,12.248],["2023-02-07",11.854,11.881,12.102,12.363,12.278],["2023-02-08",11.865,11.889,12.097,12.347,12.223],["2023-02-09",11.868,11.883,12.104,12.373,12.283],["2023-02-10",11.874,11.891,12.115,12.38,12.368],["2023-02-13",11.874,11.891,12.115,12.41,12.49],["2023-02-14",11.889,11.891,12.12,12.415,12.565],["2023-02-15",11.887,11.891,12.133,12.435,12.61],["2023-02-16",11.867,11.891,12.173,12.515,12.675],["2023-02-17",11.845,11.891,12.138,12.573,12.691],["2023-02-20",11.852,11.891,12.146,12.586,12.713],["2023-02-21",11.869,11.891,12.205,12.6,12.755],["2023-02-22",11.876,11.891,12.201,12.55,12.766],["2023-02-23",11.87,11.891,12.221,12.55,12.755],["2023-02-24",11.829,11.9,12.253,12.564,12.751],["2023-02-27",11.8,11.891,12.292,12.563,12.771],["2023-02-28",11.695,11.891,12.302,12.57,12.8],["2023-03-01",11.671,11.89,12.307,12.61,12.841],["2023-03-02",11.648,11.883,12.305,12.6,12.882],["2023-03-03",11.675,11.889,12.3,12.585,12.884],["2023-03-06",11.716,11.93,12.3,12.536,12.731],["2023-03-07",11.824,11.95,12.31,12.555,12.68],["2023-03-08",11.723,11.974,12.303,12.54,12.645],["2023-03-09",11.625,11.969,12.303,12.56,12.655],["2023-03-10",11.587,12.015,12.315,12.554,12.66],["2023-03-13",11.57,12.005,12.271,12.495,12.54],["2023-03-14",11.618,12.066,12.25,12.468,12.495],["2023-03-15",11.65,12.055,12.181,12.361,12.349],["2023-03-16",11.752,12.01,12.145,12.28,12.195],["2023-03-17",11.755,12.046,12.219,12.34,12.11],["2023-03-21",11.755,12.081,12.247,12.365,12.067],["2023-03-22",11.763,12.04,12.181,12.31,12.045],["2023-03-23",11.72,12.097,12.244,12.356,12.007],["2023-03-24",11.748,12.11,12.235,12.33,11.93],["2023-03-27",11.769,12.095,12.21,12.32,11.94],["2023-03-28",11.779,12.093,12.238,12.397,11.995],["2023-03-29",11.829,12.108,12.26,12.411,11.957],["2023-03-30",11.829,12.102,12.27,12.395,12.06],["2023-03-31",12.022,12.104,12.246,12.367,11.946],["2023-04-03",12.015,12.104,12.244,12.4,12.015],["2023-04-04",12.048,12.098,12.24,12.421,12.013],["2023-04-05",12.057,12.104,12.254,12.401,12.004],["2023-04-10",12.049,12.115,12.262,12.444,12.13],["2023-04-11",12.033,12.125,12.291,12.471,12.295],["2023-04-12",12.036,12.126,12.276,12.455,12.285],["2023-04-13",12.023,12.12,12.254,12.44,12.25],["2023-04-14",12.052,12.121,12.258,12.448,12.25],["2023-04-17",12.061,12.128,12.255,12.478,12.285],["2023-04-18",12.064,12.131,12.264,12.493,12.393],["2023-04-19",12.064,12.131,12.269,12.495,12.433],["2023-04-20",12.064,12.13,12.272,12.488,12.41],["2023-04-21",12.064,12.131,12.268,12.48,12.327],["2023-04-24",12.073,12.13,12.266,12.483,12.256],["2023-04-25",12.081,12.131,12.254,12.458,12.2],["2023-04-26",12.082,12.131,12.254,12.48,12.235],["2023-04-27",12.085,12.198,12.385,12.568,12.445],["2023-04-28",12.086,12.22,12.375,12.52,12.41],["2023-05-02",12.29,12.323,12.466,12.645,12.503],["2023-05-03",12.285,12.337,12.476,12.65,12.555],["2023-05-04",12.285,12.323,12.466,12.655,12.407],["2023-05-05",12.284,12.338,12.469,12.628,12.336],["2023-05-08",12.286,12.323,12.466,12.656,12.339],["2023-05-09",12.277,12.337,12.469,12.645,12.377],["2023-05-10",12.286,12.328,12.458,12.628,12.36],["2023-05-11",12.285,12.335,12.462,12.623,12.366],["2023-05-12",12.288,12.32,12.465,12.624,12.333],["2023-05-15",12.288,12.332,12.458,12.627,12.323],["2023-05-16",12.288,12.334,12.464,12.617,12.291],["2023-05-17",12.288,12.334,12.453,12.606,12.295],["2023-05-18",12.3,12.339,12.452,12.61,12.373],["2023-05-19",12.314,12.334,12.467,12.623,12.493],["2023-05-23",12.318,12.337,12.462,12.61,12.483],["2023-05-24",12.308,12.338,12.457,12.6,12.47],["2023-05-25",12.313,12.34,12.465,12.6,12.445],["2023-05-26",12.353,12.333,12.458,12.6,12.44],["2023-05-29",12.325,12.337,12.469,12.614,12.443],["2023-05-30",12.313,12.333,12.467,12.595,12.415],["2023-05-31",12.313,12.337,12.457,12.6,12.356],["2023-06-01",12.34,12.337,12.467,12.603,12.308],["2023-06-02",12.309,12.337,12.468,12.582,12.265],["2023-06-05",12.309,12.341,12.47,12.56,12.248],["2023-06-06",12.271,12.337,12.466,12.565,12.2],["2023-06-07",12.282,12.336,12.467,12.525,12.1],["2023-06-08",12.282,12.337,12.46,12.48,11.98],["2023-06-09",12.287,12.34,12.458,12.438,11.893],["2023-06-13",12.305,12.335,12.465,12.4,11.805],["2023-06-14",12.32,12.335,12.463,12.384,11.79],["2023-06-15",12.327,12.332,12.466,12.419,11.87],["2023-06-16",12.344,12.335,12.466,12.437,11.875],["2023-06-20",12.326,12.335,12.46,12.438,11.813],["2023-06-21",12.324,12.337,12.466,12.455,11.733],["2023-06-22",12.289,12.333,12.447,12.391,11.661],["2023-06-23",12.288,12.34,12.443,12.396,11.56],["2023-06-26",12.272,12.332,12.458,12.371,11.513],["2023-06-27",12.272,12.338,12.435,12.386,11.414],["2023-06-28",12.272,12.333,12.425,12.386,11.355],["2023-06-29",12.274,12.335,12.462,12.396,11.485],["2023-06-30",12.27,12.336,12.468,12.381,11.495],["2023-07-04",12.261,12.332,12.451,12.332,11.458],["2023-07-05",12.265,12.337,12.451,12.298,11.43],["2023-07-06",12.275,12.333,12.451,12.311,11.506],["2023-07-07",12.265,12.336,12.451,12.325,11.558],["2023-07-10",12.27,12.33,12.45,12.281,11.403],["2023-07-11",12.272,12.336,12.441,12.235,11.349],["2023-07-12",12.27,12.336,12.442,12.244,11.35],["2023-07-13",12.275,12.332,12.439,12.229,11.317],["2023-07-14",12.277,12.336,12.445,12.241,11.365],["2023-07-17",12.286,12.334,12.443,12.241,11.385],["2023-07-18",12.275,12.335,12.423,12.202,11.399],["2023-07-19",12.301,12.336,12.419,12.139,11.347],["2023-07-21",12.312,12.336,12.413,12.145,11.299],["2023-07-24",12.315,12.337,12.424,12.116,11.231],["2023-07-25",12.32,12.337,12.426,12.12,11.28],["2023-07-26",12.306,12.33,12.421,12.116,11.244],["2023-07-27",12.275,12.337,12.447,12.14,11.279],["2023-07-28",12.272,12.332,12.421,12.106,11.298],["2023-07-31",12.261,12.337,12.343,12.045,11.22],["2023-08-01",12.284,12.338,12.344,12.035,11.075],["2023-08-02",12.286,12.337,12.344,12.025,11.035],["2023-08-03",12.303,12.34,12.342,12.055,11.11],["2023-08-04",12.277,12.334,12.34,12.031,11.031],["2023-08-08",12.287,12.337,12.344,12.026,11.03],["2023-08-09",12.29,12.333,12.388,12.142,11.21],["2023-08-10",12.296,12.338,12.395,12.118,11.213],["2023-08-11",12.298,12.333,12.393,12.158,11.304],["2023-08-14",12.276,12.337,12.397,12.219,11.364],["2023-08-15",12.278,12.333,12.378,12.18,11.296],["2023-08-16",12.306,12.337,12.372,12.11,11.235],["2023-08-17",12.317,12.337,12.345,12.078,11.215],["2023-08-18",12.322,12.337,12.341,12.1,11.235],["2023-08-22",12.305,12.333,12.33,12.095,11.23],["2023-08-23",12.338,12.337,12.35,12.085,11.223],["2023-08-24",12.345,12.336,12.349,12.09,11.2],["2023-08-25",12.328,12.337,12.344,12.065,11.193],["2023-08-28",12.255,12.337,12.34,12.051,11.193],["2023-08-29",12.228,12.333,12.342,12.04,11.167],["2023-08-30",12.25,12.335,12.34,12.031,11.138],["2023-08-31",12.254,12.335,12.34,12.026,11.105],["2023-09-01",12.282,12.336,12.33,12.01,11.114],["2023-09-04",12.3,12.33,12.34,12.025,11.118],["2023-09-05",12.258,12.335,12.338,12.036,11.155],["2023-09-06",12.275,12.327,12.325,12.042,11.2],["2023-09-07",12.285,12.314,12.33,12.04,11.23],["2023-09-08",12.262,12.313,12.368,12.112,11.353],["2023-09-11",12.216,12.312,12.38,12.208,11.437],["2023-09-12",12.167,12.325,12.365,12.21,11.6],["2023-09-13",12.215,12.306,12.37,12.215,11.61],["2023-09-14",12.251,12.325,12.346,12.19,11.575],["2023-09-15",12.282,12.325,12.367,12.216,11.575],["2023-09-18",12.288,12.325,12.368,12.2,11.55],["2023-09-19",12.274,12.325,12.352,12.175,11.458],["2023-09-20",12.307,12.325,12.303,12.175,11.396],["2023-09-21",12.323,12.318,12.335,12.19,11.475],["2023-09-22",12.31,12.31,12.315,12.17,11.448],["2023-09-25",12.266,12.318,12.32,12.18,11.498],["2023-09-26",12.263,12.305,12.325,12.188,11.495],["2023-09-27",12.291,12.32,12.31,12.2,11.529],["2023-09-28",12.287,12.311,12.32,12.204,11.585],["2023-09-29",12.287,12.328,12.316,12.194,11.53],["2023-10-02",12.295,12.322,12.33,12.195,11.587],["2023-10-03",12.29,12.328,12.328,12.213,11.649],["2023-10-04",12.29,12.318,12.338,12.22,11.79],["2023-10-05",12.313,12.335,12.349,12.22,11.8],["2023-10-06",12.315,12.337,12.37,12.275,11.89],["2023-10-09",12.29,12.337,12.384,12.334,11.985],["2023-10-10",12.274,12.338,12.375,12.328,11.999],["2023-10-11",12.283,12.308,12.355,12.27,11.826],["2023-10-12",12.288,12.333,12.362,12.27,11.858],["2023-10-13",12.285,12.335,12.362,12.275,11.87],["2023-10-17",12.285,12.333,12.37,12.284,11.881],["2023-10-18",12.285,12.333,12.352,12.281,11.884],["2023-10-19",12.298,12.335,12.359,12.267,11.87],["2023-10-20",12.312,12.333,12.35,12.254,11.845],["2023-10-23",12.326,12.336,12.355,12.239,11.805],["2023-10-24",12.335,12.333,12.345,12.22,11.8],["2023-10-25",12.307,12.336,12.357,12.23,11.781],["2023-10-26",12.298,12.333,12.345,12.235,11.756],["2023-10-27",12.269,12.336,12.345,12.213,11.75],["2023-10-30",12.262,12.336,12.325,12.191,11.735],["2023-10-31",12.23,12.336,12.325,12.18,11.737],["2023-11-01",12.221,12.333,12.309,12.158,11.69],["2023-11-02",12.25,12.327,12.306,12.12,11.615],["2023-11-03",12.276,12.336,12.295,12.154,11.558],["2023-11-07",12.293,12.334,12.305,12.165,11.525],["2023-11-08",12.287,12.338,12.291,12.148,11.476],["2023-11-09",12.287,12.33,12.268,12.085,11.36],["2023-11-10",12.295,12.334,12.265,12.09,11.358],["2023-11-14",12.312,12.33,12.262,12.05,11.358],["2023-11-15",12.322,12.332,12.259,12.06,11.38],["2023-11-16",12.31,12.33,12.234,12.036,11.318],["2023-11-17",12.321,12.333,12.195,12.013,11.26],["2023-11-20",12.286,12.33,12.195,12.02,11.29],["2023-11-21",12.301,12.333,12.19,12.01,11.255],["2023-11-22",12.326,12.326,12.183,12.001,11.28],["2023-11-23",12.311,12.323,12.175,11.995,11.304],["2023-11-24",12.305,12.318,12.18,11.998,11.298],["2023-11-27",12.268,12.318,12.173,11.985,11.256],["2023-11-28",12.264,12.313,12.168,11.965,11.224],["2023-11-29",12.264,12.306,12.173,11.948,11.201],["2023-11-30",12.256,12.31,12.164,11.916,11.13],["2023-12-01",12.256,12.305,12.149,11.915,11.21],["2023-12-04",12.218,12.301,12.141,11.89,11.2],["2023-12-05",12.171,12.294,12.151,11.885,11.184],["2023-12-06",12.224,12.297,12.096,11.877,11.1],["2023-12-07",12.265,12.291,12.069,11.813,11.011],["2023-12-11",12.25,12.269,12.085,11.834,10.99],["2023-12-12",12.274,12.26,12.083,11.843,11.025],["2023-12-13",12.234,12.25,12.08,11.85,11.073],["2023-12-14",12.173,12.222,12.061,11.835,11.005],["2023-12-15",12.209,12.186,12.06,11.83,11.011],["2023-12-18",12.232,12.21,12.085,11.863,11.065],["2023-12-19",12.19,12.205,12.065,11.853,11.025],["2023-12-20",12.041,12.096,12.02,11.741,10.946],["2023-12-21",12.058,12.09,12.03,11.74,10.9],["2023-12-22",12.028,12.08,12.018,11.723,10.865],["2023-12-26",12.056,12.083,12.015,11.723,10.742],["2023-12-27",12.018,12.078,12,11.7,10.716],["2023-12-28",12.048,12.075,11.98,11.687,10.632],["2024-01-02",12.028,12.065,12,11.703,10.653],["2024-01-03",12.058,12.061,11.98,11.7,10.67],["2024-01-04",12.063,12.048,11.964,11.698,10.67],["2024-01-05",12.059,12.054,11.966,11.699,10.699],["2024-01-09",12.061,12.048,11.96,11.68,10.666],["2024-01-10",12.046,12.001,11.888,11.588,10.565],["2024-01-11",12.022,11.977,11.858,11.536,10.411],["2024-01-12",12.059,11.963,11.832,11.491,10.4],["2024-01-15",12.063,11.97,11.838,11.49,10.352],["2024-01-16",12.055,11.95,11.841,11.47,10.37],["2024-01-17",12.068,11.96,11.843,11.494,10.41],["2024-01-18",12.057,11.903,11.84,11.49,10.419],["2024-01-19",12.06,11.888,11.84,11.464,10.413],["2024-01-22",12.056,11.833,11.82,11.441,10.396],["2024-01-23",12.054,11.831,11.801,11.436,10.388],["2024-01-24",12.049,11.83,11.792,11.429,10.391],["2024-01-25",12.052,11.813,11.771,11.408,10.359],["2024-01-26",12.056,11.8,11.758,11.393,10.349],["2024-01-29",12.047,11.801,11.734,11.38,10.325],["2024-01-30",12.021,11.785,11.71,11.37,10.297],["2024-01-31",12.016,11.731,11.694,11.353,10.278],["2024-02-01",11.831,11.865,11.765,11.346,10.13],["2024-02-02",11.814,11.892,11.79,11.387,10.21],["2024-02-05",11.829,11.886,11.786,11.411,10.26],["2024-02-06",11.818,11.889,11.777,11.4,10.298],["2024-02-07",11.818,11.885,11.772,11.405,10.301],["2024-02-08",11.832,11.868,11.75,11.413,10.27],["2024-02-09",11.834,11.875,11.76,11.427,10.31],["2024-02-12",11.816,11.869,11.756,11.398,10.298],["2024-02-13",11.815,11.867,11.745,11.408,10.33],["2024-02-14",11.82,11.863,11.732,11.39,10.351],["2024-02-15",11.836,11.874,11.722,11.378,10.29],["2024-02-16",11.819,11.853,11.681,11.337,10.251],["2024-02-19",11.819,11.871,11.669,11.345,10.22],["2024-02-20",11.837,11.859,11.644,11.295,10.21],["2024-02-21",11.838,11.87,11.638,11.283,10.218],["2024-02-22",11.839,11.857,11.626,11.297,10.23],["2024-02-23",11.839,11.869,11.63,11.295,10.255],["2024-02-26",11.839,11.856,11.62,11.263,10.24],["2024-02-27",11.825,11.858,11.6,11.246,10.25],["2024-02-28",11.828,11.823,11.587,11.203,10.218],["2024-02-29",11.824,11.819,11.54,11.132,10.137],["2024-03-01",11.814,11.799,11.511,11.034,10.053],["2024-03-04",11.818,11.772,11.485,11.001,10.035],["2024-03-05",11.828,11.743,11.415,10.99,9.973],["2024-03-06",11.822,11.735,11.409,10.978,9.997],["2024-03-07",11.801,11.712,11.408,10.951,9.939],["2024-03-08",11.81,11.694,11.398,10.96,9.94],["2024-03-11",11.827,11.659,11.4,10.968,9.957],["2024-03-12",11.816,11.644,11.395,10.965,9.983],["2024-03-13",11.837,11.636,11.394,10.963,9.998],["2024-03-14",11.838,11.621,11.361,10.946,9.99],["2024-03-15",11.839,11.613,11.361,10.962,9.99],["2024-03-18",11.84,11.56,11.316,10.918,10.005],["2024-03-19",11.84,11.543,11.319,10.927,10.003],["2024-03-20",11.84,11.514,11.297,10.898,9.993],["2024-03-21",11.828,11.51,11.275,10.865,9.947],["2024-03-22",11.827,11.47,11.246,10.812,9.9],["2024-03-26",11.4,11.442,11.227,10.787,9.87],["2024-03-27",11.39,11.454,11.183,10.771,9.835],["2024-04-01",11.4,11.435,11.213,10.78,9.85],["2024-04-02",11.4,11.418,11.207,10.793,9.888],["2024-04-03",11.401,11.388,11.21,10.803,9.9],["2024-04-04",11.397,11.384,11.176,10.749,9.867],["2024-04-05",11.384,11.38,11.187,10.722,9.835],["2024-04-08",11.342,11.337,11.16,10.74,9.883],["2024-04-09",11.301,11.335,11.144,10.716,9.89],["2024-04-10",11.375,11.327,11.14,10.743,9.98],["2024-04-11",11.387,11.302,11.144,10.775,10.12],["2024-04-12",11.358,11.287,11.11,10.736,10.05],["2024-04-15",11.395,11.254,11.097,10.736,10.069],["2024-04-16",11.398,11.233,11.105,10.785,10.105],["2024-04-17",11.399,11.215,11.066,10.768,10.148],["2024-04-18",11.399,11.2,11.069,10.763,10.186],["2024-04-19",11.392,11.182,11.037,10.74,10.138],["2024-04-22",11.392,11.138,11.006,10.717,10.072],["2024-04-23",11.392,11.129,10.99,10.691,10.033],["2024-04-24",11.4,11.111,10.98,10.683,10.058],["2024-04-25",11.4,11.102,10.978,10.705,10.098],["2024-04-26",11.393,11.086,10.963,10.682,10.066],["2024-04-29",11.392,11.038,10.946,10.597,10.021],["2024-04-30",11.397,11.027,10.938,10.538,10.005],["2024-05-02",10.957,10.996,10.895,10.502,9.943],["2024-05-03",10.954,10.995,10.899,10.493,9.904],["2024-05-06",10.959,10.997,10.889,10.481,9.818],["2024-05-07",10.959,10.999,10.89,10.47,9.711],["2024-05-08",10.959,10.996,10.865,10.453,9.728],["2024-05-09",10.959,10.988,10.831,10.427,9.725],["2024-05-10",10.959,10.993,10.82,10.438,9.78],["2024-05-14",10.955,10.99,10.802,10.428,9.776],["2024-05-15",10.951,10.991,10.786,10.399,9.698],["2024-05-16",10.96,11,10.769,10.349,9.621],["2024-05-17",10.961,11.005,10.743,10.35,9.586],["2024-05-20",10.961,11.008,10.733,10.345,9.6],["2024-05-21",10.962,11.009,10.729,10.336,9.592],["2024-05-22",10.962,11.007,10.708,10.328,9.628],["2024-05-23",10.963,11.008,10.68,10.328,9.653],["2024-05-24",10.967,11.009,10.691,10.331,9.728],["2024-05-27",10.974,11.008,10.651,10.306,9.703],["2024-05-28",10.969,11.004,10.643,10.29,9.708],["2024-05-29",10.962,11.006,10.641,10.278,9.758],["2024-05-30",10.962,10.998,10.604,10.267,9.768],["2024-05-31",10.955,10.99,10.58,10.207,9.695],["2024-06-04",10.959,10.957,10.566,10.19,9.603],["2024-06-05",10.962,10.931,10.546,10.172,9.585],["2024-06-06",10.962,10.919,10.5,10.143,9.536],["2024-06-07",10.962,10.883,10.505,10.131,9.51],["2024-06-11",10.962,10.853,10.473,10.128,9.48],["2024-06-12",10.962,10.812,10.486,10.133,9.501],["2024-06-13",10.965,10.793,10.483,10.13,9.554],["2024-06-14",10.965,10.807,10.486,10.139,9.591],["2024-06-17",10.965,10.775,10.485,10.125,9.577],["2024-06-18",10.96,10.757,10.441,10.094,9.51],["2024-06-19",10.961,10.728,10.403,10.037,9.488],["2024-06-20",10.962,10.706,10.396,10.048,9.496],["2024-06-21",10.962,10.698,10.405,10.05,9.508],["2024-06-24",10.962,10.663,10.382,10.025,9.499],["2024-06-25",10.962,10.641,10.373,10.006,9.471],["2024-06-26",10.962,10.628,10.364,9.996,9.471],["2024-06-27",10.957,10.6,10.321,9.963,9.423],["2024-06-28",10.955,10.538,10.31,9.955,9.406],["2024-07-02",10.519,10.493,10.286,9.9,9.383],["2024-07-03",10.511,10.44,10.26,9.895,9.331],["2024-07-04",10.521,10.44,10.257,9.888,9.313],["2024-07-05",10.517,10.431,10.254,9.869,9.301],["2024-07-08",10.516,10.426,10.266,9.879,9.308],["2024-07-09",10.52,10.41,10.259,9.875,9.297],["2024-07-10",10.517,10.402,10.25,9.861,9.275],["2024-07-11",10.516,10.375,10.2,9.806,9.243],["2024-07-12",10.516,10.347,10.195,9.795,9.235],["2024-07-15",10.522,10.35,10.172,9.778,9.165],["2024-07-16",10.522,10.302,10.161,9.768,9.128],["2024-07-17",10.526,10.305,10.153,9.75,9.121],["2024-07-18",10.532,10.267,10.143,9.746,9.141],["2024-07-19",10.538,10.233,10.122,9.735,9.159],["2024-07-22",10.532,10.212,10.101,9.71,9.135],["2024-07-23",10.534,10.208,10.096,9.686,9.12],["2024-07-24",10.529,10.205,10.089,9.678,9.091],["2024-07-25",10.527,10.161,10.056,9.66,9.006],["2024-07-26",10.523,10.141,10.034,9.629,8.976],["2024-07-29",10.521,10.137,10.022,9.63,9.005],["2024-07-30",10.518,10.115,10.016,9.618,9.009],["2024-07-31",10.509,10.102,9.995,9.596,8.968],["2024-08-01",10.072,10.106,9.983,9.59,8.876],["2024-08-02",10.069,10.098,9.941,9.501,8.73],["2024-08-05",10.075,10.09,9.91,9.453,8.643],["2024-08-06",10.076,10.09,9.896,9.453,8.635],["2024-08-08",10.075,10.095,9.905,9.459,8.653],["2024-08-09",10.078,10.085,9.886,9.401,8.567],["2024-08-12",10.069,10.098,9.85,9.361,8.533],["2024-08-13",10.074,10.102,9.816,9.313,8.471],["2024-08-14",10.076,10.095,9.812,9.291,8.425],["2024-08-15",10.077,10.098,9.81,9.301,8.435],["2024-08-16",10.077,10.092,9.783,9.292,8.418],["2024-08-20",10.08,10.089,9.778,9.29,8.42],["2024-08-21",10.08,10.087,9.775,9.276,8.403],["2024-08-22",10.079,10.086,9.763,9.28,8.438],["2024-08-23",10.078,10.093,9.737,9.265,8.433],["2024-08-26",10.079,10.098,9.73,9.265,8.433],["2024-08-27",10.07,10.096,9.715,9.253,8.423],["2024-08-28",10.077,10.098,9.708,9.245,8.415],["2024-08-29",10.072,10.098,9.69,9.247,8.438],["2024-08-30",10.073,10.099,9.677,9.25,8.445],["2024-09-02",10.069,10.081,9.666,9.238,8.515],["2024-09-03",10.072,10.047,9.629,9.21,8.508],["2024-09-04",10.074,10.015,9.635,9.208,8.515],["2024-09-05",10.073,10.014,9.611,9.215,8.528],["2024-09-06",10.071,9.981,9.582,9.185,8.45],["2024-09-09",10.071,9.896,9.501,9.094,8.221],["2024-09-10",10.073,9.9,9.49,9.028,8.15],["2024-09-11",10.072,9.895,9.5,9.026,8.135],["2024-09-12",10.073,9.865,9.495,9.001,8.155],["2024-09-13",10.073,9.859,9.505,8.995,8.163],["2024-09-16",10.073,9.851,9.458,8.958,8.131],["2024-09-17",10.074,9.826,9.453,8.957,8.136],["2024-09-18",10.075,9.811,9.445,8.968,8.146],["2024-09-19",10.076,9.774,9.391,8.92,8.105],["2024-09-20",10.076,9.728,9.371,8.933,8.121],["2024-09-23",10.078,9.731,9.377,8.925,8.123],["2024-09-24",10.082,9.708,9.355,8.925,8.155],["2024-09-25",10.081,9.693,9.329,8.916,8.164],["2024-09-26",10.082,9.649,9.321,8.923,8.209],["2024-09-27",10.075,9.615,9.285,8.884,8.138],["2024-09-30",10.075,9.593,9.251,8.832,8.108],["2024-10-01",9.627,9.585,9.262,8.808,8.08],["2024-10-02",9.63,9.585,9.253,8.838,8.108],["2024-10-03",9.63,9.553,9.251,8.843,8.116],["2024-10-04",9.633,9.54,9.265,8.878,8.163],["2024-10-07",9.628,9.515,9.255,8.878,8.211],["2024-10-08",9.632,9.471,9.225,8.841,8.161],["2024-10-09",9.627,9.465,9.208,8.827,8.158],["2024-10-10",9.628,9.446,9.195,8.803,8.17],["2024-10-11",9.63,9.399,9.185,8.793,8.197],["2024-10-15",9.634,9.395,9.165,8.8,8.211],["2024-10-16",9.634,9.373,9.143,8.773,8.183],["2024-10-17",9.634,9.348,9.125,8.75,8.217],["2024-10-18",9.628,9.336,9.101,8.729,8.198],["2024-10-21",9.631,9.329,9.101,8.736,8.238],["2024-10-22",9.633,9.294,9.1,8.733,8.275],["2024-10-23",9.637,9.275,9.091,8.733,8.333],["2024-10-24",9.635,9.251,9.065,8.707,8.34],["2024-10-25",9.639,9.241,9.07,8.716,8.357],["2024-10-28",9.638,9.215,9.07,8.731,8.395],["2024-10-29",9.634,9.218,9.058,8.696,8.405],["2024-10-30",9.631,9.204,9.021,8.641,8.321],["2024-10-31",9.635,9.195,9.005,8.605,8.313],["2024-11-01",9.178,9.208,9.022,8.668,8.35],["2024-11-05",9.183,9.206,9.01,8.645,8.351],["2024-11-06",9.175,9.211,8.998,8.645,8.36],["2024-11-07",9.179,9.208,8.972,8.625,8.28],["2024-11-08",9.179,9.206,8.941,8.583,8.146],["2024-11-12",9.179,9.211,8.913,8.546,8.176],["2024-11-13",9.179,9.212,8.933,8.59,8.21],["2024-11-14",9.179,9.211,8.942,8.617,8.216],["2024-11-15",9.179,9.208,8.943,8.611,8.215],["2024-11-18",9.179,9.207,8.922,8.578,8.18],["2024-11-19",9.182,9.207,8.909,8.565,8.132],["2024-11-20",9.181,9.207,8.899,8.54,8.069],["2024-11-21",9.178,9.184,8.873,8.513,7.991],["2024-11-22",9.175,9.161,8.875,8.533,8.048],["2024-11-25",9.18,9.15,8.834,8.501,8.058],["2024-11-26",9.182,9.12,8.838,8.531,8.115],["2024-11-27",9.183,9.105,8.84,8.555,8.168],["2024-11-28",9.184,9.081,8.828,8.533,8.123],["2024-11-29",9.181,9.068,8.823,8.513,8.102],["2024-12-02",9.181,9.029,8.79,8.488,8.117],["2024-12-03",9.182,9.023,8.79,8.495,8.11],["2024-12-04",9.178,9.005,8.784,8.491,8.12],["2024-12-05",9.183,9,8.77,8.5,8.111],["2024-12-06",9.183,8.994,8.76,8.491,8.075],["2024-12-09",9.183,8.962,8.73,8.491,8.098],["2024-12-10",9.176,8.939,8.721,8.51,8.109],["2024-12-11",9.178,8.922,8.716,8.479,8.153],["2024-12-12",9.177,8.9,8.714,8.46,8.218],["2024-12-13",9.182,8.888,8.7,8.46,8.225],["2024-12-16",9.183,8.871,8.678,8.458,8.239],["2024-12-17",9.18,8.845,8.675,8.453,8.305],["2024-12-18",9.179,8.829,8.678,8.469,8.32],["2024-12-19",9.183,8.787,8.685,8.47,8.343],["2024-12-20",9.183,8.77,8.675,8.451,8.29],["2024-12-23",8.958,8.981,8.928,8.763,8.535],["2024-12-24",8.958,8.988,8.938,8.798,8.59],["2024-12-26",8.958,8.993,8.968,8.894,8.705],["2024-12-27",8.959,8.993,8.965,8.888,8.729],["2024-12-30",8.96,8.991,8.957,8.893,8.77],["2025-01-02",8.956,8.987,8.95,8.903,8.795],["2025-01-03",8.946,8.986,8.925,8.9,8.753],["2025-01-07",8.955,8.969,8.899,8.852,8.737],["2025-01-08",8.961,8.945,8.873,8.802,8.698],["2025-01-09",8.961,8.945,8.88,8.803,8.69],["2025-01-10",8.964,8.938,8.92,8.83,8.697],["2025-01-13",8.967,8.925,8.92,8.85,8.77],["2025-01-14",8.963,8.93,8.929,8.89,8.87],["2025-01-15",8.964,8.935,8.93,8.86,8.868],["2025-01-16",8.964,8.917,8.883,8.826,8.726],["2025-01-17",8.964,8.9,8.875,8.801,8.666],["2025-01-20",8.97,8.905,8.893,8.794,8.616],["2025-01-21",8.97,8.9,8.883,8.756,8.556],["2025-01-22",8.971,8.885,8.85,8.681,8.48],["2025-01-23",8.973,8.887,8.86,8.68,8.5],["2025-01-24",8.974,8.872,8.838,8.664,8.442],["2025-01-27",8.981,8.88,8.875,8.722,8.556],["2025-01-28",8.985,8.865,8.869,8.72,8.486],["2025-01-29",8.989,8.86,8.885,8.723,8.52],["2025-01-30",8.995,8.874,8.823,8.706,8.446],["2025-01-31",9,8.851,8.808,8.673,8.461],["2025-02-03",9.002,8.97,8.957,8.825,8.581],["2025-02-04",8.984,8.99,8.954,8.801,8.557],["2025-02-05",8.977,8.99,8.953,8.788,8.513],["2025-02-06",9.002,8.99,8.945,8.775,8.503],["2025-02-07",8.984,8.99,8.933,8.801,8.6],["2025-02-10",8.979,8.989,8.942,8.821,8.66],["2025-02-11",8.989,8.982,8.952,8.845,8.673],["2025-02-12",9.003,8.981,8.966,8.875,8.734],["2025-02-13",8.966,8.979,8.98,8.89,8.755],["2025-02-14",8.956,8.979,8.945,8.845,8.665],["2025-02-17",8.954,8.978,8.94,8.858,8.718],["2025-02-18",8.953,8.979,8.918,8.849,8.708],["2025-02-19",8.945,8.981,8.919,8.843,8.735],["2025-02-20",8.956,8.975,8.928,8.83,8.713],["2025-02-21",8.96,8.973,8.905,8.8,8.685],["2025-02-24",8.961,8.973,8.889,8.76,8.64],["2025-02-25",8.966,8.973,8.883,8.756,8.619],["2025-02-26",8.962,8.97,8.88,8.757,8.635],["2025-02-27",8.969,8.979,8.892,8.796,8.645],["2025-02-28",8.952,8.977,8.858,8.765,8.605],["2025-03-03",8.958,8.97,8.845,8.76,8.58],["2025-03-04",8.959,8.97,8.85,8.76,8.56],["2025-03-05",8.953,8.948,8.865,8.755,8.551],["2025-03-06",8.954,8.943,8.86,8.759,8.577],["2025-03-07",8.953,8.941,8.854,8.735,8.546],["2025-03-10",8.952,8.952,8.877,8.79,8.61],["2025-03-11",8.947,8.97,8.879,8.802,8.655],["2025-03-12",8.95,8.95,8.874,8.809,8.653],["2025-03-13",8.956,8.957,8.869,8.795,8.672],["2025-03-14",8.951,8.955,8.875,8.795,8.65],["2025-03-17",8.952,8.938,8.87,8.788,8.665],["2025-03-18",8.956,8.935,8.91,8.84,8.756],["2025-03-19",8.955,8.955,8.925,8.87,8.79],["2025-03-20",8.955,8.951,8.913,8.87,8.805],["2025-03-21",8.955,8.927,8.875,8.805,8.675],["2025-03-25",8.956,8.917,8.875,8.801,8.69],["2025-03-26",8.955,8.925,8.875,8.789,8.69],["2025-03-27",8.954,8.905,8.853,8.8,8.73],["2025-03-28",8.953,8.924,8.88,8.83,8.815],["2025-03-31",8.974,8.921,8.89,8.83,8.76],["2025-04-01",8.952,8.943,8.925,8.85,8.701],["2025-04-02",8.952,8.965,8.954,8.86,8.745],["2025-04-03",8.951,8.965,8.887,8.791,8.636],["2025-04-04",8.953,8.952,8.887,8.76,8.51],["2025-04-07",8.952,8.941,8.903,8.77,8.56],["2025-04-08",8.952,8.934,8.893,8.751,8.525],["2025-04-09",8.951,8.931,8.881,8.746,8.532],["2025-04-10",8.951,8.923,8.875,8.725,8.478],["2025-04-11",8.951,8.911,8.885,8.75,8.536],["2025-04-14",8.953,8.923,8.89,8.738,8.49],["2025-04-15",8.952,8.908,8.885,8.73,8.475],["2025-04-16",8.952,8.91,8.868,8.729,8.468],["2025-04-21",8.96,8.908,8.85,8.737,8.44],["2025-04-22",8.955,8.885,8.83,8.729,8.468],["2025-04-23",8.954,8.902,8.835,8.723,8.418],["2025-04-24",8.954,8.933,8.915,8.825,8.535],["2025-04-25",8.953,8.94,8.933,8.843,8.57],["2025-04-28",8.953,8.933,8.946,8.859,8.641],["2025-04-29",8.954,8.938,8.963,8.87,8.668],["2025-04-30",8.953,8.948,8.955,8.873,8.675],["2025-05-02",8.724,8.759,8.745,8.673,8.495],["2025-05-05",8.727,8.755,8.735,8.655,8.483],["2025-05-06",8.727,8.759,8.742,8.65,8.473],["2025-05-07",8.724,8.76,8.735,8.65,8.462],["2025-05-08",8.721,8.759,8.73,8.653,8.456],["2025-05-09",8.718,8.762,8.765,8.71,8.535],["2025-05-12",8.724,8.759,8.775,8.725,8.584],["2025-05-13",8.725,8.759,8.755,8.715,8.63],["2025-05-14",8.727,8.761,8.77,8.743,8.67],["2025-05-15",8.725,8.765,8.764,8.727,8.659],["2025-05-16",8.724,8.76,8.753,8.705,8.628],["2025-05-19",8.726,8.762,8.74,8.693,8.621],["2025-05-20",8.727,8.759,8.75,8.696,8.62],["2025-05-21",8.727,8.762,8.752,8.713,8.618],["2025-05-22",8.725,8.761,8.756,8.72,8.655],["2025-05-23",8.727,8.762,8.748,8.73,8.655],["2025-05-26",8.731,8.759,8.756,8.74,8.641],["2025-05-27",8.734,8.76,8.754,8.719,8.628],["2025-05-28",8.737,8.761,8.73,8.731,8.629],["2025-05-29",8.738,8.764,8.73,8.72,8.63],["2025-05-30",8.736,8.75,8.717,8.695,8.626],["2025-06-03",8.733,8.756,8.737,8.701,8.61],["2025-06-04",8.731,8.756,8.737,8.7,8.59],["2025-06-05",8.727,8.76,8.758,8.726,8.653],["2025-06-06",8.73,8.755,8.79,8.815,8.8],["2025-06-09",8.731,8.755,8.791,8.8,8.785],["2025-06-10",8.731,8.753,8.77,8.765,8.775],["2025-06-11",8.73,8.754,8.741,8.783,8.795],["2025-06-12",8.73,8.757,8.755,8.803,8.823],["2025-06-13",8.728,8.748,8.76,8.8,8.84],["2025-06-16",8.728,8.741,8.736,8.731,8.746],["2025-06-17",8.729,8.743,8.751,8.757,8.77],["2025-06-18",8.728,8.748,8.758,8.758,8.773],["2025-06-19",8.728,8.753,8.767,8.76,8.763],["2025-06-20",8.73,8.738,8.74,8.727,8.742],["2025-06-24",8.73,8.727,8.715,8.713,8.771],["2025-06-25",8.734,8.726,8.715,8.698,8.77],["2025-06-26",8.736,8.727,8.698,8.668,8.722],["2025-06-27",8.729,8.713,8.694,8.67,8.67],["2025-07-01",8.728,8.754,8.76,8.746,8.75],["2025-07-02",8.728,8.74,8.728,8.715,8.695],["2025-07-03",8.728,8.742,8.73,8.709,8.7],["2025-07-04",8.727,8.739,8.73,8.713,8.71],["2025-07-07",8.728,8.74,8.737,8.735,8.729],["2025-07-08",8.728,8.738,8.725,8.716,8.708],["2025-07-09",8.729,8.735,8.7,8.689,8.689],["2025-07-10",8.728,8.735,8.708,8.705,8.698],["2025-07-11",8.728,8.7,8.708,8.69,8.685],["2025-07-14",8.73,8.7,8.7,8.695,8.684],["2025-07-15",8.73,8.7,8.675,8.672,8.659],["2025-07-16",8.729,8.695,8.68,8.665,8.672],["2025-07-17",8.73,8.675,8.665,8.651,8.655],["2025-07-18",8.73,8.68,8.672,8.638,8.64],["2025-07-21",8.73,8.685,8.68,8.643,8.644],["2025-07-22",8.73,8.673,8.666,8.64,8.645],["2025-07-23",8.733,8.68,8.675,8.655,8.69],["2025-07-24",8.735,8.66,8.672,8.67,8.681],["2025-07-25",8.736,8.656,8.685,8.653,8.653],["2025-07-28",8.732,8.651,8.667,8.654,8.655],["2025-07-29",8.733,8.635,8.63,8.624,8.627],["2025-07-30",8.73,8.61,8.614,8.613,8.615],["2025-07-31",8.729,8.602,8.614,8.59,8.591],["2025-08-01",8.728,8.756,8.774,8.735,8.725],["2025-08-04",8.729,8.756,8.779,8.758,8.736],["2025-08-05",8.73,8.756,8.78,8.755,8.74],["2025-08-06",8.728,8.758,8.78,8.78,8.788],["2025-08-08",8.729,8.758,8.8,8.8,8.8],["2025-08-11",8.728,8.76,8.793,8.803,8.833],["2025-08-12",8.727,8.758,8.787,8.798,8.82],["2025-08-13",8.727,8.759,8.772,8.795,8.77],["2025-08-14",8.726,8.76,8.783,8.814,8.82],["2025-08-15",8.726,8.76,8.79,8.828,8.84],["2025-08-19",8.728,8.756,8.78,8.788,8.83],["2025-08-20",8.727,8.758,8.778,8.8,8.835],["2025-08-21",8.73,8.759,8.785,8.815,8.848],["2025-08-22",8.73,8.759,8.755,8.8,8.81],["2025-08-25",8.728,8.759,8.76,8.779,8.79],["2025-08-26",8.728,8.759,8.75,8.753,8.783],["2025-08-27",8.727,8.757,8.741,8.745,8.77],["2025-08-28",8.73,8.758,8.75,8.75,8.794],["2025-08-29",8.727,8.759,8.759,8.765,8.82],["2025-09-01",8.727,8.756,8.77,8.771,8.825],["2025-09-02",8.727,8.756,8.777,8.8,8.848],["2025-09-03",8.727,8.753,8.775,8.806,8.874],["2025-09-04",8.727,8.75,8.778,8.808,8.87],["2025-09-05",8.726,8.745,8.773,8.775,8.79],["2025-09-08",8.727,8.73,8.748,8.732,8.755],["2025-09-09",8.729,8.737,8.755,8.76,8.776],["2025-09-10",8.727,8.742,8.759,8.757,8.748],["2025-09-11",8.727,8.739,8.713,8.705,8.7],["2025-09-12",8.727,8.741,8.723,8.75,8.765],["2025-09-15",8.728,8.742,8.732,8.765,8.78],["2025-09-16",8.729,8.74,8.748,8.78,8.815],["2025-09-17",8.73,8.75,8.771,8.798,8.837],["2025-09-18",8.73,8.748,8.767,8.807,8.825],["2025-09-19",8.73,8.745,8.767,8.783,8.83],["2025-09-22",8.73,8.747,8.758,8.795,8.854],["2025-09-23",8.729,8.746,8.753,8.8,8.868],["2025-09-24",8.729,8.75,8.768,8.825,8.895],["2025-09-25",8.729,8.758,8.78,8.835,8.905],["2025-09-26",8.73,8.757,8.79,8.84,8.925],["2025-09-29",8.731,8.757,8.788,8.815,8.895],["2025-09-30",8.73,8.753,8.783,8.82,8.881],["2025-10-01",8.728,8.754,8.791,8.845,8.903],["2025-10-02",8.728,8.759,8.813,8.868,8.955],["2025-10-03",8.731,8.758,8.838,8.9,9.01],["2025-10-06",8.729,8.759,8.827,8.898,9],["2025-10-07",8.731,8.755,8.828,8.911,9.003],["2025-10-08",8.73,8.759,8.828,8.925,9.015],["2025-10-09",8.731,8.757,8.826,8.923,9.013],["2025-10-10",8.732,8.76,8.823,8.922,9.041],["2025-10-14",8.73,8.759,8.822,8.907,9.06],["2025-10-15",8.73,8.76,8.82,8.88,9.003],["2025-10-16",8.73,8.758,8.822,8.895,9.025],["2025-10-17",8.729,8.759,8.826,8.91,9.095],["2025-10-20",8.73,8.757,8.828,8.93,9.13],["2025-10-21",8.728,8.755,8.827,8.92,9.099],["2025-10-22",8.728,8.759,8.827,8.932,9.117],["2025-10-23",8.727,8.76,8.833,8.95,9.153],["2025-10-24",8.729,8.759,8.834,8.96,9.162],["2025-10-27",8.727,8.757,8.862,8.979,9.22],["2025-10-28",8.729,8.759,8.858,8.983,9.178],["2025-10-29",8.73,8.758,8.869,9.02,9.248],["2025-10-30",8.729,8.758,8.864,9.056,9.31],["2025-10-31",8.73,8.757,8.847,9.014,9.36],["2025-11-04",8.731,8.758,8.84,9.019,9.37],["2025-11-05",8.73,8.757,8.83,9.006,9.394],["2025-11-06",8.728,8.754,8.825,8.97,9.306],["2025-11-07",8.732,8.758,8.863,9.021,9.393],["2025-11-10",8.731,8.756,8.847,9.06,9.421],["2025-11-11",8.733,8.759,8.87,9.125,9.565],["2025-11-12",8.733,8.755,8.9,9.12,9.582],["2025-11-13",8.734,8.759,8.935,9.24,9.726],["2025-11-14",8.734,8.759,8.988,9.277,9.87],["2025-11-18",8.736,8.758,8.97,9.299,9.959],["2025-11-19",8.736,8.758,8.99,9.335,9.982],["2025-11-20",8.735,8.762,8.995,9.335,9.971],["2025-11-21",8.732,8.763,9.003,9.357,10.011],["2025-11-24",8.729,8.76,8.958,9.286,9.86],["2025-11-25",8.727,8.759,8.938,9.25,9.815],["2025-11-26",8.723,8.757,8.98,9.305,9.883],["2025-11-27",8.71,8.76,8.99,9.311,9.895],["2025-11-28",8.658,8.765,9.023,9.35,9.95],["2025-12-01",8.612,8.76,9.003,9.334,9.968],["2025-12-02",8.552,8.758,8.975,9.368,9.985],["2025-12-03",8.644,8.761,8.972,9.35,9.976],["2025-12-04",8.686,8.759,8.972,9.334,9.95],["2025-12-05",8.671,8.8,9.003,9.4,10],["2025-12-09",8.715,8.778,9.003,9.4,10.025],["2025-12-10",8.721,8.781,9.063,9.5,10.173],["2025-12-11",8.721,8.85,9.1,9.6,10.35],["2025-12-12",8.726,8.837,9.028,9.539,10.226],["2025-12-15",8.727,8.843,9.02,9.5,10.18],["2025-12-16",8.727,8.827,9.017,9.5,10.2],["2025-12-17",8.727,8.828,9.033,9.526,10.263],["2025-12-18",8.727,8.881,9.116,9.634,10.41],["2025-12-19",8.726,8.873,9.12,9.58,10.324],["2025-12-22",8.728,8.773,8.975,9.458,10.12],["2025-12-23",8.728,8.759,8.95,9.41,10.098],["2025-12-24",8.73,8.76,8.956,9.411,10.1],["2025-12-26",8.736,8.767,8.991,9.473,10.203],["2025-12-29",8.763,8.818,9.128,9.653,10.472],["2025-12-30",8.745,8.905,9.401,10.163,11.095],["2026-01-02",8.728,8.87,9.288,10.117,11.165],["2026-01-05",8.727,8.861,9.272,10.042,11.108],["2026-01-06",8.729,8.81,9.21,9.905,10.918],["2026-01-07",8.731,8.81,9.208,9.92,10.91],["2026-01-08",8.732,8.915,9.306,10.013,11.008],["2026-01-09",8.736,8.927,9.313,10.005,11.008],["2026-01-13",8.735,8.954,9.333,10.03,11.048],["2026-01-14",8.737,8.991,9.385,10.075,11.056],["2026-01-15",8.739,9.025,9.402,10.12,11.121],["2026-01-16",8.74,9.054,9.475,10.176,11.184],["2026-01-19",8.74,9.08,9.493,10.19,11.19],["2026-01-20",8.741,9.077,9.48,10.203,11.205],["2026-01-21",8.74,9.08,9.478,10.195,11.179],["2026-01-22",8.74,9.125,9.514,10.235,11.25],["2026-01-23",8.735,9.15,9.537,10.239,11.246],["2026-01-26",8.738,9.149,9.528,10.238,11.238],["2026-01-27",8.732,9.16,9.545,10.277,11.292],["2026-01-28",8.735,9.188,9.535,10.222,11.203],["2026-01-29",8.742,9.267,9.598,10.277,11.265],["2026-01-30",8.746,9.275,9.585,10.3,11.255],["2026-02-02",9.638,9.68,10.04,10.745,11.667],["2026-02-03",9.637,9.667,10.091,10.848,11.789],["2026-02-04",9.639,9.664,10.079,10.863,11.818],["2026-02-05",9.631,9.675,10.157,10.944,11.936],["2026-02-06",9.634,9.68,10.201,11.112,12.132],["2026-02-09",9.642,9.673,10.195,11.095,12.02],["2026-02-10",9.628,9.671,10.2,11.098,12.038],["2026-02-11",9.635,9.67,10.223,11.141,12.125],["2026-02-12",9.637,9.669,10.265,11.145,12.068],["2026-02-13",9.638,9.668,10.26,11.06,11.883],["2026-02-16",9.639,9.666,10.312,11.135,11.995],["2026-02-17",9.645,9.664,10.348,11.125,12.01],["2026-02-18",9.645,9.66,10.365,11.165,12.055],["2026-02-19",9.641,9.662,10.398,11.2,12.085],["2026-02-20",9.629,9.662,10.436,11.23,12.105],["2026-02-23",9.627,9.663,10.431,11.21,12.127],["2026-02-24",9.643,9.66,10.486,11.277,12.24],["2026-02-25",9.639,9.668,10.51,11.323,12.315],["2026-02-26",9.629,9.674,10.54,11.38,12.4],["2026-02-27",9.634,9.709,10.553,11.37,12.367],["2026-03-02",9.636,9.759,10.587,11.408,12.419],["2026-03-03",9.636,9.771,10.628,11.449,12.504],["2026-03-04",9.628,9.779,10.613,11.416,12.453],["2026-03-05",9.631,9.825,10.673,11.475,12.405],["2026-03-06",9.629,9.847,10.74,11.544,12.513],["2026-03-09",9.622,9.903,10.715,11.47,12.395],["2026-03-10",9.617,9.96,10.675,11.398,12.208],["2026-03-11",9.621,10.008,10.72,11.425,12.296],["2026-03-12",9.623,10.084,10.802,11.564,12.442],["2026-03-13",9.626,10.085,10.806,11.568,12.434],["2026-03-16",9.63,10.117,10.822,11.609,12.499],["2026-03-17",9.634,10.148,10.84,11.6,12.43],["2026-03-18",9.636,10.18,10.88,11.688,12.557],["2026-03-19",9.638,10.264,10.975,11.762,12.652],["2026-03-20",9.642,10.3,11.015,11.82,12.704],["2026-03-24",9.641,10.315,11.005,11.781,12.676],["2026-03-25",9.642,10.35,10.976,11.722,12.64],["2026-03-26",9.643,10.41,11.005,11.745,12.653],["2026-03-27",9.636,10.425,11.024,11.745,12.67],["2026-03-30",9.635,10.453,11,11.715,12.645],["2026-03-31",9.635,10.555,11.023,11.71,12.588],["2026-04-01",10.515,10.585,11.085,11.755,12.645],["2026-04-06",10.522,10.583,10.995,11.63,12.476],["2026-04-07",10.518,10.629,10.956,11.6,12.435],["2026-04-08",10.524,10.653,10.983,11.57,12.35],["2026-04-09",10.531,10.7,11.04,11.59,12.28],["2026-04-10",10.521,10.683,11.036,11.565,12.265],["2026-04-13",10.519,10.705,11.053,11.578,12.283],["2026-04-14",10.518,10.715,11.07,11.55,12.258],["2026-04-15",10.516,10.717,11.05,11.566,12.195],["2026-04-16",10.516,10.71,11.05,11.578,12.23],["2026-04-17",10.508,10.717,11.06,11.57,12.218],["2026-04-20",10.523,10.745,11.135,11.6,12.24],["2026-04-21",10.516,10.82,11.173,11.66,12.292],["2026-04-22",10.525,10.87,11.2,11.715,12.41],["2026-04-23",10.521,10.955,11.3,11.858,12.535],["2026-04-24",10.521,10.912,11.3,11.865,12.575],["2026-04-27",10.528,10.98,11.343,11.901,12.593],["2026-04-28",10.53,11.078,11.427,11.985,12.708],["2026-04-29",10.531,11.06,11.43,12.033,12.771],["2026-04-30",10.532,11.062,11.447,12.047,12.8],["2026-05-04",10.522,10.577,10.89,11.5,12.37],["2026-05-05",10.505,10.58,10.87,11.5,12.37],["2026-05-06",10.515,10.58,10.898,11.525,12.44],["2026-05-07",10.524,10.573,10.86,11.485,12.363],["2026-05-08",10.522,10.58,10.86,11.463,12.35],["2026-05-11",10.511,10.575,10.868,11.478,12.357],["2026-05-12",10.523,10.575,10.88,11.453,12.312],["2026-05-13",10.527,10.58,10.98,11.555,12.415],["2026-05-14",10.526,10.586,10.99,11.573,12.448],["2026-05-15",10.524,10.65,11.074,11.66,12.598],["2026-05-19",10.521,10.61,11.168,11.826,12.81],["2026-05-20",10.53,10.58,11.107,11.724,12.635],["2026-05-21",10.525,10.578,11.123,11.74,12.642],["2026-05-22",10.526,10.58,11.11,11.708,12.531],["2026-05-25",10.521,10.57,11.105,11.69,12.46],["2026-05-26",10.521,10.568,11.116,11.724,12.455],["2026-05-27",10.529,10.581,11.2,11.823,12.567],["2026-05-28",10.541,10.623,11.225,11.86,12.618],["2026-05-29",10.544,10.641,11.26,11.9,12.691],["2026-06-01",10.542,10.59,11.21,11.77,12.45],["2026-06-02",10.531,10.59,11.23,11.776,12.413],["2026-06-03",10.542,10.61,11.25,11.811,12.42],["2026-06-04",10.543,10.665,11.24,11.775,12.375],["2026-06-05",10.544,10.715,11.31,11.823,12.445],["2026-06-09",10.543,10.735,11.365,11.865,12.513],["2026-06-10",10.544,10.755,11.363,11.867,12.49],["2026-06-11",10.531,10.801,11.355,11.843,12.42],["2026-06-12",10.516,10.79,11.328,11.745,12.28],["2026-06-16",10.528,10.858,11.352,11.748,12.151],["2026-06-17",10.54,10.896,11.375,11.754,12.204],["2026-06-18",10.542,10.92,11.4,11.785,12.215],["2026-06-19",10.539,10.935,11.437,11.803,12.24],["2026-06-22",10.521,10.941,11.437,11.828,12.216],["2026-06-23",10.516,10.935,11.435,11.83,12.268],["2026-06-24",10.529,10.955,11.46,11.855,12.247],["2026-06-25",10.519,11.05,11.485,11.838,12.208],["2026-06-26",10.524,11.075,11.455,11.776,12.09],["2026-06-30",10.538,11.08,11.478,11.78,12.065],["2026-07-01",11.192,11.205,11.585,11.885,12.22],["2026-07-02",11.195,11.25,11.578,11.855,12.167],["2026-07-03",11.177,11.253,11.579,11.88,12.263],["2026-07-06",11.185,11.29,11.61,11.905,12.36],["2026-07-07",11.185,11.318,11.63,11.97,12.39],["2026-07-08",11.191,11.318,11.65,12.019,12.455],["2026-07-09",11.185,11.316,11.61,11.955,12.38],["2026-07-10",11.184,11.318,11.599,11.926,12.268],["2026-07-14",11.181,11.318,11.6,11.918,12.235],["2026-07-15",11.183,11.415,11.625,11.945,12.273],["2026-07-16",11.183,11.424,11.659,11.975,12.345],["2026-07-17",11.18,11.45,11.67,11.998,12.375],["2026-07-21",11.184,11.507,11.788,12.11,12.51],["2026-07-22",11.192,11.51,11.81,12.13,12.537],["2026-07-23",11.198,11.529,11.816,12.135,12.62],["2026-07-24",11.189,11.501,11.77,12.1,12.53],["2026-07-27",11.194,11.505,11.753,12.055,12.482],["2026-07-28",11.173,11.526,11.78,12.053,12.395],["2026-07-29",11.189,11.58,11.833,12.11,12.518],["2026-07-30",11.192,11.583,11.818,12.07,12.483],["2026-07-31",11.192,11.555,11.768,12.025,12.44],["2026-08-03",11.187,11.2,11.455,11.745,12.153],["2026-08-04",11.185,11.234,11.428,11.735,12.125],["2026-08-05",11.185,11.23,11.406,11.758,12.22],["2026-08-06",11.182,11.231,11.424,11.773,12.22],["2026-08-10",11.185,11.231,11.425,11.795,12.28],["2026-08-11",11.183,11.232,11.41,11.74,12.18],["2026-08-12",11.179,11.231,11.405,11.72,12.128],["2026-08-13",11.178,11.23,11.42,11.71,12.075],["2026-08-14",11.183,11.23,11.408,11.725,12.085],["2026-08-18",11.189,11.232,11.436,11.756,12.165],["2026-08-19",11.186,11.236,11.424,11.728,12.118],["2026-08-20",11.19,11.235,11.427,11.737,12.129],["2026-08-21",11.188,11.234,11.42,11.725,12.123],["2026-08-24",11.18,11.235,11.41,11.7,12.05],["2026-08-25",11.169,11.235,11.44,11.71,12.05],["2026-08-26",11.176,11.232,11.438,11.708,12.108],["2026-08-27",11.177,11.233,11.43,11.706,12.104],["2026-08-28",11.178,11.232,11.42,11.732,12.202],["2026-08-31",11.174,11.234,11.42,11.716,12.256],["2026-09-01",11.179,11.235,11.4,11.7,12.174],["2026-09-02",11.171,11.235,11.43,11.677,12.14],["2026-09-03",11.17,11.237,11.45,11.715,12.14],["2026-09-04",11.167,11.24,11.43,11.69,12.11],["2026-09-07",11.167,11.24,11.42,11.685,12.11],["2026-09-08",11.166,11.25,11.48,11.755,12.18],["2026-09-09",11.175,11.263,11.46,11.78,12.245],["2026-09-10",11.179,11.3,11.495,11.83,12.305],["2026-09-11",11.177,11.302,11.51,11.83,12.278],["2026-09-14",11.178,11.308,11.5,11.83,12.308],["2026-09-15",11.179,11.326,11.56,11.883,12.395],["2026-09-16",11.182,11.32,11.54,11.85,12.316],["2026-09-17",11.181,11.32,11.533,11.847,12.325],["2026-09-18",11.185,11.35,11.59,11.913,12.407],["2026-09-21",11.183,11.325,11.568,11.885,12.368],["2026-09-22",11.176,11.304,11.522,11.815,12.27],["2026-09-23",11.181,11.319,11.546,11.831,12.28]],"ibrLast":["2026-09-23",11.181,11.319,11.546,11.831,12.28],"ipc":[["2021-01-31",105.91,null,"2021-02-06"],["2021-02-28",106.58,null,"2021-03-06"],["2021-03-31",107.12,null,"2021-04-10"],["2021-04-30",107.76,null,"2021-05-08"],["2021-05-31",108.84,null,"2021-06-09"],["2021-06-30",108.78,null,"2021-07-09"],["2021-07-31",109.14,null,"2021-08-07"],["2021-08-31",109.62,null,"2021-09-08"],["2021-09-30",110.04,null,"2021-10-08"],["2021-10-31",110.06,null,"2021-11-09"],["2021-11-30",110.6,null,"2021-12-08"],["2021-12-31",111.41,null,"2022-01-08"],["2022-01-31",113.26,null,"2022-02-08"],["2022-02-28",115.11,null,"2022-03-08"],["2022-03-31",116.26,null,"2022-04-08"],["2022-04-30",117.71,null,"2022-05-07"],["2022-05-31",118.7,null,"2022-06-08"],["2022-06-30",119.31,null,"2022-07-09"],["2022-07-31",120.27,null,"2022-08-06"],["2022-08-31",121.5,null,"2022-09-08"],["2022-09-30",122.63,null,"2022-10-08"],["2022-10-31",123.51,null,"2022-11-09"],["2022-11-30",124.46,null,"2022-12-08"],["2022-12-31",126.03,null,"2023-01-07"],["2023-01-31",128.27,null,"2023-02-08"],["2023-02-28",130.4,null,"2023-03-08"],["2023-03-31",131.77,null,"2023-04-12"],["2023-04-30",132.8,null,"2023-05-09"],["2023-05-31",133.38,null,"2023-06-08"],["2023-06-30",133.78,null,"2023-07-11"],["2023-07-31",134.45,null,"2023-08-09"],["2023-08-31",135.39,null,"2023-09-08"],["2023-09-30",136.11,null,"2023-10-07"],["2023-10-31",136.45,null,"2023-11-09"],["2023-11-30",137.09,null,"2023-12-08"],["2023-12-31",137.72,null,"2024-01-10"],["2024-01-31",138.98,null,"2024-02-08"],["2024-02-29",140.49,null,"2024-03-08"],["2024-03-31",141.48,null,"2024-04-06"],["2024-04-30",142.32,null,"2024-05-09"],["2024-05-31",142.92,null,"2024-06-12"],["2024-06-30",143.38,null,"2024-07-09"],["2024-07-31",143.67,null,"2024-08-09"],["2024-08-31",143.67,null,"2024-09-07"],["2024-09-30",144.02,null,"2024-10-08"],["2024-10-31",143.83,null,"2024-11-09"],["2024-11-30",144.22,null,"2024-12-07"],["2024-12-31",144.88,null,"2025-01-10"],["2025-01-31",146.24,null,"2025-02-08"],["2025-02-28",147.9,null,"2025-03-08"],["2025-03-31",148.68,null,"2025-04-08"],["2025-04-30",149.66,null,"2025-05-09"],["2025-05-31",150.14,null,"2025-06-10"],["2025-06-30",150.3,null,"2025-07-08"],["2025-07-31",150.71,null,"2025-08-09"],["2025-08-31",150.99,null,"2025-09-06"],["2025-09-30",151.48,null,"2025-10-08"],["2025-10-31",151.76,null,"2025-11-11"],["2025-11-30",151.87,null,"2025-12-06"],["2025-12-31",152.27,null,"2026-01-09"],["2026-01-31",154.07,null,"2026-02-07"],["2026-02-28",155.73,null,"2026-03-07"],["2026-03-31",156.94,null,"2026-04-10"],["2026-04-30",158.17,null,"2026-05-09"],["2026-05-31",158.91,null,"2026-06-06"],["2026-06-30",159.53,null,"2026-07-08"],["2026-07-31",159.79,null,"2026-08-11"],["2026-08-31",160.42,null,"2026-09-08"],["2026-09-30",161.008092,null,null]],"exp":[["2026-09-01",0.0628565804066545],["2026-10-01",0.0639603026530318],["2026-11-01",0.0672384361006559],["2026-12-01",0.0690886608107744],["2027-01-01",0.0631744618332815],["2027-02-01",0.0581539653578764],["2027-03-01",0.0556305422125776],["2027-04-01",0.0526839791562481],["2027-05-01",0.0531135602764672],["2027-06-01",0.0535218630840171],["2027-07-01",0.0554705250874046],["2027-08-01",0.0551864518600482],["2027-09-01",0.0544556103939973],["2027-10-01",0.0542182238047346],["2027-11-01",0.0530402883254222],["2027-12-01",0.0512633255420607]],"frac":[["2024-10-29",0.08981050967714171],["2024-11-13",0.08783387838247009],["2024-11-28",0.08758534666110712],["2024-12-13",0.08665374883904103],["2024-12-28",0.08562224170747473],["2025-01-12",0.08379941516514794],["2025-01-27",0.08153846730199849],["2025-02-11",0.07981590734566296],["2025-02-26",0.07828098845123715],["2025-03-13",0.07676072200037648],["2025-03-28",0.07525472758486934],["2025-04-12",0.07553342295589299],["2025-04-27",0.07655956853930451],["2025-05-12",0.07614880806760421],["2025-05-27",0.0753350589801624],["2025-06-11",0.07452840529293997],["2025-06-26",0.07372872460304108],["2025-07-11",0.07376965545923081],["2025-07-26",0.07421734086827353],["2025-08-10",0.0739486598822911],["2025-08-25",0.07339629432827749],["2025-09-09",0.07284840217432759],["2025-09-24",0.07230491546303636],["2025-10-09",0.0731332583598045],["2025-10-24",0.07501129723529004],["2025-11-08",0.07569156832431506],["2025-11-23",0.07549465594295984],["2025-12-08",0.07529883313004809],["2025-12-23",0.07510409513539557],["2026-01-07",0.07491042877078108],["2026-01-22",0.07471782162676316],["2026-02-06",0.0745262701892781],["2026-02-21",0.07433576781363843],["2026-03-08",0.0741463006687319],["2026-03-23",0.07395785979986819],["2026-04-07",0.07467018073263482],["2026-04-22",0.07647888391335605],["2026-05-07",0.0774793376467095],["2026-05-22",0.07747493059408],["2026-06-06",0.07746968663560722],["2026-06-21",0.07746361314128908],["2026-07-06",0.0774567190849233],["2026-07-21",0.07744901506061413],["2026-08-05",0.07744050631361915],["2026-08-20",0.07743120249243635],["2026-09-04",0.07742111345711716],["2026-09-19",0.07741024367084876],["2026-10-04",0.07756274743554797],["2026-10-19",0.07817914469024462],["2026-11-03",0.07865138206451622],["2026-11-18",0.07867869733150851],["2026-12-03",0.07870481624754383],["2026-12-18",0.07872974998094978],["2027-01-02",0.0787535114525934],["2027-01-17",0.07877610956193987],["2027-02-01",0.0787975549502557],["2027-02-16",0.07881786000973484],["2027-03-03",0.07883703453073515],["2027-03-18",0.07885508711222616],["2027-04-02",0.07887203254281555],["2027-04-17",0.07888788298243238],["2027-05-02",0.0789026434952737],["2027-05-17",0.07891632531742893],["2027-06-01",0.07892893997904288],["2027-06-16",0.0789404978228902],["2027-07-01",0.07895100947354411],["2027-07-16",0.07896048433546582],["2027-07-31",0.07896893360308471],["2027-08-15",0.07897636723781915],["2027-08-30",0.0789827939563898],["2027-09-14",0.0789882242610011],["2027-09-29",0.07899266893734808],["2027-10-14",0.08001401539026926],["2027-10-29",0.08105490796364595],["2027-11-13",0.08109706177191928],["2027-11-28",0.08113777470288713],["2027-12-13",0.08117705714121864],["2027-12-28",0.08121492450181783],["2028-01-12",0.08125138789195713],["2028-01-27",0.08128646352618624],["2028-02-11",0.08132016325774621],["2028-02-26",0.08135249773875891],["2028-03-12",0.08138348272940682],["2028-03-27",0.0814131296069544],["2028-04-11",0.08144145493463778],["2028-04-26",0.0814684643614369],["2028-05-11",0.08149417033516254],["2028-05-26",0.08151859373819054],["2028-06-10",0.08154174128847774],["2028-06-25",0.08156362488842589],["2028-07-10",0.08158425842016775],["2028-07-25",0.081603654507099],["2028-08-09",0.08162182612659613],["2028-08-24",0.08163878163198518],["2028-09-08",0.08165453635373637],["2028-09-23",0.08166910096160013],["2028-10-08",0.08198905692434572],["2028-10-23",0.08258198278514456],["2028-11-07",0.08287473597022504],["2028-11-22",0.0828996640954664],["2028-12-07",0.08292326116920407],["2028-12-22",0.08294553590041293],["2029-01-06",0.08296650254083676],["2029-01-21",0.08298617047456375],["2029-02-05",0.08300455644369759],["2029-02-20",0.08302167575868186],["2029-03-07",0.08303752860721442],["2029-03-22",0.08305214322778148],["2029-04-06",0.08306552216316238],["2029-04-21",0.08307768234142138],["2029-05-06",0.08308863567906094],["2029-05-21",0.08309839284091275],["2029-06-05",0.08310697000011696],["2029-06-20",0.08311437496517676],["2029-07-05",0.08312062467430298],["2029-07-20",0.08312572038482585],["2029-08-04",0.0831296869694626],["2029-08-19",0.08313253168968199],["2029-09-03",0.0831342621893642],["2029-09-18",0.08313489538446323],["2029-10-03",0.08378388724732705],["2029-10-18",0.08704755369458222],["2029-11-02",0.08968999599102861],["2029-11-17",0.08974340756544258],["2029-12-02",0.08979485587428243],["2029-12-17",0.08984436761945819],["2030-01-01",0.08989196263586091],["2030-01-16",0.08993764836582802],["2030-01-31",0.08998145900514704],["2030-02-15",0.09002340688994209],["2030-03-02",0.09006351254158712],["2030-03-17",0.09010180083780867],["2030-04-01",0.09013827443592642],["2030-04-16",0.0901729671164681],["2030-05-01",0.09020589409399665],["2030-05-16",0.09023707324341629],["2030-05-31",0.09026652672621299],["2030-06-15",0.090294259931404],["2030-06-30",0.09032030794429996],["2030-07-15",0.09034468111830435],["2030-07-30",0.09036739627406337],["2030-08-14",0.09038847662516009],["2030-08-29",0.09040793019542143],["2030-09-13",0.09042578537880924],["2030-09-28",0.09044205320312887],["2030-10-13",0.09022954217431994],["2030-10-28",0.08997910110347312],["2030-11-12",0.08995281721899356],["2030-11-27",0.08995992982835105],["2030-12-12",0.08996560056711761],["2030-12-27",0.08996984894376275],["2031-01-11",0.08997268871307046],["2031-01-26",0.08997413423684847],["2031-02-10",0.08997420435416043],["2031-02-25",0.08997291650041145],["2031-03-12",0.08997028640487542],["2031-03-27",0.089966315679399],["2031-04-11",0.08996103777056635],["2031-04-26",0.08995446356684361],["2031-05-11",0.08994660234076818],["2031-05-26",0.0899374700071029],["2031-06-10",0.08992708734867122],["2031-06-25",0.08991546698203429],["2031-07-10",0.08990262208017213],["2031-07-25",0.08988856608233714],["2031-08-09",0.0898733129966946],["2031-08-24",0.08985688585956669],["2031-09-08",0.08983928426398297],["2031-09-23",0.08982053217389158],["2031-10-08",0.09038109281635037],["2031-10-23",0.09145175439459624],["2031-11-07",0.09194503035580442],["2031-11-22",0.09193006043088076],["2031-12-07",0.09191381462119391],["2031-12-22",0.09189631607032428],["2032-01-06",0.09187758183916589],["2032-01-21",0.0918576135040658],["2032-02-05",0.09183642895271266],["2032-02-20",0.09181406245276452],["2032-03-06",0.09179050779491099],["2032-03-21",0.09176578195194857],["2032-04-05",0.09173990922013558],["2032-04-20",0.09171290297973961],["2032-05-05",0.09168477229148081],["2032-05-20",0.091655526614073],["2032-06-04",0.09162519687318887],["2032-06-19",0.091593781611293],["2032-07-04",0.09156129387005446],["2032-07-19",0.09152776119511102],["2032-08-03",0.09149319279563212],["2032-08-18",0.09145759572228979],["2032-09-02",0.0914209821917144],["2032-09-17",0.09138337922241341],["2032-10-02",0.0915753827051557],["2032-10-17",0.09269048738356961],["2032-11-01",0.09357674565343505],["2032-11-16",0.09354048493444228],["2032-12-01",0.09350313487684087],["2032-12-16",0.0934647052816841],["2032-12-31",0.09342521115727859],["2033-01-15",0.09338466303685194],["2033-01-30",0.0933430867906701],["2033-02-14",0.0933004938232504],["2033-03-01",0.09325689341269644],["2033-03-16",0.09321230018678456],["2033-03-31",0.09316672155466538],["2033-04-15",0.09312018056655663],["2033-04-30",0.09307269563458881],["2033-05-15",0.09302426767321709],["2033-05-30",0.09297491325163815],["2033-06-14",0.0929246389281792],["2033-06-29",0.09287347247404959],["2033-07-14",0.09282142379187736],["2033-07-29",0.09276849278661853],["2033-08-13",0.0927147030460182],["2033-08-28",0.09266006290281087],["2033-09-12",0.09260458090258211],["2033-09-27",0.09254827658803005],["2033-10-12",0.09456738985049323],["2033-10-27",0.09734358093921308],["2033-11-11",0.09804500865944771],["2033-11-26",0.09799048153252737],["2033-12-11",0.09793488779759979],["2033-12-26",0.09787824503163417],["2034-01-10",0.09782056855533788],["2034-01-25",0.09776187414799548],["2034-02-09",0.09770217803006126],["2034-02-24",0.09764148852376348],["2034-03-11",0.09757982826825934],["2034-03-26",0.09751721196828494],["2034-04-10",0.09745364638763782],["2034-04-25",0.09738915546872334],["2034-05-10",0.09732374668013527],["2034-05-25",0.09725743923992475],["2034-06-09",0.09719024413956084],["2034-06-24",0.0971221728323059],["2034-07-09",0.09705324853343228],["2034-07-24",0.0969834718639419],["2034-08-08",0.09691286397071369],["2034-08-23",0.09684144057016514],["2034-09-07",0.09676920611441492],["2034-09-22",0.09669617993353125],["2034-10-07",0.09631360074573209],["2034-10-22",0.09557738621290163],["2034-11-06",0.09514920877402883],["2034-11-21",0.09507319299642297],["2034-12-06",0.09499650142543853],["2034-12-21",0.09491914696285914],["2035-01-05",0.09484113068956418],["2035-01-20",0.09476246596587984],["2035-02-04",0.09468317252526631],["2035-02-19",0.09460325826328514],["2035-03-06",0.09452272509825516],["2035-03-21",0.09444158743273817],["2035-04-05",0.09435986303685023],["2035-04-20",0.09427755760559847],["2035-05-05",0.09419468638465162],["2035-05-20",0.09411124599620763],["2035-06-04",0.09402724578005411],["2035-06-19",0.09394271099677937],["2035-07-04",0.09385764838976257],["2035-07-19",0.09377206481893768],["2035-08-03",0.09368596088245823],["2035-08-18",0.09359935010594217],["2035-09-02",0.09351224947730458],["2035-09-17",0.09342466334770488],["2035-10-02",0.09333660596458099],["2035-10-17",0.09324807540460206],["2035-11-01",0.09315907640178395],["2035-11-16",0.09306963677207353],["2035-12-01",0.09297975837744271],["2035-12-16",0.09288943982366543],["2035-12-31",0.09279869635978105],["2036-01-15",0.092707540136931],["2036-01-30",0.09261597345398037],["2036-02-14",0.09252400878915562],["2036-02-29",0.09243164861120995],["2036-03-15",0.09233890231745029],["2036-03-30",0.09224577935806394],["2036-04-14",0.09215228601244657],["2036-04-29",0.09205843891565951],["2036-05-14",0.09196423079638855],["2036-05-29",0.09186967164332088],["2036-06-13",0.091774781977143],["2036-06-28",0.09167956171764174],["2036-07-13",0.09158400723914134],["2036-07-28",0.09148813247511217],["2036-08-12",0.09139195152416452],["2036-08-27",0.0912954645442014],["2036-09-11",0.09119868951420645],["2036-09-26",0.0911016159530677],["2036-10-11",0.09269544424874393],["2036-10-26",0.0949020752377216],["2036-11-10",0.0954143813690122],["2036-11-25",0.09531083578783889],["2036-12-10",0.09520692838242034],["2036-12-25",0.09510267889989116],["2037-01-09",0.0949980999922641],["2037-01-24",0.09489318606384461],["2037-02-08",0.09478794622781223],["2037-02-23",0.09468239341965429],["2037-03-10",0.09457653330313359],["2037-03-25",0.09447037536517072],["2037-04-09",0.0943639216412015],["2037-04-24",0.09425718178814385],["2037-05-09",0.0941501693312054],["2037-05-24",0.0940428865761524],["2037-06-08",0.09393533579202845],["2037-06-23",0.09382752696015068],["2037-07-08",0.0937194623961281],["2037-07-23",0.09361116392174779],["2037-08-07",0.09350263403684472],["2037-08-22",0.09339386368519914],["2037-09-06",0.093284870927071],["2037-09-21",0.09317566232772062],["2037-10-06",0.0930662444737726],["2037-10-21",0.09295662005112909],["2037-11-05",0.09284679170314497],["2037-11-20",0.09273677410807085],["2037-12-05",0.0926265740264482],["2037-12-20",0.09251618622213215],["2038-01-04",0.09240562147636261],["2038-01-19",0.09229488660350466],["2038-02-03",0.0921839925937244],["2038-02-18",0.09207294229483981],["2038-03-05",0.09196173860254259],["2038-03-20",0.09185038429880205],["2038-04-04",0.09173888221168397],["2038-04-19",0.09162724758102975],["2038-05-04",0.09151548330932296],["2038-05-19",0.0914035922787701],["2038-06-03",0.09129157731760479],["2038-06-18",0.09117944123157468],["2038-07-03",0.09106719954372927],["2038-07-18",0.09095485085281879],["2038-08-02",0.09084239373277864],["2038-08-17",0.09072983514797656],["2038-09-01",0.09061719081614633],["2038-09-16",0.09050446353781044],["2038-10-01",0.0903916431457818],["2038-10-16",0.09027874532118613],["2038-10-31",0.09016577716613167],["2038-11-15",0.09005273262802799],["2038-11-30",0.08993961872745654],["2038-12-15",0.08982644245064225],["2038-12-30",0.08971321088396461],["2039-01-14",0.08959992660207078],["2039-01-29",0.08948658771778767],["2039-02-13",0.08937320566491586],["2039-02-28",0.08925977390025469],["2039-03-15",0.08914630388006944],["2039-03-30",0.08903281161467852],["2039-04-14",0.0889192813647734],["2039-04-29",0.08880571998292058],["2039-05-14",0.08869213424154004],["2039-05-29",0.08857853104024066],["2039-06-13",0.08846491254813532],["2039-06-28",0.08835127165870865],["2039-07-13",0.08823762435309973],["2039-07-28",0.0881239774045785],["2039-08-12",0.08801032348397836],["2039-08-27",0.08789666450559203],["2039-09-11",0.0877830117664335],["2039-09-26",0.0876693575970377],["2039-10-11",0.08663242294066315],["2039-10-26",0.08513619799400857],["2039-11-10",0.08456584800981254],["2039-11-25",0.08445753671353134],["2039-12-10",0.08434927449595925],["2039-12-25",0.08424103724842652],["2040-01-09",0.08413284432736962],["2040-01-24",0.0840247004859464],["2040-02-08",0.08391660078428703],["2040-02-23",0.08380854489782447],["2040-03-09",0.08370053748518685],["2040-03-24",0.08359258802844266],["2040-04-08",0.08348469120916086],["2040-04-23",0.0833768514755992],["2040-05-08",0.08326906825813868],["2040-05-23",0.08316134591225527],["2040-06-07",0.08305368370211624],["2040-06-22",0.08294609097419187],["2040-07-07",0.0828385668756097],["2040-07-22",0.08273110540541534],["2040-08-06",0.08262371571148591],["2040-08-21",0.08251640186333148],["2040-09-05",0.08240915236781227],["2040-09-20",0.08230198666564664],["2040-10-05",0.08219489820244824],["2040-10-20",0.08208788046660181],["2040-11-04",0.08198095798557009],["2040-11-19",0.08187410833776049],["2040-12-04",0.08176734564616378],["2040-12-19",0.08166067342203792],["2041-01-03",0.08155408467499331],["2041-01-18",0.08144757738913583],["2041-02-02",0.08134117099712096],["2041-02-17",0.08123485806192438],["2041-03-04",0.081128625818986],["2041-03-19",0.08102249883189167],["2041-04-03",0.08091646408534853],["2041-04-18",0.08081053550127354],["2041-05-03",0.08070469969653743],["2041-05-18",0.08059896510452752],["2041-06-02",0.0804933344489504],["2041-06-17",0.08038780513937954],["2041-07-02",0.08028237974680102],["2041-07-17",0.08017706102045036],["2041-08-01",0.0800718514310445],["2041-08-16",0.0799667480189909],["2041-08-31",0.07986175872029072],["2041-09-15",0.07975687474746124],["2041-09-30",0.07965210961247798],["2041-10-15",0.07954745426439963],["2041-10-30",0.0794429108493015],["2041-11-14",0.07933848137815896],["2041-11-29",0.07923417362300839],["2041-12-14",0.07912998377224806],["2041-12-29",0.0790259079925017],["2042-01-13",0.07892195375678618],["2042-01-28",0.07881812284963668],["2042-02-12",0.07871441691362197],["2042-02-27",0.07861082588527996],["2042-03-14",0.07850735703788864],["2042-03-29",0.07840401765602628],["2042-04-13",0.0783008032366363],["2042-04-28",0.07819771506746992],["2042-05-13",0.07809476028513845],["2042-05-28",0.0779919221602427],["2042-06-12",0.07788921964311196],["2042-06-27",0.07778664765653559],["2042-07-12",0.07768420120896241],["2042-07-27",0.07758189304880808],["2042-08-11",0.077479718013373],["2042-08-26",0.07737767062188933],["2042-09-10",0.07727575147419724],["2042-09-25",0.07717397934634945],["2042-10-10",0.07707233638227734],["2042-10-25",0.07697082907983915],["2042-11-09",0.07686946385424726],["2042-11-24",0.07676823480003353],["2042-12-09",0.07666713576446099],["2042-12-24",0.07656617925193515],["2043-01-08",0.07646536519858177],["2043-01-23",0.07636468731495188],["2043-02-07",0.07626415162244754],["2043-02-22",0.0761637579151801],["2043-03-09",0.07606350581440718],["2043-03-24",0.07596339493256948],["2043-04-08",0.07586343111243593],["2043-04-23",0.07576360741651861],["2043-05-08",0.0756639231354676],["2043-05-23",0.075564390400443],["2043-06-07",0.07546500194610711],["2043-06-22",0.07536575040994403],["2043-07-07",0.07526666077606453],["2043-07-22",0.0751677059332167],["2043-08-06",0.07506889128296773],["2043-08-21",0.07497024173894079],["2043-09-05",0.0748717298233505],["2043-09-20",0.07477336730931533],["2043-10-05",0.07467515933476271],["2043-10-20",0.07457709110778094],["2043-11-04",0.07447917427639655],["2043-11-19",0.0743814138299998],["2043-12-04",0.07428379459157369],["2043-12-19",0.07418632811931264],["2044-01-03",0.07408901920370198],["2044-01-18",0.07399185231652566],["2044-02-02",0.07389484570509935],["2044-02-17",0.07379798350871031],["2044-03-03",0.07370127719929392],["2044-03-18",0.07360473119646954],["2044-04-02",0.07350832253142897],["2044-04-17",0.07341207616031337],["2044-05-02",0.07331598260318056],["2044-05-17",0.07322003919944414],["2044-06-01",0.07312425708783138],["2044-06-16",0.07302861944901234],["2044-07-01",0.07293314440217852],["2044-07-16",0.07283782184354542],["2044-07-31",0.07274264167838002],["2044-08-15",0.0726476360140284],["2044-08-30",0.07255278041261753],["2044-09-14",0.07245807151784017],["2044-09-29",0.07236352725238099],["2044-10-14",0.08741337152190848],["2044-10-29",0.10475867245338794],["2044-11-13",0.10687946601962256],["2044-11-28",0.10666190724473917],["2044-12-13",0.10644505732144122],["2044-12-28",0.10622890578298655],["2045-01-12",0.10601345589653505],["2045-01-27",0.10579871065572138],["2045-02-11",0.10558466481018275],["2045-02-26",0.105371305156638],["2045-03-13",0.10515865520869155],["2045-03-28",0.10494668532856849],["2045-04-12",0.10473539534898396],["2045-04-27",0.10452481489882398],["2045-05-12",0.10431490459783216],["2045-05-27",0.1041056779079414],["2045-06-11",0.10389713990575217],["2045-06-26",0.10368927225269914],["2045-07-11",0.10348208670118136],["2045-07-26",0.1032755713000148],["2045-08-10",0.10306972904828576],["2045-08-25",0.10286455455345717],["2045-09-09",0.10266004979665094],["2045-09-24",0.10245620821389373],["2045-10-09",0.10225303877944153],["2045-10-24",0.10205052575372736],["2045-11-08",0.1018486609480988],["2045-11-23",0.10164746777200889],["2045-12-08",0.10144692891990331],["2045-12-23",0.1012470262230169],["2046-01-07",0.10104778189900404],["2046-01-22",0.10084919312705981],["2046-02-06",0.10065124018894916],["2046-02-21",0.10045393568971445],["2046-03-08",0.10025726692899489],["2046-03-23",0.10006123736569833],["2046-04-07",0.09986585843046253],["2046-04-22",0.09967109890872322],["2046-05-07",0.09947696926128596],["2046-05-22",0.09928347943471966],["2046-06-06",0.09909060499730898],["2046-06-21",0.09889836363739274],["2046-07-06",0.09870675558152303],["2046-07-21",0.09851575458321488],["2046-08-05",0.09832536842827494],["2046-08-20",0.0981356132841919],["2046-09-04",0.09794647003691942],["2046-09-19",0.0977579365145042],["2046-10-04",0.09757000107288455],["2046-10-19",0.09738267837236542],["2046-11-03",0.09719597373532401],["2046-11-18",0.0970098654527311],["2046-12-03",0.09682434887030705],["2046-12-18",0.09663943712123174],["2047-01-02",0.09645513390407995],["2047-01-17",0.09627140618720226],["2047-02-01",0.09608827497405897],["2047-02-16",0.09590574269491409],["2047-03-03",0.09572379312848195],["2047-03-18",0.09554243711616767],["2047-04-02",0.09536164799338603],["2047-04-17",0.0951814452161392],["2047-05-02",0.09500182911532778],["2047-05-17",0.0948227811203321],["2047-06-01",0.09464431010744384],["2047-06-16",0.0944664154261487],["2047-07-01",0.09428908632350147],["2047-07-16",0.09411232127933683],["2047-07-31",0.09393613746082646],["2047-08-15",0.09376051342277275],["2047-08-30",0.09358543666923808],["2047-09-14",0.09341092337340523],["2047-09-29",0.09323697980603679],["2047-10-14",0.09306358260465813],["2047-10-29",0.09289074713837792],["2047-11-13",0.09271845882269719],["2047-11-28",0.09254670272727633],["2047-12-13",0.09237551302646402],["2047-12-28",0.09220486408296263],["2048-01-12",0.09203474974510367],["2048-01-27",0.09186518341900335],["2048-02-11",0.09169615829874583],["2048-02-26",0.09152766704794363],["2048-03-12",0.09135970195288973],["2048-03-27",0.09119227531275115],["2048-04-11",0.09102538904153817],["2048-04-26",0.0908590137533491],["2048-05-11",0.09069316085450513],["2048-05-26",0.09052785186781115],["2048-06-10",0.09036305625142343],["2048-06-25",0.09019877412576299],["2048-07-10",0.09003502631333354],["2048-07-25",0.08987178079815589],["2048-08-09",0.0897090367357189],["2048-08-24",0.08954682473017378],["2048-09-08",0.08938512225454026],["2048-09-23",0.08922392762679315],["2048-10-08",0.08906322792840221],["2048-10-23",0.0889030315652461],["2048-11-07",0.08874334658055488],["2048-11-22",0.0885841592967282],["2048-12-07",0.08842546630314757],["2048-12-22",0.0882672749860593],["2049-01-06",0.08810958138999808],["2049-01-21",0.08795235925010964],["2049-02-05",0.08779564819975189],["2049-02-20",0.08763942120143792],["2049-03-07",0.08748366204017038],["2049-03-22",0.08732840979613637],["2049-04-06",0.08717363645559256],["2049-04-21",0.08701933594602579],["2049-05-06",0.08686551308533413],["2049-05-21",0.08671217261744285],["2049-06-05",0.08655930757712088],["2049-06-20",0.08640692225849861],["2049-07-05",0.08625499752230187],["2049-07-20",0.08610353707374546],["2049-08-04",0.0859525557399316],["2049-08-19",0.08580203365306222],["2049-09-03",0.08565197361013727],["2049-09-18",0.08550237831222013],["2049-10-03",0.08588122374757073],["2049-10-18",0.08770738731277422],["2049-11-02",0.08899795979144581],["2049-11-17",0.0888338181082084],["2049-12-02",0.08867022135940456],["2049-12-17",0.08850716430227873],["2050-01-01",0.08834465343370596],["2050-01-16",0.08818268287316616],["2050-01-31",0.08802124648415471],["2050-02-15",0.08786036202872477],["2050-03-02",0.08770001058665094],["2050-03-17",0.08754017269790498],["2050-04-01",0.08738086523259486],["2050-04-16",0.08722209266256481],["2050-05-01",0.08706384692186425],["2050-05-16",0.08690611948042587],["2050-05-31",0.08674890143208319],["2050-06-15",0.08659220856433553],["2050-06-30",0.0864360313924552],["2050-07-15",0.08628037281396977],["2050-07-30",0.08612522261397032],["2050-08-14",0.08597055760132516],["2050-08-29",0.08581641779913912],["2050-09-13",0.0856627793579911],["2050-09-28",0.08550963093475733],["2050-10-13",0.08535699927226709],["2050-10-28",0.08520485953493612],["2050-11-12",0.08505321229240742],["2050-11-27",0.08490204469329438],["2050-12-12",0.08475136984982562],["2050-12-27",0.08460120063911652],["2051-01-11",0.08445151045584115],["2051-01-26",0.08430228517228716],["2051-02-10",0.08415355023214172],["2051-02-25",0.08400530435255366],["2051-03-12",0.08385753285838987],["2051-03-27",0.08371023382322068],["2051-04-11",0.08356339173106025],["2051-04-26",0.08341704472380357],["2051-05-11",0.08327116324113376],["2051-05-26",0.08312571726818291],["2051-06-10",0.08298075807024435],["2051-06-25",0.08283626876981603],["2051-07-10",0.08269223221985683],["2051-07-25",0.0825486582453982],["2051-08-09",0.08240554287025542],["2051-08-24",0.08226286777889275],["2051-09-08",0.08212064230107113],["2051-09-23",0.08197887548193655],["2051-10-08",0.08183756246036417],["2051-10-23",0.08169668373047706],["2051-11-07",0.08155624791265698],["2051-11-22",0.08141627749222685],["2051-12-07",0.08127673821778497],["2051-12-22",0.08113762366028204],["2052-01-06",0.08099894149538617],["2052-01-21",0.08086069929270095],["2052-02-05",0.08072290461384707],["2052-02-20",0.08058553579839906],["2052-03-06",0.08044858538170935],["2052-03-21",0.08031207469797902],["2052-04-05",0.08017598124606312],["2052-04-20",0.08004031151996166],["2052-05-05",0.07990505698549327],["2052-05-20",0.07977022384462756],["2052-06-04",0.07963581797340552],["2052-06-19",0.07950181550763119],["2052-07-04",0.07936823687727695],["2052-07-19",0.07923508762622816],["2052-08-03",0.07910232793438826],["2052-08-18",0.07896996272522955],["2052-09-02",0.07883802700906134],["2052-09-17",0.07870649531482637],["2052-10-02",0.07857535693981926],["2052-10-17",0.07844461609987835],["2052-11-01",0.07831429238931381],["2052-11-16",0.0781843590522055],["2052-12-01",0.07805482002479941],["2052-12-16",0.07792567878470574],["2052-12-31",0.07779692344770023],["2053-01-15",0.07766857281445322],["2053-01-30",0.07754061459197409],["2053-02-14",0.07741303602031507],["2053-03-01",0.0772858399118958],["2053-03-16",0.07715902881536824],["2053-03-31",0.07703260532767636],["2053-04-15",0.07690655578777189],["2053-04-30",0.0767808984573563],["2053-05-15",0.07665561924010816],["2053-05-30",0.07653070408326584],["2053-06-14",0.07640617053484039],["2053-06-29",0.07628202035104298],["2053-07-14",0.07615823859687904],["2053-07-29",0.07603481026949627],["2053-08-13",0.07591176889967549],["2053-08-28",0.07578908271744605],["2053-09-12",0.07566676890867935],["2053-09-27",0.07554482801122248],["2053-10-12",0.07542324407459983],["2053-10-27",0.0753020172170395],["2053-11-11",0.07518113085109274],["2053-11-26",0.07506063503233523],["2053-12-11",0.07494049617030324],["2053-12-26",0.07482068037782102],["2054-01-10",0.07470123746218021],["2054-01-25",0.07458214999286245],["2054-02-09",0.07446341729548717],["2054-02-24",0.0743450212781584],["2054-03-11",0.07422697798557504],["2054-03-26",0.07410928604090777],["2054-04-10",0.07399192702669438],["2054-04-25",0.07387491643892868],["2054-05-10",0.07375825273073872],["2054-05-25",0.0736419340406162],["2054-06-09",0.07352594102453608],["2054-06-24",0.07341028890160434],["2054-07-09",0.07329497540546587],["2054-07-24",0.07318001583012673],["2054-08-08",0.07306537232956462],["2054-08-23",0.07295104216629195],["2054-09-07",0.07283705770830234],["2054-09-22",0.07272341622913941],["2054-10-07","#REF!"],["2054-10-22","#REF!"]],"uvr":[["2025-01-01",376.8091],["2025-01-02",376.8418],["2025-01-03",376.8746],["2025-01-04",376.9074],["2025-01-05",376.9402],["2025-01-06",376.973],["2025-01-07",377.0058],["2025-01-08",377.0385],["2025-01-09",377.0713],["2025-01-10",377.1041],["2025-01-11",377.1369],["2025-01-12",377.1698],["2025-01-13",377.2026],["2025-01-14",377.2354],["2025-01-15",377.2682],["2025-01-16",377.3241],["2025-01-17",377.3799],["2025-01-18",377.4358],["2025-01-19",377.4917],["2025-01-20",377.5476],["2025-01-21",377.6035],["2025-01-22",377.6594],["2025-01-23",377.7153],["2025-01-24",377.7712],["2025-01-25",377.8271],["2025-01-26",377.8831],["2025-01-27",377.939],["2025-01-28",377.995],["2025-01-29",378.051],["2025-01-30",378.1069],["2025-01-31",378.1629],["2025-02-01",378.2189],["2025-02-02",378.2749],["2025-02-03",378.3309],["2025-02-04",378.3869],["2025-02-05",378.4429],["2025-02-06",378.499],["2025-02-07",378.555],["2025-02-08",378.6111],["2025-02-09",378.6671],["2025-02-10",378.7232],["2025-02-11",378.7793],["2025-02-12",378.8353],["2025-02-13",378.8914],["2025-02-14",378.9475],["2025-02-15",379.0036],["2025-02-16",379.1303],["2025-02-17",379.257],["2025-02-18",379.3837],["2025-02-19",379.5105],["2025-02-20",379.6373],["2025-02-21",379.7642],["2025-02-22",379.8911],["2025-02-23",380.0181],["2025-02-24",380.1451],["2025-02-25",380.2721],["2025-02-26",380.3992],["2025-02-27",380.5264],["2025-02-28",380.6535],["2025-03-01",380.7808],["2025-03-02",380.908],["2025-03-03",381.0353],["2025-03-04",381.1627],["2025-03-05",381.29],["2025-03-06",381.4175],["2025-03-07",381.5449],["2025-03-08",381.6724],["2025-03-09",381.8],["2025-03-10",381.9276],["2025-03-11",382.0552],["2025-03-12",382.1829],["2025-03-13",382.3107],["2025-03-14",382.4384],["2025-03-15",382.5662],["2025-03-16",382.7061],["2025-03-17",382.8461],["2025-03-18",382.9861],["2025-03-19",383.1262],["2025-03-20",383.2663],["2025-03-21",383.4065],["2025-03-22",383.5467],["2025-03-23",383.687],["2025-03-24",383.8273],["2025-03-25",383.9677],["2025-03-26",384.1081],["2025-03-27",384.2486],["2025-03-28",384.3891],["2025-03-29",384.5297],["2025-03-30",384.6703],["2025-03-31",384.811],["2025-04-01",384.9517],["2025-04-02",385.0925],["2025-04-03",385.2334],["2025-04-04",385.3743],["2025-04-05",385.5152],["2025-04-06",385.6562],["2025-04-07",385.7972],["2025-04-08",385.9383],["2025-04-09",386.0795],["2025-04-10",386.2207],["2025-04-11",386.3619],["2025-04-12",386.5032],["2025-04-13",386.6446],["2025-04-14",386.786],["2025-04-15",386.9275],["2025-04-16",386.9944],["2025-04-17",387.0613],["2025-04-18",387.1282],["2025-04-19",387.1952],["2025-04-20",387.2621],["2025-04-21",387.3291],["2025-04-22",387.396],["2025-04-23",387.463],["2025-04-24",387.53],["2025-04-25",387.597],["2025-04-26",387.664],["2025-04-27",387.7311],["2025-04-28",387.7981],["2025-04-29",387.8651],["2025-04-30",387.9322],["2025-05-01",387.9993],["2025-05-02",388.0664],["2025-05-03",388.1335],["2025-05-04",388.2006],["2025-05-05",388.2677],["2025-05-06",388.3348],["2025-05-07",388.402],["2025-05-08",388.4691],["2025-05-09",388.5363],["2025-05-10",388.6035],["2025-05-11",388.6706],["2025-05-12",388.7379],["2025-05-13",388.8051],["2025-05-14",388.8723],["2025-05-15",388.9395],["2025-05-16",389.022],["2025-05-17",389.1046],["2025-05-18",389.1872],["2025-05-19",389.2698],["2025-05-20",389.3524],["2025-05-21",389.435],["2025-05-22",389.5177],["2025-05-23",389.6003],["2025-05-24",389.683],["2025-05-25",389.7657],["2025-05-26",389.8484],["2025-05-27",389.9312],["2025-05-28",390.0139],["2025-05-29",390.0967],["2025-05-30",390.1795],["2025-05-31",390.2623],["2025-06-01",390.3451],["2025-06-02",390.428],["2025-06-03",390.5108],["2025-06-04",390.5937],["2025-06-05",390.6766],["2025-06-06",390.7595],["2025-06-07",390.8424],["2025-06-08",390.9254],["2025-06-09",391.0083],["2025-06-10",391.0913],["2025-06-11",391.1743],["2025-06-12",391.2573],["2025-06-13",391.3404],["2025-06-14",391.4234],["2025-06-15",391.5065],["2025-06-16",391.5482],["2025-06-17",391.5899],["2025-06-18",391.6316],["2025-06-19",391.6733],["2025-06-20",391.715],["2025-06-21",391.7567],["2025-06-22",391.7985],["2025-06-23",391.8402],["2025-06-24",391.8819],["2025-06-25",391.9237],["2025-06-26",391.9654],["2025-06-27",392.0071],["2025-06-28",392.0489],["2025-06-29",392.0907],["2025-06-30",392.1324],["2025-07-01",392.1742],["2025-07-02",392.2159],["2025-07-03",392.2577],["2025-07-04",392.2995],["2025-07-05",392.3413],["2025-07-06",392.3831],["2025-07-07",392.4248],["2025-07-08",392.4666],["2025-07-09",392.5084],["2025-07-10",392.5502],["2025-07-11",392.592],["2025-07-12",392.6339],["2025-07-13",392.6757],["2025-07-14",392.7175],["2025-07-15",392.7593],["2025-07-16",392.772],["2025-07-17",392.7846],["2025-07-18",392.7973],["2025-07-19",392.81],["2025-07-20",392.8226],["2025-07-21",392.8353],["2025-07-22",392.848],["2025-07-23",392.8606],["2025-07-24",392.8733],["2025-07-25",392.886],["2025-07-26",392.8986],["2025-07-27",392.9113],["2025-07-28",392.924],["2025-07-29",392.9366],["2025-07-30",392.9493],["2025-07-31",392.962],["2025-08-01",392.9746],["2025-08-02",392.9873],["2025-08-03",393],["2025-08-04",393.0126],["2025-08-05",393.0253],["2025-08-06",393.038],["2025-08-07",393.0507],["2025-08-08",393.0633],["2025-08-09",393.076],["2025-08-10",393.0887],["2025-08-11",393.1014],["2025-08-12",393.114],["2025-08-13",393.1267],["2025-08-14",393.1394],["2025-08-15",393.1521],["2025-08-16",393.1876],["2025-08-17",393.223],["2025-08-18",393.2585],["2025-08-19",393.294],["2025-08-20",393.3294],["2025-08-21",393.3649],["2025-08-22",393.4004],["2025-08-23",393.4359],["2025-08-24",393.4714],["2025-08-25",393.5069],["2025-08-26",393.5424],["2025-08-27",393.5779],["2025-08-28",393.6134],["2025-08-29",393.6489],["2025-08-30",393.6844],["2025-08-31",393.7199],["2025-09-01",393.7554],["2025-09-02",393.7909],["2025-09-03",393.8264],["2025-09-04",393.862],["2025-09-05",393.8975],["2025-09-06",393.933],["2025-09-07",393.9685],["2025-09-08",394.0041],["2025-09-09",394.0396],["2025-09-10",394.0752],["2025-09-11",394.1107],["2025-09-12",394.1463],["2025-09-13",394.1818],["2025-09-14",394.2174],["2025-09-15",394.2529],["2025-09-16",394.2778],["2025-09-17",394.3028],["2025-09-18",394.3277],["2025-09-19",394.3527],["2025-09-20",394.3776],["2025-09-21",394.4026],["2025-09-22",394.4276],["2025-09-23",394.4525],["2025-09-24",394.4775],["2025-09-25",394.5024],["2025-09-26",394.5274],["2025-09-27",394.5524],["2025-09-28",394.5773],["2025-09-29",394.6023],["2025-09-30",394.6273],["2025-10-01",394.6522],["2025-10-02",394.6772],["2025-10-03",394.7022],["2025-10-04",394.7272],["2025-10-05",394.7521],["2025-10-06",394.7771],["2025-10-07",394.8021],["2025-10-08",394.8271],["2025-10-09",394.8521],["2025-10-10",394.877],["2025-10-11",394.902],["2025-10-12",394.927],["2025-10-13",394.952],["2025-10-14",394.977],["2025-10-15",395.002],["2025-10-16",395.0427],["2025-10-17",395.0834],["2025-10-18",395.1241],["2025-10-19",395.1649],["2025-10-20",395.2056],["2025-10-21",395.2463],["2025-10-22",395.2871],["2025-10-23",395.3278],["2025-10-24",395.3686],["2025-10-25",395.4093],["2025-10-26",395.4501],["2025-10-27",395.4908],["2025-10-28",395.5316],["2025-10-29",395.5723],["2025-10-30",395.6131],["2025-10-31",395.6539],["2025-11-01",395.6947],["2025-11-02",395.7354],["2025-11-03",395.7762],["2025-11-04",395.817],["2025-11-05",395.8578],["2025-11-06",395.8986],["2025-11-07",395.9394],["2025-11-08",395.9802],["2025-11-09",396.021],["2025-11-10",396.0619],["2025-11-11",396.1027],["2025-11-12",396.1435],["2025-11-13",396.1843],["2025-11-14",396.2252],["2025-11-15",396.266],["2025-11-16",396.2898],["2025-11-17",396.3135],["2025-11-18",396.3373],["2025-11-19",396.361],["2025-11-20",396.3848],["2025-11-21",396.4086],["2025-11-22",396.4323],["2025-11-23",396.4561],["2025-11-24",396.4798],["2025-11-25",396.5036],["2025-11-26",396.5274],["2025-11-27",396.5512],["2025-11-28",396.5749],["2025-11-29",396.5987],["2025-11-30",396.6225],["2025-12-01",396.6463],["2025-12-02",396.67],["2025-12-03",396.6938],["2025-12-04",396.7176],["2025-12-05",396.7414],["2025-12-06",396.7652],["2025-12-07",396.7889],["2025-12-08",396.8127],["2025-12-09",396.8365],["2025-12-10",396.8603],["2025-12-11",396.8841],["2025-12-12",396.9079],["2025-12-13",396.9317],["2025-12-14",396.9555],["2025-12-15",396.9793],["2025-12-16",396.9883],["2025-12-17",396.9972],["2025-12-18",397.0062],["2025-12-19",397.0151],["2025-12-20",397.0241],["2025-12-21",397.0331],["2025-12-22",397.042],["2025-12-23",397.051],["2025-12-24",397.06],["2025-12-25",397.0689],["2025-12-26",397.0779],["2025-12-27",397.0868],["2025-12-28",397.0958],["2025-12-29",397.1048],["2025-12-30",397.1137],["2025-12-31",397.1227],["2026-01-01",397.1317],["2026-01-02",397.1406],["2026-01-03",397.1496],["2026-01-04",397.1586],["2026-01-05",397.1675],["2026-01-06",397.1765],["2026-01-07",397.1855],["2026-01-08",397.1944],["2026-01-09",397.2034],["2026-01-10",397.2124],["2026-01-11",397.2213],["2026-01-12",397.2303],["2026-01-13",397.2393],["2026-01-14",397.2482],["2026-01-15",397.2572],["2026-01-16",397.2918],["2026-01-17",397.3263],["2026-01-18",397.3609],["2026-01-19",397.3954],["2026-01-20",397.43],["2026-01-21",397.4646],["2026-01-22",397.4991],["2026-01-23",397.5337],["2026-01-24",397.5683],["2026-01-25",397.6029],["2026-01-26",397.6375],["2026-01-27",397.6721],["2026-01-28",397.7066],["2026-01-29",397.7412],["2026-01-30",397.7758],["2026-01-31",397.8104],["2026-02-01",397.845],["2026-02-02",397.8796],["2026-02-03",397.9143],["2026-02-04",397.9489],["2026-02-05",397.9835],["2026-02-06",398.0181],["2026-02-07",398.0527],["2026-02-08",398.0873],["2026-02-09",398.122],["2026-02-10",398.1566],["2026-02-11",398.1912],["2026-02-12",398.2259],["2026-02-13",398.2605],["2026-02-14",398.2951],["2026-02-15",398.3298],["2026-02-16",398.4967],["2026-02-17",398.6637],["2026-02-18",398.8308],["2026-02-19",398.9979],["2026-02-20",399.1651],["2026-02-21",399.3324],["2026-02-22",399.4997],["2026-02-23",399.6671],["2026-02-24",399.8346],["2026-02-25",400.0021],["2026-02-26",400.1698],["2026-02-27",400.3375],["2026-02-28",400.5052],["2026-03-01",400.6731],["2026-03-02",400.841],["2026-03-03",401.0089],["2026-03-04",401.177],["2026-03-05",401.3451],["2026-03-06",401.5133],["2026-03-07",401.6815],["2026-03-08",401.8498],["2026-03-09",402.0182],["2026-03-10",402.1867],["2026-03-11",402.3552],["2026-03-12",402.5238],["2026-03-13",402.6925],["2026-03-14",402.8613],["2026-03-15",403.0301],["2026-03-16",403.1698],["2026-03-17",403.3095],["2026-03-18",403.4493],["2026-03-19",403.5891],["2026-03-20",403.729],["2026-03-21",403.8689],["2026-03-22",404.0089],["2026-03-23",404.1489],["2026-03-24",404.289],["2026-03-25",404.4291],["2026-03-26",404.5693],["2026-03-27",404.7095],["2026-03-28",404.8497],["2026-03-29",404.9901],["2026-03-30",405.1304],["2026-03-31",405.2708],["2026-04-01",405.4113],["2026-04-02",405.5518],["2026-04-03",405.6924],["2026-04-04",405.833],["2026-04-05",405.9736],["2026-04-06",406.1143],["2026-04-07",406.2551],["2026-04-08",406.3959],["2026-04-09",406.5367],["2026-04-10",406.6776],["2026-04-11",406.8186],["2026-04-12",406.9595],["2026-04-13",407.1006],["2026-04-14",407.2417],["2026-04-15",407.3828],["2026-04-16",407.4883],["2026-04-17",407.5939],["2026-04-18",407.6994],["2026-04-19",407.8051],["2026-04-20",407.9107],["2026-04-21",408.0163],["2026-04-22",408.122],["2026-04-23",408.2277],["2026-04-24",408.3335],["2026-04-25",408.4393],["2026-04-26",408.545],["2026-04-27",408.6509],["2026-04-28",408.7567],["2026-04-29",408.8626],["2026-04-30",408.9685],["2026-05-01",409.0744],["2026-05-02",409.1804],["2026-05-03",409.2864],["2026-05-04",409.3924],["2026-05-05",409.4984],["2026-05-06",409.6045],["2026-05-07",409.7106],["2026-05-08",409.8167],["2026-05-09",409.9229],["2026-05-10",410.0291],["2026-05-11",410.1353],["2026-05-12",410.2415],["2026-05-13",410.3478],["2026-05-14",410.4541],["2026-05-15",410.5604],["2026-05-16",410.6633],["2026-05-17",410.7663],["2026-05-18",410.8692],["2026-05-19",410.9722],["2026-05-20",411.0752],["2026-05-21",411.1783],["2026-05-22",411.2813],["2026-05-23",411.3844],["2026-05-24",411.4876],["2026-05-25",411.5907],["2026-05-26",411.6939],["2026-05-27",411.7971],["2026-05-28",411.9003],["2026-05-29",412.0036],["2026-05-30",412.1068],["2026-05-31",412.2101],["2026-06-01",412.3135],["2026-06-02",412.4168],["2026-06-03",412.5202],["2026-06-04",412.6236],["2026-06-05",412.727],["2026-06-06",412.8305],["2026-06-07",412.934],["2026-06-08",413.0375],["2026-06-09",413.141],["2026-06-10",413.2446],["2026-06-11",413.3482],["2026-06-12",413.4518],["2026-06-13",413.5554],["2026-06-14",413.6591],["2026-06-15",413.7628],["2026-06-16",413.8275],["2026-06-17",413.8922],["2026-06-18",413.9569],["2026-06-19",414.0216],["2026-06-20",414.0863],["2026-06-21",414.151],["2026-06-22",414.2157],["2026-06-23",414.2805],["2026-06-24",414.3452],["2026-06-25",414.41],["2026-06-26",414.4748],["2026-06-27",414.5396],["2026-06-28",414.6044],["2026-06-29",414.6692],["2026-06-30",414.734],["2026-07-01",414.7988],["2026-07-02",414.8637],["2026-07-03",414.9285],["2026-07-04",414.9934],["2026-07-05",415.0582],["2026-07-06",415.1231],["2026-07-07",415.188],["2026-07-08",415.2529],["2026-07-09",415.3178],["2026-07-10",415.3827],["2026-07-11",415.4477],["2026-07-12",415.5126],["2026-07-13",415.5776],["2026-07-14",415.6425],["2026-07-15",415.7075],["2026-07-16",415.7597],["2026-07-17",415.8119],["2026-07-18",415.8641],["2026-07-19",415.9163],["2026-07-20",415.9686],["2026-07-21",416.0208],["2026-07-22",416.073],["2026-07-23",416.1253],["2026-07-24",416.1775],["2026-07-25",416.2298],["2026-07-26",416.2821],["2026-07-27",416.3343],["2026-07-28",416.3866],["2026-07-29",416.4389],["2026-07-30",416.4912],["2026-07-31",416.5435],["2026-08-01",416.5958],["2026-08-02",416.6481],["2026-08-03",416.7004],["2026-08-04",416.7528],["2026-08-05",416.8051],["2026-08-06",416.8574],["2026-08-07",416.9098],["2026-08-08",416.9621],["2026-08-09",417.0145],["2026-08-10",417.0668],["2026-08-11",417.1192],["2026-08-12",417.1716],["2026-08-13",417.224],["2026-08-14",417.2764],["2026-08-15",417.3288],["2026-08-16",417.3517],["2026-08-17",417.3745],["2026-08-18",417.3974],["2026-08-19",417.4203],["2026-08-20",417.4431],["2026-08-21",417.466],["2026-08-22",417.4889],["2026-08-23",417.5118],["2026-08-24",417.5346],["2026-08-25",417.5575],["2026-08-26",417.5804],["2026-08-27",417.6033],["2026-08-28",417.6262],["2026-08-29",417.6491],["2026-08-30",417.6719],["2026-08-31",417.6948],["2026-09-01",417.7177],["2026-09-02",417.7406],["2026-09-03",417.7635],["2026-09-04",417.7864],["2026-09-05",417.8093],["2026-09-06",417.8322],["2026-09-07",417.8551],["2026-09-08",417.878],["2026-09-09",417.9009],["2026-09-10",417.9237],["2026-09-11",417.9466],["2026-09-12",417.9695],["2026-09-13",417.9925],["2026-09-14",418.0154],["2026-09-15",418.0383],["2026-09-16",418.0925],["2026-09-17",418.1468],["2026-09-18",418.201],["2026-09-19",418.2553],["2026-09-20",418.3096],["2026-09-21",418.3639],["2026-09-22",418.4181],["2026-09-23",418.4724],["2026-09-24",418.5267],["2026-09-25",418.581],["2026-09-26",418.6354],["2026-09-27",418.6897],["2026-09-28",418.744],["2026-09-29",418.7983],["2026-09-30",418.8527],["2026-10-01",418.907],["2026-10-02",418.9614],["2026-10-03",419.0157],["2026-10-04",419.0701],["2026-10-05",419.1245],["2026-10-06",419.1789],["2026-10-07",419.2333],["2026-10-08",419.2877],["2026-10-09",419.3421],["2026-10-10",419.3965],["2026-10-11",419.4509],["2026-10-12",419.5053],["2026-10-13",419.5598],["2026-10-14",419.6142],["2026-10-15",419.6686],["2026-10-16",419.7186],["2026-10-17",419.7686],["2026-10-18",419.8186],["2026-10-19",419.8686],["2026-10-20",419.9187],["2026-10-21",419.9687],["2026-10-22",420.0187],["2026-10-23",420.0688],["2026-10-24",420.1188],["2026-10-25",420.1689],["2026-10-26",420.2189],["2026-10-27",420.269],["2026-10-28",420.3191],["2026-10-29",420.3691],["2026-10-30",420.4192],["2026-10-31",420.4693],["2026-11-01",420.5194],["2026-11-02",420.5695],["2026-11-03",420.6196],["2026-11-04",420.6697],["2026-11-05",420.7199],["2026-11-06",420.77],["2026-11-07",420.8201],["2026-11-08",420.8702],["2026-11-09",420.9204],["2026-11-10",420.9705],["2026-11-11",421.0207],["2026-11-12",421.0709],["2026-11-13",421.121],["2026-11-14",421.1712],["2026-11-15",421.2214]]};</script>
+<script>
+(function(){
+const E=BondEngine; E.load(DATA);
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const nf=(d)=>new Intl.NumberFormat('es-CO',{minimumFractionDigits:d,maximumFractionDigits:d});
+const F={n:(x,d=3)=>x==null||!isFinite(x)?'—':nf(d).format(x), pct:(x,d=3)=>x==null||!isFinite(x)?'—':nf(d).format(x*100)+' %',
+  cop:x=>x==null||!isFinite(x)?'—':'$ '+nf(0).format(x), copM:x=>{if(x==null||!isFinite(x))return'—';const a=Math.abs(x);return (x<0?'−':'')+'$ '+(a>=1e12?nf(2).format(a/1e12)+' B':a>=1e9?nf(2).format(a/1e9)+' mil M':a>=1e6?nf(1).format(a/1e6)+' M':nf(0).format(a));},
+  bp:x=>x==null||!isFinite(x)?'—':(x>0?'+':'')+nf(1).format(x)+' pb', date:s=>{const [y,m,d]=s.split('-');return d+'·'+['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'][+m-1]+'·'+y}};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const store={get(k,d){try{const v=localStorage.getItem('cc_'+k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem('cc_'+k,JSON.stringify(v))}catch(e){}}};
+function toast(t){const el=$('#toast');el.textContent=t;el.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>el.hidden=true,2400)}
+const TODAY='2026-11-04';
+
+/* ---------------- Datos macro ---------------- */
+const MACRO={tpm:.1225,tpmFecha:'2026-10-30',tpmFuente:'BanRep vía BBVA Research',ipcSep:.0629,ipcFecha:'2026-09-30',ipcFuente:'DANE vía Noticias RCN',nucleo:.060,exp2y:.040};
+const ibrLast=DATA.ibr[DATA.ibr.length-1];
+const ipcV=DATA.ipcV, ipcLast=ipcV[ipcV.length-1];
+const uvrToday=E.uvrAt(E.toN(TODAY));
+const z=t=>E.spot(t);
+const tesSorted=DATA.tes.slice().sort((a,b)=>a[4]-b[4]);
+const tes2=tesSorted.find(r=>r[4]>=1.8)||tesSorted[0], tes10=tesSorted.slice().reverse().find(r=>r[4]<=10.5)||tesSorted[tesSorted.length-1];
+const realRate=(1+MACRO.tpm)/(1+ipcLast.annual)-1;
+
+/* ---------------- Guilloché ---------------- */
+function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim()}
+function guilloche(cv,opt){
+  const ctx=cv.getContext('2d'),W=cv.width,H=cv.height,cx=W/2,cy=H/2;ctx.clearRect(0,0,W,H);
+  ctx.strokeStyle=css('--engrave');ctx.lineWidth=opt.lw||1;
+  const R=opt.R*W/2;
+  for(let k=0;k<opt.lines;k++){
+    ctx.globalAlpha=opt.alpha;ctx.beginPath();
+    const ph=k/opt.lines*Math.PI*2/opt.n;
+    for(let i=0;i<=1440;i++){const th=i/1440*Math.PI*2;
+      const r=R*(1-opt.a)+R*opt.a*Math.sin(opt.n*th+ph)*Math.cos(opt.m*th-ph*2);
+      const x=cx+r*Math.cos(th),y=cy+r*Math.sin(th); i?ctx.lineTo(x,y):ctx.moveTo(x,y);}
+    ctx.stroke();
+  }
+  ctx.globalAlpha=1;
+}
+function drawOrnaments(){
+  guilloche($('#seal'),{R:.95,a:.32,n:9,m:2,lines:14,alpha:.7,lw:.8});
+  guilloche($('#guilloche'),{R:.92,a:.22,n:18,m:3,lines:46,alpha:.38,lw:1});
+}
+
+/* ---------------- Gráficos SVG ---------------- */
+function chart(el,o){
+  const W=Math.max(300,el.clientWidth||600),H=o.h||Math.round(Math.min(300,Math.max(210,W*.42)));
+  const P={l:o.pl||48,r:14,t:12,b:28};
+  const all=o.series.flatMap(s=>s.data);
+  if(o.bars){all.push(...o.bars.data.map(d=>[d[0],d[1]]),...o.bars.data.map(d=>[d[0],0]))}
+  let xs=all.map(d=>d[0]),ys=all.map(d=>d[1]);
+  if(o.band){ys.push(o.band[0],o.band[1])}
+  let x0=o.xmin??Math.min(...xs),x1=o.xmax??Math.max(...xs),y0=o.ymin??Math.min(...ys),y1=o.ymax??Math.max(...ys);
+  if(o.bars&&o.bars.cat){x0=-.5;x1=o.bars.data.length-.5}
+  const pad=(y1-y0)*.08||1;if(o.ymin==null)y0-=pad;if(o.ymax==null)y1+=pad;
+  const X=v=>P.l+(v-x0)/(x1-x0||1)*(W-P.l-P.r),Y=v=>H-P.b-(v-y0)/(y1-y0||1)*(H-P.t-P.b);
+  const nice=(a,b,n)=>{const st=Math.pow(10,Math.floor(Math.log10((b-a)/n)));const m=[1,2,2.5,5,10].find(m=>(b-a)/(st*m)<=n)*st;const out=[];for(let v=Math.ceil(a/m)*m;v<=b+1e-12;v+=m)out.push(+v.toFixed(10));return out};
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.label||'Gráfico')}">`;
+  if(o.band)s+=`<rect class="band" x="${P.l}" width="${W-P.l-P.r}" y="${Y(o.band[1])}" height="${Y(o.band[0])-Y(o.band[1])}"/>`;
+  nice(y0,y1,5).forEach(v=>{s+=`<line class="grid-l" x1="${P.l}" x2="${W-P.r}" y1="${Y(v)}" y2="${Y(v)}"/><text x="${P.l-6}" y="${Y(v)+3.5}" text-anchor="end">${o.yf(v)}</text>`});
+  if(y0<0&&y1>0)s+=`<line class="ax" x1="${P.l}" x2="${W-P.r}" y1="${Y(0)}" y2="${Y(0)}"/>`;
+  s+=`<line class="ax" x1="${P.l}" x2="${W-P.r}" y1="${H-P.b}" y2="${H-P.b}"/>`;
+  if(o.bars&&o.bars.cat){const bw=Math.max(3,(W-P.l-P.r)/o.bars.data.length*.62);const step=Math.ceil(o.bars.data.length/(W/70));
+    o.bars.data.forEach((d,i)=>{const v=d[1],y=Y(Math.max(0,v)),h=Math.abs(Y(v)-Y(0));s+=`<rect class="${d[2]||(v>=0?'bar-pos':'bar-neg')}" x="${X(i)-bw/2}" y="${y}" width="${bw}" height="${Math.max(1,h)}" rx="1.5" data-i="${i}"/>`;if(i%step===0)s+=`<text x="${X(i)}" y="${H-P.b+16}" text-anchor="middle">${esc(d[0])}</text>`});}
+  else{const xt=o.xticks?o.xticks(x0,x1):nice(x0,x1,Math.max(3,Math.floor(W/110)));xt.forEach(v=>{s+=`<text x="${X(v)}" y="${H-P.b+16}" text-anchor="middle">${o.xf(v)}</text>`})}
+  o.series.forEach(se=>{if(!se.data.length)return;const d=se.data.map((p,i)=>(i?'L':'M')+X(p[0]).toFixed(1)+' '+Y(p[1]).toFixed(1)).join('');
+    if(se.area)s+=`<path class="area-a" d="${d}L${X(se.data[se.data.length-1][0])} ${Y(Math.max(y0,0))}L${X(se.data[0][0])} ${Y(Math.max(y0,0))}Z"/>`;
+    if(!se.pointsOnly)s+=`<path class="${se.cls}" d="${d}"/>`;
+    if(se.points)se.data.forEach(p=>{s+=`<circle class="${se.points}" cx="${X(p[0])}" cy="${Y(p[1])}" r="${se.r||3.5}"/>`;if(p[2]&&se.labels)s+=`<text x="${X(p[0])+6}" y="${Y(p[1])-6}" style="fill:var(--ink-2)">${esc(p[2])}</text>`});
+    if(se.end){const p=se.data[se.data.length-1];s+=`<circle class="${se.end}" cx="${X(p[0])}" cy="${Y(p[1])}" r="4"/>`}});
+  s+=`<line id="xh" class="ax" y1="${P.t}" y2="${H-P.b}" x1="-10" x2="-10" style="stroke:var(--ink-3)"/></svg><div class="tip" hidden></div>`;
+  el.innerHTML=s;
+  const svg=el.querySelector('svg'),tip=el.querySelector('.tip'),xh=el.querySelector('#xh');
+  if(!o.tip)return;
+  svg.addEventListener('pointermove',ev=>{const r=svg.getBoundingClientRect(),px=(ev.clientX-r.left)*W/r.width;
+    let xv=x0+(px-P.l)/(W-P.l-P.r)*(x1-x0);const h=o.tip(xv);if(!h){tip.hidden=true;return}
+    tip.innerHTML=h.html;tip.hidden=false;const xx=X(h.x);xh.setAttribute('x1',xx);xh.setAttribute('x2',xx);
+    tip.style.left=Math.min(r.width-70,Math.max(70,xx*r.width/W))+'px';tip.style.top=(Y(h.y)*r.height/H)+'px'});
+  svg.addEventListener('pointerleave',()=>{tip.hidden=true;xh.setAttribute('x1',-10);xh.setAttribute('x2',-10)});
+}
+const nearest=(arr,x)=>{let b=arr[0],d=Infinity;for(const p of arr){const dd=Math.abs(p[0]-x);if(dd<d){d=dd;b=p}}return b};
+const dX=n=>{const s=E.toS(n);return ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'][+s.slice(5,7)-1]+" '"+s.slice(2,4)};
+const pctAx=d=>v=>nf(d).format(v*100)+'%';
+
+/* ---------------- Cinta ---------------- */
+function tape(){
+  const items=[['TPM',F.pct(MACRO.tpm,2),''],['IPC 12M',F.pct(ipcLast.annual,2),ipcLast.annual>ipcV[ipcV.length-2].annual?'up':'dn'],['IBR ON',nf(3).format(ibrLast[1])+'%',''],['IBR 3M',nf(3).format(ibrLast[3])+'%',''],['IBR 12M',nf(3).format(ibrLast[5])+'%',''],['UVR',nf(4).format(uvrToday.v),'up'],
+    ...tesSorted.map(r=>['TES '+r[1].slice(2,4)+'/'+r[1].slice(5,7),F.pct(r[3],3),'']),['TASA REAL',F.pct(realRate,2),'']];
+  const h=items.map(i=>`<span><b>${i[0]}</b><em class="${i[2]}" style="font-style:normal">${i[1]}</em></span>`).join('');
+  $('#tape').innerHTML=h+h;
+}
+
+/* ---------------- Mercado ---------------- */
+function renderMercado(){
+  $('#h-tpm').innerHTML=nf(2).format(MACRO.tpm*100)+'<small>%</small>';
+  $('#h-lede').textContent=`Inflación anual ${F.pct(ipcLast.annual,2)} a ${F.date(ipcLast[0])} (DANE). Tasa real ex post ${F.pct(realRate,2)}. Pendiente TES ${tes2[1].slice(0,4)}–${tes10[1].slice(0,4)}: ${F.bp((tes10[3]-tes2[3])*1e4)}.`;
+  const prev=ipcV[ipcV.length-2].annual;
+  const k=[
+    ['Tasa de política',F.pct(MACRO.tpm,2),'BanRep · '+F.date(MACRO.tpmFecha),''],
+    ['Inflación 12 meses',F.pct(ipcLast.annual,2),'DANE · '+ipcLast[0].slice(0,7),ipcLast.annual>prev?`<span class="chip neg">▲ ${F.bp((ipcLast.annual-prev)*1e4)}</span>`:`<span class="chip pos">▼ ${F.bp((ipcLast.annual-prev)*1e4)}</span>`],
+    ['Inflación núcleo',F.pct(MACRO.nucleo,1),'sin alimentos ni regulados',''],
+    ['Tasa real ex post',F.pct(realRate,2),'(1+TPM)/(1+IPC)−1',''],
+    ['IBR overnight',nf(3).format(ibrLast[1])+' %','N.A. · '+F.date(ibrLast[0]),''],
+    ['IBR 3 meses',nf(3).format(ibrLast[3])+' %','N.A. · '+F.date(ibrLast[0]),''],
+    ['UVR hoy',nf(4).format(uvrToday.v),'$/UVR · '+F.date(uvrToday.f),''],
+    ['TES '+tes10[1].slice(0,4),F.pct(tes10[3],3),'TIR E.A. · curva '+F.date(DATA.curveDate),''],
+  ];
+  $('#kpis').innerHTML=k.map(x=>`<div class="kpi"><span class="l">${x[0]}</span><span class="v">${x[1]}</span><span class="s">${x[2]}</span>${x[3]?'<span>'+x[3]+'</span>':''}</div>`).join('');
+  $('#src-ipc').textContent='DANE · índice base dic-2018';$('#src-ibr').textContent='BanRep · hasta '+F.date(ibrLast[0]);$('#src-uvr').textContent='BanRep · hasta '+F.date(DATA.uvr[DATA.uvr.length-1][0]);
+  const ipcS=ipcV.filter(r=>r[0]>='2022-01-01').map(r=>[r._n,r.annual]);
+  const expS=DATA.exp.map(r=>[r._n,r[1]]);
+  chart($('#c-ipc'),{series:[{data:ipcS,cls:'s-a',area:true,end:'pt-a'},{data:expS,cls:'s-b'}],band:[.02,.04],ymin:0,yf:pctAx(0),xf:dX,label:'Inflación anual',
+    tip:x=>{const p=nearest(ipcS.concat(expS),x);const isE=expS.includes(p);return{x:p[0],y:p[1],html:`${E.toS(p[0]).slice(0,7)}<br>${isE?'Expectativa':'IPC 12m'} ${F.pct(p[1],2)}`}}});
+  const ib=DATA.ibr.filter((r,i)=>i%3===0||i===DATA.ibr.length-1);
+  const s1=ib.map(r=>[r._n,r[1]/100]),s3=ib.map(r=>[r._n,r[3]/100]),s12=ib.map(r=>[r._n,r[5]/100]);
+  chart($('#c-ibr'),{series:[{data:s1,cls:'s-a',end:'pt-a'},{data:s3,cls:'s-b'},{data:s12,cls:'s-c'}],yf:pctAx(1),xf:dX,label:'IBR',
+    tip:x=>{const i=ib.indexOf(ib.reduce((b,r)=>Math.abs(r._n-x)<Math.abs(b._n-x)?r:b));const r=ib[i];return{x:r._n,y:r[1]/100,html:`${F.date(r[0])}<br>ON ${nf(3).format(r[1])}% · 3M ${nf(3).format(r[3])}% · 12M ${nf(3).format(r[5])}%`}}});
+  const uv=DATA.uvr.filter((r,i)=>i%4===0).map(r=>[r._n,r[1]]);
+  chart($('#c-uvr'),{series:[{data:uv,cls:'s-a',area:true,end:'pt-a'}],yf:v=>nf(0).format(v),xf:dX,label:'UVR',pl:44,
+    tip:x=>{const p=nearest(uv,x);return{x:p[0],y:p[1],html:`${E.toS(p[0])}<br>${nf(4).format(p[1])} $/UVR`}}});
+  miniCurve($('#c-mini-curve'));
+}
+function curveSeries(){
+  const zs=DATA.zero.map(r=>[r[0],r[1]]);
+  const mk=tesSorted.map(r=>[r[4],r[3],r[0].replace('TES TF ','')]);
+  const fw=[];for(let t=1;t<=Math.max(...zs.map(r=>r[0]));t+=.5){const a=z(t-1),b=z(t);fw.push([t,Math.pow(1+b,t)/Math.pow(1+a,t-1)-1])}
+  return{zs,mk,fw};
+}
+function miniCurve(el){const {zs,mk}=curveSeries();chart(el,{series:[{data:zs,cls:'s-a'},{data:mk,cls:'s-a',pointsOnly:true,points:'pt-b'}],yf:pctAx(1),xf:v=>v+'a',label:'Curva TES',
+  tip:x=>{const p=nearest(mk,x);return{x:p[0],y:p[1],html:`${p[2]}<br>${nf(2).format(p[0])} años · ${F.pct(p[1],3)}`}}})}
+
+/* ---------------- Calculadora ---------------- */
+const DEFAULTS={
+  TF:{tipo:'TF',nombre:'TES TF ejemplo 2031',nominal:1e10,emision:'2026-10-20',vencimiento:'2031-10-20',cupon:13.85,frecuencia:'Trimestral',base:'365/365',valoracion:TODAY,tasaCompra:13.6,tasaVenta:11.5,corrido:'Lineal'},
+  IBR:{tipo:'IBR',nombre:'Bono IBR+1,80 2028',nominal:5e9,emision:'2025-09-15',vencimiento:'2028-09-15',spread:1.8,frecuencia:'Trimestral',base:'30/360',valoracion:TODAY,spreadCompra:1.7,spreadVenta:1.9,metodologia:'IBR vigente',descuento:'TIR con IBR promedio',precioDado:''},
+  IPC:{tipo:'IPC',nombre:'Bono IPC+7,98 2036',nominal:1e10,emision:'2026-10-20',vencimiento:'2036-10-20',spread:7.98,frecuencia:'Trimestral',base:'365/365',valoracion:TODAY,spreadCompra:7.5,spreadVenta:6,modalidad:'Inicio (Previo)',proyeccion:'IPC vigente',corrido:'Lineal'},
+  UVR:{tipo:'UVR',nombre:'TES UVR 2029',nominal:1e10,emision:'2025-04-18',vencimiento:'2029-04-18',cupon:2.25,frecuencia:'Anual',base:'365/365',valoracion:TODAY,tasaCompra:5.11,tasaVenta:5.21,corrido:'Lineal',proyeccion:'IPC vigente'}
+};
+const PCT_KEYS=['cupon','tasaCompra','tasaVenta','spread','spreadCompra','spreadVenta'];
+const OPTS={frecuencia:['Mensual','Bimestral','Trimestral','Semestral','Anual'],base:['365/365','Real/365','30/360','Real/360'],corrido:['Lineal','Compuesto'],metodologia:['IBR vigente','Curva FRAC'],descuento:['TIR con IBR promedio','Encadenado por periodo'],modalidad:['Inicio (Previo)','Final (Actual)'],proyeccion:['IPC vigente','Expectativas']};
+const LAYOUT={
+  common1:[['nombre','Nombre del título','text','w'],['nominal','Valor nominal','num','w'],['emision','Emisión','date'],['vencimiento','Vencimiento','date'],['frecuencia','Frecuencia del cupón','sel'],['base','Base de intereses','sel']],
+  TF:{faciales:[['cupon','Cupón facial','pct','w','E.A.']],neg:[['tasaCompra','Tasa compra (offer)','pct','','E.A.'],['tasaVenta','Tasa venta (bid)','pct','','E.A.'],['corrido','Cupón corrido','sel','w']]},
+  IBR:{faciales:[['spread','Spread facial sobre IBR','pct','w','N.A.']],neg:[['spreadCompra','Spread compra','pct','','IBR+'],['spreadVenta','Spread venta','pct','','IBR+'],['metodologia','Proyección del IBR','sel'],['descuento','Método de descuento','sel'],['precioDado','Precio sucio dado (opcional)','num','w','%']]},
+  IPC:{faciales:[['spread','Spread facial sobre IPC','pct','w','E.A.']],neg:[['spreadCompra','Spread compra','pct','','IPC+'],['spreadVenta','Spread venta','pct','','IPC+'],['modalidad','Modalidad del IPC','sel'],['proyeccion','Proyección del IPC','sel'],['corrido','Cupón corrido','sel','w']]},
+  UVR:{faciales:[['cupon','Cupón facial real','pct','w','E.A.']],neg:[['tasaCompra','Tasa compra (offer)','pct','','real'],['tasaVenta','Tasa venta (bid)','pct','','real'],['proyeccion','Inflación para proyectar UVR','sel'],['corrido','Cupón corrido','sel']]}
+};
+let state=store.get('calc',null)||{type:'TF',inputs:JSON.parse(JSON.stringify(DEFAULTS))};
+let editingId=null;
+function field([k,lab,kind,w,unit]){
+  const v=state.inputs[state.type][k]??'';const id='in_'+k;
+  if(kind==='sel')return `<div class="f ${w||''}"><label for="${id}">${lab}</label><select id="${id}" data-k="${k}">${OPTS[k].map(o=>`<option${o===v?' selected':''}>${o}</option>`).join('')}</select></div>`;
+  const type=kind==='date'?'date':kind==='text'?'text':'number',step=kind==='pct'?'0.001':kind==='num'?'any':'';
+  return `<div class="f ${w||''}"><label for="${id}">${lab}</label><div class="u"><input id="${id}" data-k="${k}" type="${type}" ${step?'step="'+step+'"':''} value="${esc(v)}" inputmode="${kind==='text'?'text':'decimal'}">${unit||kind==='pct'?`<span>${unit?esc(unit):''}${kind==='pct'?' %':''}</span>`:''}</div></div>`;
+}
+function renderForm(){
+  const L=LAYOUT[state.type];
+  $('#form').innerHTML=`<fieldset><legend>1 · Datos faciales</legend>${LAYOUT.common1.map(field).join('')}${L.faciales.map(field).join('')}</fieldset><div class="perf"></div>
+  <fieldset><legend>2 · Negociación</legend>${field(['valoracion','Fecha de negociación / valoración','date','w'])}${L.neg.map(field).join('')}</fieldset>
+  <div class="sheet-foot"><button type="button" class="btn primary" id="addPf">${editingId?'Guardar cambios':'+ Agregar al portafolio'}</button><button type="button" class="btn ghost" id="resetEx">Restaurar ejemplo</button></div>`;
+  $$('#typeSeg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.type===state.type));
+  $('#form').oninput=e=>{const k=e.target.dataset.k;if(!k)return;state.inputs[state.type][k]=e.target.type==='number'?(e.target.value===''?'':+e.target.value):e.target.value;store.set('calc',state);clearTimeout(renderForm._t);renderForm._t=setTimeout(renderResults,120)};
+  $('#addPf').onclick=addToPortfolio;
+  $('#resetEx').onclick=()=>{state.inputs[state.type]=JSON.parse(JSON.stringify(DEFAULTS[state.type]));editingId=null;store.set('calc',state);renderForm();renderResults()};
+}
+function toEngine(inp){const b={...inp};PCT_KEYS.forEach(k=>{if(k in b)b[k]=(+b[k]||0)/100});b.nominal=+b.nominal||0;b.precioDado=+b.precioDado||0;return b}
+let lastCalc=null;
+function kv(rows,heads){return `<div class="kv">${heads?heads.map(h=>`<div class="h">${h}</div>`).join(''):''}${rows.map(r=>`<div class="lbl">${r[0]}</div><div class="n">${r[1]}</div><div class="n">${r[2]??''}</div>`).join('')}</div>`}
+function renderResults(){
+  const inp=state.inputs[state.type],b=toEngine(inp),o=E.price(b),R=$('#results');lastCalc={b,o};
+  if(o.error){R.innerHTML=`<div class="alert">${esc(o.error)}</div>`;return}
+  const t=b.tipo,fx=o.fx;
+  const head=[
+    ['Precio sucio',F.n(o.dirty,3)+' %','Compra · truncado a 3 dec.'],
+    ['Precio limpio',F.n(o.clean,3)+' %',o.cond],
+    ['TIR '+(t==='UVR'?'real':'E.A.'),F.pct(o.irr,3),t==='UVR'?'En pesos ≈ '+F.pct(o.tirPesos,2):'Nominal '+F.pct(o.nom,3)],
+    ['Duración mod.',F.n(o.mod,3),'Macaulay '+F.n(o.mac,3)+' años'],
+    ['DV01',F.copM(o.dv01),'por 1 pb de tasa'],
+  ];
+  const warn=[];if(o.aviso)warn.push(o.aviso);
+  if(t==='IBR'&&o.ibrStale)warn.push(`La fecha de valoración es posterior al último IBR cargado (${F.date(o.ibrFecha)}); se usa ese último dato publicado.`);
+  if(t==='IBR'&&o.fracStale)warn.push(`La curva FRAC cargada es del ${F.date(o.fracStart)}: actualízala para valorar en esta fecha.`);
+  if(t==='UVR'&&o.uvrExtrap)warn.push('La UVR de la fecha de valoración se extrapoló con el IPC vigente.');
+  let spec=[];
+  if(t==='TF')spec=[['Rendimiento corriente',F.pct(o.rendCorriente,3)],['Precio teórico con curva cero TES',F.n(o.pCurve,3)+' %'],['TIR equivalente al precio de curva',F.pct(o.irrCurve,3)],['Spread sobre curva TES',F.bp(o.spreadCurve)]];
+  if(t==='IPC')spec=[['IPC vigente ('+o.ipcMes.slice(0,7)+')',F.pct(o.ipcVig,3)],['Tasa de negociación (1+IPC)(1+s)−1',F.pct(o.tasaNeg,3),F.pct(o.tasaNegV,3)],['TIR real',F.pct(o.tirReal,3),F.pct(o.tirRealV,3)],['Tasa cupón periodo vigente',F.pct(o.tasaCupVig,3)]];
+  if(t==='IBR')spec=[[o.plazoIBR+' vigente ('+o.ibrFecha+')',F.pct(o.ibrVig,3)],['Tasa negociación IBR+spread (N.A.)',F.pct(o.tasaNeg,3),F.pct(o.tasaNegV,3)],['Equivalente E.A.',F.pct(o.tasaNegEA,3),F.pct(o.tasaNegEAV,3)],['IBR promedio proyectado',F.pct(o.ibrAvg,3)]];
+  if(t==='UVR')spec=[['UVR a la valoración ('+o.uvrFecha+')',F.n(o.uvr,4)],['TIR en pesos (UVR proyectada)',F.pct(o.tirPesos,3)],['Fisher (1+TIR)(1+IPC)−1',F.pct(o.fisher,3)],['Spread TIR UVR vs TES TF a su duración',F.bp(o.spreadUVR)],['Spread TIR pesos vs TES TF',F.bp(o.spreadPesos)]];
+  R.innerHTML=`
+  <div class="headline">${head.map(h=>`<div class="kpi"><span class="l">${h[0]}</span><span class="v">${h[1]}</span><span class="s">${h[2]}</span></div>`).join('')}</div>
+  ${warn.map(w=>`<div class="alert">${esc(w)}</div>`).join('')}
+  <div class="grid g2">
+    <div class="panel"><div class="panel-h"><h2>Valoración</h2><span class="src">${o.cupones} cupones · ${o.pendientes} pendientes · ${F.n(o.plazo,3)} años</span></div>
+      ${kv([['Tasa de negociación',F.pct(o.irr,3),F.pct(o.irrV,3)],['Precio sucio',F.n(o.dirty,3)+' %',F.n(o.dirtyV,3)+' %'],['Cupón corrido',F.n(o.accrued,4)+' %',F.n(o.accrued,4)+' %'],['Precio limpio',F.n(o.clean,3)+' %',F.n(o.cleanV,3)+' %'],['Valor de giro',F.cop(o.giro),F.cop(o.giroV)],['Cupón corrido $',F.cop(o.corridoCOP),''],['Condición',o.cond,o.condV],['Diferencia de giro venta − compra',F.cop(o.difGiro),'']],['','Compra','Venta'])}
+    </div>
+    <div class="panel"><div class="panel-h"><h2>Riesgo y rentabilidad</h2><span class="src">Último cupón ${F.date(o.ultimo)} · próximo ${F.date(o.proximo)}</span></div>
+      ${kv([['Duración Macaulay',F.n(o.mac,4)+' a',F.n(o.macDays,0)+' días'],['Duración modificada',F.n(o.mod,4),''],['Duración en pesos (pts por 100 pb)',F.n(o.durPesos,4),''],['Duración $ de la posición (100 pb)',F.copM(o.durPos),''],['DV01',F.cop(o.dv01),''],['Convexidad',F.n(o.conv,3),''],...spec])}
+    </div>
+  </div>
+  <div class="panel"><div class="panel-h"><h2>Sensibilidad precio–rendimiento</h2><span class="src">Real vs. aproximación por duración y por duración + convexidad</span></div>
+    <div class="chart" id="c-sens"></div><div class="legend"><span><i></i>Precio real</span><span><i class="c"></i>Solo D*</span><span><i class="b"></i>D* + convexidad</span></div>
+    <details style="margin-top:12px"><summary>Tabla de sensibilidad</summary><div class="tbl" style="margin-top:10px"><table><thead><tr><th>Δ tasa</th><th>Tasa</th><th>Precio real</th><th>Solo D*</th><th>D*+C</th><th>Error D*</th><th>Error D*+C</th><th>Δ valor posición</th></tr></thead><tbody>
+    ${o.sens.map(s=>`<tr class="${s.bp===0?'zero':''}"><td>${s.bp>0?'+':''}${s.bp} pb</td><td>${F.pct(s.r,3)}</td><td>${F.n(s.real,3)}</td><td>${F.n(s.eD,3)}</td><td>${F.n(s.eDC,3)}</td><td>${F.n(s.errD,4)}</td><td>${F.n(s.errDC,4)}</td><td style="color:var(--${s.dVal>=0?'pos':'neg'})">${F.copM(s.dVal)}</td></tr>`).join('')}</tbody></table></div></details>
+  </div>
+  <div class="grid g2">
+    <div class="panel"><div class="panel-h"><h2>Flujos pendientes</h2><span class="src">% del nominal · cupón y capital</span></div><div class="chart" id="c-flows"></div></div>
+    <div class="panel"><div class="panel-h"><h2>Simular venta antes del vencimiento</h2></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <div class="f"><label for="hvDate">Fecha de venta</label><input type="date" id="hvDate" value="${state.hv?.d||E.toS(E.edate(E.toN(b.valoracion),12))}"></div>
+        <div class="f"><label for="hvRate">Tasa de venta ${t==='IBR'?'(E.A. equivalente)':t==='UVR'?'(real E.A.)':'(E.A.)'}</label><div class="u"><input id="hvRate" type="number" step="0.01" value="${state.hv?.r??+(o.irr*100-1).toFixed(2)}"><span>%</span></div></div>
+      </div><div id="hvOut"></div></div>
+  </div>
+  <div class="panel"><details><summary>Cronograma de flujos (${o.rows.length} periodos)</summary><div class="tbl" style="margin-top:12px">${schedTable(o,t)}</div></details></div>`;
+  // sensibilidad
+  const sens=[];for(let bp=-300;bp<=300;bp+=10){const r=o.irr+bp/1e4,dy=bp/1e4;sens.push([bp,E.pvAt(o.flows,r),o.dirty*(1-o.mod*dy),o.dirty*(1-o.mod*dy+.5*o.conv*dy*dy)])}
+  chart($('#c-sens'),{series:[{data:sens.map(s=>[s[0],s[1]]),cls:'s-a'},{data:sens.map(s=>[s[0],s[2]]),cls:'s-c'},{data:sens.map(s=>[s[0],s[3]]),cls:'s-b'},{data:[[0,E.pvAt(o.flows,o.irr)]],cls:'s-a',pointsOnly:true,points:'pt-a',r:4.5}],
+    yf:v=>nf(0).format(v),xf:v=>(v>0?'+':'')+v,label:'Sensibilidad',xticks:()=>[-300,-200,-100,0,100,200,300],
+    tip:x=>{const s=nearest(sens,x);return{x:s[0],y:s[1],html:`${s[0]>0?'+':''}${s[0]} pb · TIR ${F.pct(o.irr+s[0]/1e4,2)}<br>Real ${F.n(s[1],3)} · D* ${F.n(s[2],3)} · D*+C ${F.n(s[3],3)}`}}});
+  const fut=o.rows.filter(r=>r.N>0);
+  const bars=fut.map(r=>[E.toS(r.pay).slice(2,7).replace('-','/'),r.L,r.last?'bar-b':'bar-pos']);
+  chart($('#c-flows'),{series:[],bars:{cat:true,data:bars},ymin:0,yf:v=>nf(0).format(v),label:'Flujos',
+    tip:x=>{const i=Math.round(x);const r=fut[i];if(!r)return null;return{x:i,y:r.L,html:`${F.date(E.toS(r.pay))}<br>Cupón ${F.n(r.K,4)}% · Flujo ${F.n(r.L,4)}%<br>${F.cop(r.L/100*b.nominal*fx)}`}}});
+  const hv=()=>{const d=$('#hvDate').value,r=+$('#hvRate').value/100;state.hv={d,r:+$('#hvRate').value};store.set('calc',state);const h=E.holding(b,o,d,r);
+    $('#hvOut').innerHTML=h.error?`<div class="alert">${esc(h.error)}</div>`:kv([['Precio sucio de venta',F.n(h.pVenta,3)+' %'],['Cupones recibidos',h.ncup+' · '+F.n(h.cupones,3)+' %'],['Días de tenencia',h.dias],['Retorno del periodo',F.pct(h.retorno,2)],['TIR de la inversión (E.A.)',`<b style="color:var(--${h.tir>=o.irr?'pos':'neg'})">${F.pct(h.tir,3)}</b>`],['Ganancia / pérdida',F.cop(h.gan)],['vs. TIR de compra',F.bp((h.tir-o.irr)*1e4)]])};
+  $('#hvDate').oninput=hv;$('#hvRate').oninput=hv;hv();
+}
+function schedTable(o,t){
+  const extra={TF:['Tasa cupón',r=>F.pct(r.tasa,3)],IBR:['IBR aplicado',r=>F.pct(r.H,3)+' <span class="src">'+r.fuente+'</span>'],IPC:['IPC aplicado',r=>F.pct(r.H,3)+' <span class="src">'+r.fuente+'</span>'],UVR:['UVR proyectada',r=>r.uvrP?F.n(r.uvrP,2):'—']}[t];
+  return `<table><thead><tr><th>#</th><th>Inicio</th><th>Pago</th><th>Días</th><th>Estado</th><th>${extra[0]}</th><th>Cupón %</th><th>CFt %</th><th>Flujo $</th><th>Días dcto</th><th>t</th><th>VP CF</th><th>t×VP</th></tr></thead><tbody>
+  ${o.rows.map(r=>`<tr class="${r.estado==='Pagado'?'paid':r.estado==='Vigente'?'curr':''}"><td>${r.i}</td><td>${E.toS(r.start)}</td><td>${E.toS(r.pay)}</td><td>${r.D}</td><td class="t">${r.estado}</td><td>${extra[1](r)}</td><td>${F.n(r.K,4)}</td><td>${F.n(r.L,4)}</td><td>${F.cop(r.COP*(t==='UVR'?1:1))}${t==='UVR'?' UVR':''}</td><td>${r.N}</td><td>${F.n(r.t,4)}</td><td>${F.n(r.vp,4)}</td><td>${F.n(r.t*r.vp,4)}</td></tr>`).join('')}</tbody></table>`;
+}
+
+/* ---------------- Portafolio ---------------- */
+const EX_PF=()=>[
+  {id:'p1',ejemplo:true,inputs:{...DEFAULTS.TF,nombre:'TES TF 2031 (ejemplo)',nominal:4e9}},
+  {id:'p2',ejemplo:true,inputs:{...DEFAULTS.IBR,nombre:'Bono IBR+1,80 2028 (ejemplo)',nominal:3e9}},
+  {id:'p3',ejemplo:true,inputs:{...DEFAULTS.IPC,nombre:'Bono IPC+7,98 2036 (ejemplo)',nominal:2e9}},
+  {id:'p4',ejemplo:true,inputs:{...DEFAULTS.UVR,nombre:'TES UVR 2029 (ejemplo)',nominal:5e6}},
+];
+let pf=store.get('pf',null)||EX_PF();
+let pfDate=store.get('pfDate',TODAY);
+function addToPortfolio(){
+  const inp=JSON.parse(JSON.stringify(state.inputs[state.type]));
+  const o=E.price(toEngine(inp));if(o.error){toast(o.error);return}
+  if(editingId){const p=pf.find(x=>x.id===editingId);if(p){p.inputs=inp;p.ejemplo=false}editingId=null;toast('Posición actualizada');}
+  else{pf.push({id:'p'+Date.now(),inputs:inp});toast('Agregado al portafolio: '+inp.nombre);}
+  store.set('pf',pf);renderForm();
+}
+function valuePf(){
+  return pf.map(p=>{const b=toEngine({...p.inputs,valoracion:pfDate});const o=E.price(b);return{p,b,o}}).filter(x=>!x.o.error);
+}
+const TYPE_LBL={TF:'Tasa fija',IBR:'IBR',IPC:'IPC',UVR:'UVR'};
+const TYPE_CLR={TF:'var(--engrave)',IBR:'var(--seal)',IPC:'var(--neg)',UVR:'var(--ink-3)'};
+function pfMetrics(V){
+  const mv=V.reduce((s,x)=>s+x.o.giro,0);
+  const w=x=>x.o.giro/mv;
+  const m={mv,n:V.length,ytm:V.reduce((s,x)=>s+w(x)*x.o.yieldCOP,0),mod:V.reduce((s,x)=>s+w(x)*x.o.mod,0),mac:V.reduce((s,x)=>s+w(x)*x.o.mac,0),conv:V.reduce((s,x)=>s+w(x)*x.o.conv,0),dv01:V.reduce((s,x)=>s+x.o.dv01,0)};
+  m.byType={};V.forEach(x=>{m.byType[x.b.tipo]=(m.byType[x.b.tipo]||0)+x.o.giro});
+  const shock=(fn)=>V.reduce((s,x)=>{const dy=fn(x.o.mac);const np=E.pvAt(x.o.flows,x.o.irr+dy);return s+(np-E.pvAt(x.o.flows,x.o.irr))/100*x.b.nominal*x.o.fx},0);
+  m.stress=[['−200 pb',shock(()=>-.02)],['−100 pb',shock(()=>-.01)],['−50 pb',shock(()=>-.005)],['+50 pb',shock(()=>.005)],['+100 pb',shock(()=>.01)],['+200 pb',shock(()=>.02)],['Empinamiento',shock(t=>(t-3)*.0015)],['Aplanamiento',shock(t=>-(t-3)*.0015)]];
+  const lad={};V.forEach(x=>x.o.cashCOP.forEach(c=>{const y=E.toS(c.n).slice(0,4);lad[y]=lad[y]||{TF:0,IBR:0,IPC:0,UVR:0};lad[y][x.b.tipo]+=c.cop}));
+  m.ladder=Object.keys(lad).sort().map(y=>[y,lad[y]]);
+  return m;
+}
+function renderPortfolio(){
+  $('#pfDate').value=pfDate;
+  const V=valuePf(),body=$('#pfBody');
+  if(!V.length){body.innerHTML=`<div class="panel empty"><h2 style="margin-bottom:6px">Tu portafolio está vacío</h2><p>Valora un título en la calculadora y pulsa «Agregar al portafolio».</p><p style="margin-top:14px"><a class="btn primary" href="#calculadora">Ir a la calculadora</a></p></div>`;return}
+  const m=pfMetrics(V);const types=Object.entries(m.byType);
+  const isEx=pf.some(p=>p.ejemplo);
+  const alerts=[];types.forEach(([k,v])=>{if(v/m.mv>.5)alerts.push(`Concentración: ${TYPE_LBL[k]} pesa ${F.pct(v/m.mv,1)} del portafolio.`)});
+  if(m.mod>5)alerts.push(`Duración modificada de ${F.n(m.mod,2)}: un alza de 100 pb restaría cerca de ${F.pct(m.mod/100,1)} del valor.`);
+  body.innerHTML=`
+  ${isEx?'<div class="notice"><span class="chip warn"><span class="dot"></span>Ejemplo</span><span>Posiciones de ejemplo con los títulos del Excel. Agrega las tuyas desde la calculadora o elimínalas aquí. Se guardan en este navegador.</span></div>':''}
+  <div class="kpis k3">
+    <div class="kpi"><span class="l">Valor de mercado</span><span class="v">${F.copM(m.mv)}</span><span class="s">${m.n} títulos · giro sucio</span></div>
+    <div class="kpi"><span class="l">TIR ponderada (pesos)</span><span class="v">${F.pct(m.ytm,2)}</span><span class="s">UVR convertida a pesos</span></div>
+    <div class="kpi"><span class="l">Duración modificada</span><span class="v">${F.n(m.mod,3)}</span><span class="s">Macaulay ${F.n(m.mac,2)} años</span></div>
+    <div class="kpi"><span class="l">DV01 total</span><span class="v">${F.copM(m.dv01)}</span><span class="s">por 1 pb paralelo</span></div>
+    <div class="kpi"><span class="l">Convexidad</span><span class="v">${F.n(m.conv,2)}</span><span class="s">ponderada por valor</span></div>
+    <div class="kpi"><span class="l">Spread vs. TES a su duración</span><span class="v">${F.bp((m.ytm-z(m.mac))*1e4)}</span><span class="s">TES cero ${F.pct(z(m.mac),2)}</span></div>
+  </div>
+  ${alerts.map(a=>`<div class="alert">${esc(a)}</div>`).join('')}
+  <div class="panel"><div class="panel-h"><h2>Posiciones</h2><span class="src">Valoradas al ${F.date(pfDate)} con su tasa de negociación</span></div>
+    <div class="tbl" style="max-height:none"><table><thead><tr><th>Título</th><th>Tipo</th><th>Nominal</th><th>Precio sucio</th><th>TIR</th><th>Peso</th><th>D. mod</th><th>DV01</th><th>Valor</th><th></th></tr></thead><tbody>
+    ${V.map(x=>`<tr class="pos-row"><td class="t">${esc(x.p.inputs.nombre)}</td><td><span class="tag">${x.b.tipo}</span></td><td>${F.copM(x.b.nominal)}${x.b.tipo==='UVR'?' UVR':''}</td><td>${F.n(x.o.dirty,3)}</td><td>${F.pct(x.o.irr,2)}${x.b.tipo==='UVR'?'<span class="src"> r</span>':''}</td><td>${F.pct(x.o.giro/m.mv,1)}</td><td>${F.n(x.o.mod,2)}</td><td>${F.copM(x.o.dv01)}</td><td>${F.copM(x.o.giro)}</td><td><button class="btn sm ghost" data-ed="${x.p.id}">Editar</button> <button class="btn sm ghost" data-rm="${x.p.id}" aria-label="Eliminar">✕</button></td></tr>`).join('')}
+    </tbody></table></div></div>
+  <div class="grid g2">
+    <div class="panel"><div class="panel-h"><h2>Composición por indexación</h2></div>
+      <div class="alloc">${types.map(([k,v])=>`<div style="flex:${v};background:${TYPE_CLR[k]}" title="${TYPE_LBL[k]}">${v/m.mv>.08?TYPE_LBL[k]+' '+nf(0).format(v/m.mv*100)+'%':''}</div>`).join('')}</div>
+      <div class="legend">${types.map(([k,v])=>`<span><i style="background:${TYPE_CLR[k]};height:8px"></i>${TYPE_LBL[k]} · ${F.pct(v/m.mv,1)}</span>`).join('')}</div>
+      <h3 style="margin:20px 0 8px">Escalera de flujos en pesos</h3><div class="chart" id="c-ladder"></div>
+    </div>
+    <div class="panel"><div class="panel-h"><h2>Pruebas de estrés de tasa</h2><span class="src">Revaloración completa · Δ valor</span></div><div class="chart" id="c-stress"></div>
+      <p class="src" style="margin-top:8px">Empinamiento: tasas cortas −, largas + (0,15 pb por cada año de duración frente a 3 años). Aplanamiento: lo contrario.</p></div>
+  </div>
+  <div class="panel"><div class="panel-h"><h2>Posiciones frente a la curva TES</h2><span class="src">Duración vs. TIR en pesos · encima de la curva = paga prima sobre el soberano</span></div><div class="chart" id="c-rv"></div></div>`;
+  body.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>{pf=pf.filter(p=>p.id!==b.dataset.rm);store.set('pf',pf);renderPortfolio();toast('Posición eliminada')});
+  body.querySelectorAll('[data-ed]').forEach(b=>b.onclick=()=>{const p=pf.find(x=>x.id===b.dataset.ed);state.type=p.inputs.tipo;state.inputs[state.type]=JSON.parse(JSON.stringify(p.inputs));editingId=p.id;store.set('calc',state);location.hash='calculadora'});
+  const ld=m.ladder.map(([y,v])=>[y,v.TF+v.IBR+v.IPC+v.UVR]);
+  chart($('#c-ladder'),{series:[],bars:{cat:true,data:ld.map(d=>[d[0],d[1]/1e9,'bar-pos'])},ymin:0,yf:v=>nf(1).format(v),label:'Escalera',h:200,
+    tip:x=>{const i=Math.round(x),r=m.ladder[i];if(!r)return null;return{x:i,y:ld[i][1]/1e9,html:`${r[0]} · ${F.copM(ld[i][1])}<br>${Object.entries(r[1]).filter(e=>e[1]).map(e=>TYPE_LBL[e[0]]+' '+F.copM(e[1])).join('<br>')}`}}});
+  chart($('#c-stress'),{series:[],bars:{cat:true,data:m.stress.map(s=>[s[0],s[1]/1e6])},yf:v=>nf(0).format(v)+'M',label:'Estrés',pl:56,
+    tip:x=>{const i=Math.round(x),s=m.stress[i];if(!s)return null;return{x:i,y:s[1]/1e6,html:`${s[0]}<br>${F.copM(s[1])} · ${F.pct(s[1]/m.mv,2)}`}}});
+  const {zs}=curveSeries();const pts=V.map(x=>[x.o.mac,x.o.yieldCOP,x.p.inputs.nombre.replace(' (ejemplo)','')]);
+  chart($('#c-rv'),{series:[{data:zs,cls:'s-a'},{data:pts,pointsOnly:true,points:'pt-b',labels:true,r:5}],xmin:0,yf:pctAx(0),xf:v=>v+'a',label:'Valor relativo',
+    tip:x=>{const p=nearest(pts,x);return{x:p[0],y:p[1],html:`${esc(p[2])}<br>Duración ${F.n(p[0],2)} · TIR ${F.pct(p[1],2)}<br>Spread ${F.bp((p[1]-z(p[0]))*1e4)}`}}});
+}
+
+/* ---------------- Curva ---------------- */
+function renderCurva(){
+  const {zs,mk,fw}=curveSeries();
+  const slope=(tes10[3]-tes2[3])*1e4;
+  const shape=slope>25?'Positiva (normal)':slope<-25?'Invertida':'Plana';
+  $('#curveBody').innerHTML=`
+  <div class="kpis">
+    <div class="kpi"><span class="l">Fecha de la curva</span><span class="v" style="font-size:20px">${F.date(DATA.curveDate)}</span><span class="s">TIR de cierre cargada</span></div>
+    <div class="kpi"><span class="l">Forma</span><span class="v" style="font-size:20px">${shape}</span><span class="s">pendiente ${F.bp(slope)}</span></div>
+    <div class="kpi"><span class="l">Spot 1 año</span><span class="v">${F.pct(z(1),2)}</span><span class="s">cero cupón E.A.</span></div>
+    <div class="kpi"><span class="l">Spot 10 años</span><span class="v">${F.pct(z(10),2)}</span><span class="s">cero cupón E.A.</span></div>
+    <div class="kpi"><span class="l">Prima vs. TPM</span><span class="v">${F.bp((z(10)-MACRO.tpm)*1e4)}</span><span class="s">spot 10a − tasa política</span></div>
+  </div>
+  <div class="panel"><div class="panel-h"><h2>Curva cero cupón, forwards y TIR de mercado</h2><span class="src">Bootstrapping de bonos par anuales (hoja Curva_Rendimiento)</span></div>
+    <div class="chart" id="c-curve"></div><div class="legend"><span><i></i>Spot cero cupón</span><span><i class="c"></i>Forward 1 año implícito</span><span><i class="b" style="height:8px;width:8px;border-radius:50%"></i>TES de mercado</span><span><i class="d"></i>Tasa de política</span></div></div>
+  <div class="grid g2">
+    <div class="panel"><div class="panel-h"><h2>Referencias TES</h2></div><div class="tbl"><table><thead><tr><th>Título</th><th>Vence</th><th>Cupón</th><th>TIR</th><th>Plazo</th><th>vs. spot</th></tr></thead><tbody>
+      ${tesSorted.map(r=>`<tr><td class="t">${r[0]}</td><td>${r[1]}</td><td>${F.pct(r[2],2)}</td><td>${F.pct(r[3],3)}</td><td>${F.n(r[4],2)}</td><td>${F.bp((r[3]-z(r[4]))*1e4)}</td></tr>`).join('')}</tbody></table></div></div>
+    <div class="panel"><div class="panel-h"><h2>Lectura de la curva</h2></div>
+      <div style="display:flex;flex-direction:column;gap:10px;color:var(--ink-2)">
+        <p>La curva arranca en ${F.pct(z(.25),2)} y llega a ${F.pct(zs[zs.length-1][1],2)} en ${zs[zs.length-1][0]} años. Con la tasa de política en ${F.pct(MACRO.tpm,2)}, el tramo corto de TES rinde ${F.bp((z(1)-MACRO.tpm)*1e4)} frente a la TPM: el mercado descuenta recortes futuros.</p>
+        <p>Los forwards implícitos muestran qué tasa a 1 año espera el mercado en cada punto. Si crees que las tasas bajarán más rápido que los forwards, alargar duración en tasa fija gana; si no, el carry de IBR e IPC compensa con menos riesgo.</p>
+        <p>Pide al <a href="#asesor">asesor IA</a> que contraste tu portafolio con esta curva.</p>
+      </div></div>
+  </div>`;
+  const pol=[[0,MACRO.tpm],[zs[zs.length-1][0],MACRO.tpm]];
+  chart($('#c-curve'),{series:[{data:zs,cls:'s-a',area:true},{data:fw,cls:'s-c'},{data:pol,cls:'s-d'},{data:mk,pointsOnly:true,points:'pt-b',r:4.5}],xmin:0,yf:pctAx(1),xf:v=>v+'a',label:'Curva TES',h:320,
+    tip:x=>{const zz=z(Math.max(.25,x));const f=nearest(fw,x);return{x:Math.max(.25,x),y:zz,html:`${F.n(Math.max(.25,x),2)} años<br>Spot ${F.pct(zz,3)} · Fwd ${F.pct(f[1],3)}`}}});
+}
+
+/* ---------------- Asesor IA ---------------- */
+let sampleP=null,history=[];
+function ctxSnapshot(){
+  const V=valuePf(),m=V.length?pfMetrics(V):null;
+  return {fecha_analisis:TODAY,
+    macro:{tasa_politica:MACRO.tpm,fecha_decision:MACRO.tpmFecha,inflacion_12m:ipcLast.annual,mes_inflacion:ipcLast[0],inflacion_nucleo:MACRO.nucleo,expectativa_inflacion_2a:MACRO.exp2y,tasa_real_ex_post:realRate,
+      ibr:{fecha:ibrLast[0],overnight:ibrLast[1]/100,m1:ibrLast[2]/100,m3:ibrLast[3]/100,m6:ibrLast[4]/100,m12:ibrLast[5]/100},uvr:uvrToday.v,
+      ipc_ultimos_12m:ipcV.slice(-12).map(r=>[r[0].slice(0,7),+r.annual.toFixed(4)]),expectativas_ipc:DATA.exp.slice(0,12).map(r=>[r[0].slice(0,7),+r[1].toFixed(4)])},
+    curva_tes:{fecha:DATA.curveDate,spot:[.5,1,2,3,5,7,10].map(t=>[t,+z(t).toFixed(4)]),referencias:tesSorted.map(r=>({titulo:r[0],tir:r[3],plazo:+r[4].toFixed(2)}))},
+    portafolio:m?{valor_mercado_cop:Math.round(m.mv),tir_ponderada_pesos:+m.ytm.toFixed(4),duracion_mod:+m.mod.toFixed(3),dv01_cop:Math.round(m.dv01),convexidad:+m.conv.toFixed(2),
+      composicion:Object.fromEntries(Object.entries(m.byType).map(([k,v])=>[k,+(v/m.mv).toFixed(3)])),estres_cop:Object.fromEntries(m.stress.map(s=>[s[0],Math.round(s[1])])),
+      posiciones:V.map(x=>({nombre:x.p.inputs.nombre,tipo:x.b.tipo,vencimiento:x.b.vencimiento,tir:+x.o.irr.toFixed(4),tir_pesos:+x.o.yieldCOP.toFixed(4),duracion_mod:+x.o.mod.toFixed(3),peso:+(x.o.giro/m.mv).toFixed(3),spread_vs_tes_pb:Math.round((x.o.yieldCOP-z(x.o.mac))*1e4)}))}:null};
+}
+const SYS=`Eres el asesor de una calculadora académica de renta fija colombiana (curso de portafolio de renta fija). Respondes en español de Colombia, con criterio de analista de mesa de dinero, claro y estructurado.
+Reglas: usa SOLO los datos del bloque CONTEXTO para cifras; si algo no está, dilo. Cita la fuente/fecha del dato (BanRep, DANE, curva cargada). Explica el porqué con conceptos del curso (duración, convexidad, carry, roll-down, spread vs. TES, tasa real, Fisher, riesgo de reinversión). Da escenarios y alternativas, no órdenes de compra/venta, y cierra con una línea recordando que es un ejercicio académico y no asesoría financiera.
+Formato: títulos cortos con "### ", viñetas con "- ", negritas con **. Máximo ~350 palabras salvo que pidan más.`;
+const QUICK=[['Resumen de la economía','Inflación, tasa del BanRep, IBR y lo que implica para la renta fija','Hazme un resumen de la situación económica de Colombia con estos datos: inflación, política monetaria, IBR, UVR y la curva TES. ¿Qué implica para un inversionista de renta fija?'],
+  ['Analiza mi portafolio','Riesgo, composición, valor relativo vs. curva','Analiza mi portafolio: composición por indexación, duración y DV01, resultados de estrés y spread de cada posición frente a la curva TES. ¿Tengo buenas posiciones para el contexto actual?'],
+  ['Estrategia de duración','¿Alargar o acortar? ¿Tasa fija o indexados?','Con la curva y las expectativas de inflación cargadas, ¿conviene alargar o acortar duración? Compara tasa fija vs. IBR vs. IPC vs. UVR y propón dos estrategias con sus riesgos.'],
+  ['Explica la curva','Forma, forwards y qué descuenta el mercado','Explícame la forma actual de la curva TES, qué descuentan los forwards implícitos y cómo se compara con la tasa de política.']];
+function md(t){const lines=esc(t).split('\n');let h='',inL=false;for(let l of lines){l=l.replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');
+  if(/^\s*[-•]\s+/.test(l)){if(!inL){h+='<ul>';inL=true}h+='<li>'+l.replace(/^\s*[-•]\s+/,'')+'</li>';continue}
+  if(inL){h+='</ul>';inL=false} if(/^#{1,4}\s/.test(l))h+='<h4>'+l.replace(/^#{1,4}\s/,'')+'</h4>';else if(l.trim())h+='<p>'+l+'</p>'}
+  if(inL)h+='</ul>';return h}
+function addMsg(role,html){const d=document.createElement('div');d.className='msg '+role;d.innerHTML=(role==='a'?'<div class="who">Asesor · Cupón Corrido</div>':'')+'<div class="b">'+html+'</div>';$('#msgs').appendChild(d);$('#msgs').scrollTop=1e9;return d.querySelector('.b')}
+let busy=false;
+async function ask(q){
+  if(busy||!q.trim())return;busy=true;$('#send').disabled=true;
+  addMsg('u',esc(q));const out=addMsg('a','<p class="src">Analizando datos…</p>');
+  if(!sampleP)if(!sampleP)if(!sampleP)sampleP=(window.claude&&window.claude.use)?window.claude.use('sample').catch(()=>null):Promise.resolve(null);const sample=await sampleP;
+  if(!sample){out.innerHTML='<p>El asesor necesita abrirse dentro de claude.ai para conectarse a Claude. En tu versión desplegada se conecta mediante tu propio servidor con la API de Anthropic (ver guía).</p>';busy=false;$('#send').disabled=false;return}
+  const ctx=JSON.stringify(ctxSnapshot());
+  const msgs=[...history.slice(-6),{role:'user',content:`${SYS}\n\nCONTEXTO (JSON, tasas en fracción decimal):\n${ctx}\n\nPREGUNTA: ${q}`}];
+  try{const r=await sample(msgs,{cache:false,modelTier:'default',onText:({text})=>{out.innerHTML=md(text);$('#msgs').scrollTop=1e9}});
+    out.innerHTML=md(r.text);history.push({role:'user',content:q},{role:'assistant',content:r.text});}
+  catch(e){out.innerHTML='<p>'+(e.code==='not_granted'?'No se concedió permiso para consultar a Claude. Puedes activarlo desde el menú de permisos de la página.':e.code==='rate_limited'?'Se alcanzó el límite de consultas por ahora. Intenta en unos minutos.':'No se pudo completar el análisis: '+esc(e.message||e.code))+'</p>'}
+  busy=false;$('#send').disabled=false;
+}
+function renderAsesor(){
+  if(!$('#prompts').childElementCount){
+    $('#prompts').innerHTML=QUICK.map((q,i)=>`<button data-q="${i}"><b>${q[0]}</b><span>${q[1]}</span></button>`).join('');
+    $('#prompts').onclick=e=>{const b=e.target.closest('button');if(b)ask(QUICK[+b.dataset.q][2])};
+    $('#send').onclick=()=>{const v=$('#ask').value;$('#ask').value='';ask(v)};
+    $('#ask').onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();$('#send').click()}};
+    addMsg('a',md('Hola. Tengo cargados la tasa de política, la inflación del DANE, el IBR, la UVR, la curva TES y tu portafolio. Elige una consulta rápida o escríbeme tu pregunta.'));
+  }
+  const V=valuePf();
+  $('#aiCtx').innerHTML=`<span><b>Contexto que lee el asesor:</b> TPM ${F.pct(MACRO.tpm,2)}, IPC ${F.pct(ipcLast.annual,2)} (${ipcLast[0].slice(0,7)}), IBR al ${F.date(ibrLast[0])}, curva TES del ${F.date(DATA.curveDate)} y ${V.length} posiciones del portafolio.</span>`;
+}
+
+/* ---------------- Fuentes ---------------- */
+function renderFuentes(){
+  const L=[
+    ['Noticias','Bloomberg Línea · Colombia','Mercados, BanRep, inflación y deuda pública en español.','https://www.bloomberglinea.com/latinoamerica/colombia/'],
+    ['Noticias','Bloomberg Línea · Mercados','Bonos, divisas y tasas de América Latina.','https://www.bloomberglinea.com/mercados/'],
+    ['Oficial','Banco de la República · Estadísticas','TPM, IBR, UVR, TRM, encuesta de expectativas.','https://www.banrep.gov.co/es/estadisticas'],
+    ['Oficial','DANE · Índice de precios al consumidor','Boletín mensual del IPC y series históricas.','https://www.dane.gov.co/index.php/estadisticas-por-tema/precios-y-costos/indice-de-precios-al-consumidor-ipc'],
+    ['Datos abiertos','datos.gov.co','Portal de datos abiertos con API (TRM, tasas, series del Estado).','https://www.datos.gov.co'],
+    ['Análisis','BBVA Research · Decisión BanRep oct-2026','Nota del 30-oct-2026: tasa en 12,25 %.','https://www.bbvaresearch.com/publicaciones/colombia-banrep-mantuvo-la-tasa-en-1225-en-su-reunion-de-octubre/'],
+    ['Noticias','Noticias RCN · IPC septiembre 2026','Inflación anual de 6,29 % en septiembre.','https://www.noticiasrcn.com/economia/inflacion-anual-en-colombia-llego-al-6-29-en-septiembre-1069516'],
+  ];
+  $('#srcBody').innerHTML=`<div class="links">${L.map(l=>`<a class="link" href="${l[3]}" target="_blank" rel="noopener"><em>${l[0]}</em><b>${l[1]} ↗</b><span>${l[2]}</span></a>`).join('')}</div>
+  <div class="panel"><div class="panel-h"><h2>Estado de los datos de la calculadora</h2></div><div class="tbl" style="max-height:none"><table><thead><tr><th>Serie</th><th>Fuente</th><th>Último dato</th><th>Valor</th><th>Actualización prevista</th></tr></thead><tbody>
+    <tr><td class="t">Tasa de política</td><td class="t">BanRep</td><td>${MACRO.tpmFecha}</td><td>${F.pct(MACRO.tpm,2)}</td><td class="t">Tras cada junta directiva</td></tr>
+    <tr><td class="t">IPC 12 meses</td><td class="t">DANE</td><td>${ipcLast[0]}</td><td>${F.pct(ipcLast.annual,2)}</td><td class="t">Mensual, ~5.º día hábil</td></tr>
+    <tr><td class="t">IBR (ON a 12M)</td><td class="t">BanRep</td><td>${ibrLast[0]}</td><td>${nf(3).format(ibrLast[1])}%</td><td class="t">Diaria</td></tr>
+    <tr><td class="t">UVR</td><td class="t">BanRep</td><td>${DATA.uvr[DATA.uvr.length-1][0]}</td><td>${nf(4).format(DATA.uvr[DATA.uvr.length-1][1])}</td><td class="t">Mensual (serie diaria)</td></tr>
+    <tr><td class="t">Curva TES</td><td class="t">SEN / proveedor de precios</td><td>${DATA.curveDate}</td><td>${tesSorted.length} referencias</td><td class="t">Diaria</td></tr>
+    <tr><td class="t">Expectativas de inflación</td><td class="t">Encuesta BanRep</td><td>${DATA.exp[0][0]}</td><td>${DATA.exp.length} meses</td><td class="t">Mensual</td></tr>
+  </tbody></table></div></div>`;
+}
+
+/* ---------------- Ruteo, tema ---------------- */
+const VIEWS=['mercado','calculadora','portafolio','curva','asesor','fuentes'];
+function route(keep){
+  const v=VIEWS.includes(location.hash.slice(1))?location.hash.slice(1):'mercado';
+  VIEWS.forEach(x=>$('#v-'+x).hidden=x!==v);
+  $$('.nav a').forEach(a=>a.toggleAttribute('aria-current',a.getAttribute('href')==='#'+v)),$$('.nav a').forEach(a=>{if(a.hasAttribute('aria-current'))a.setAttribute('aria-current','page')});
+  ({mercado:renderMercado,calculadora:()=>{renderForm();renderResults()},portafolio:renderPortfolio,curva:renderCurva,asesor:renderAsesor,fuentes:renderFuentes})[v]();
+  if(keep!==true)window.scrollTo(0,0);
+}
+function setTheme(t){if(t==='system')document.documentElement.removeAttribute('data-theme');else document.documentElement.setAttribute('data-theme',t);store.set('theme',t);$$('.theme button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.t===t));drawOrnaments()}
+$$('.theme button').forEach(b=>b.onclick=()=>setTheme(b.dataset.t));
+$('#typeSeg').onclick=e=>{const b=e.target.closest('button');if(!b)return;state.type=b.dataset.type;editingId=null;store.set('calc',state);renderForm();renderResults()};
+$('#pfDate').onchange=e=>{pfDate=e.target.value||TODAY;store.set('pfDate',pfDate);renderPortfolio()};
+$('#pfReset').onclick=()=>{pf=EX_PF();store.set('pf',pf);renderPortfolio();toast('Portafolio de ejemplo restaurado')};
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',drawOrnaments);
+let rz,lastW=innerWidth;addEventListener('resize',()=>{if(Math.abs(innerWidth-lastW)<40)return;lastW=innerWidth;clearTimeout(rz);rz=setTimeout(()=>route(true),200)});
+addEventListener('hashchange',route);
+setTheme(store.get('theme','system'));tape();route();
+
+})();
+</script>
