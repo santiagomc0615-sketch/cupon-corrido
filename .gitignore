@@ -25,6 +25,9 @@
 # Vercel
 .vercel
 
+# Series cargadas en local desde /datos (en producción van a Vercel Blob)
+/data/cargas/
+
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts

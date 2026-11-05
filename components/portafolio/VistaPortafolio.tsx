@@ -4,13 +4,13 @@ import { useRouter } from "next/navigation";
 import { Chart, nearest, type PuntoSerie } from "@/components/charts/Chart";
 import { useApp } from "@/components/providers/AppProvider";
 import { Aviso, Kpi, Panel } from "@/components/ui";
-import { PF_EJEMPLO, TYPE_CLR, TYPE_LBL } from "@/lib/calculadora";
+import { TYPE_CLR, TYPE_LBL } from "@/lib/calculadora";
 import type { TipoBono } from "@/lib/engine";
 import { F, nf, pctAx } from "@/lib/format";
 import { useHidratado } from "@/lib/storage";
 
 export function VistaPortafolio() {
-  const { pfDate, setPfDate, setPf, snap, toast } = useApp();
+  const { pfDate, setPfDate, setPf, snap, toast, pfEjemplo } = useApp();
   const hidratado = useHidratado();
   return (
     <section className="view">
@@ -35,7 +35,7 @@ export function VistaPortafolio() {
             type="button"
             className="btn"
             onClick={() => {
-              setPf(PF_EJEMPLO);
+              setPf(pfEjemplo);
               toast("Portafolio de ejemplo restaurado");
             }}
           >

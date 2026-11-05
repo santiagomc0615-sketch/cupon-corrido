@@ -31,7 +31,10 @@ export function ctxSnapshot(
     fecha_analisis: snap.fechaAnalisis,
     macro: {
       tasa_politica: macro.tpm,
-      fecha_decision: macro.tpmFecha,
+      fecha_dato_tasa: macro.tpmFecha,
+      fuente_tasa: macro.tpmFuente,
+      ultima_decision_junta: { fecha: macro.decisionFecha, decision: macro.decision },
+      trm: snap.trm ? { valor: snap.trm.valor, fecha: snap.trm.fecha } : null,
       inflacion_12m: mk.ipcLast.annual,
       mes_inflacion: mk.ipcLast.f,
       inflacion_nucleo: macro.nucleo,

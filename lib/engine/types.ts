@@ -57,6 +57,8 @@ export interface BonoIBR extends BonoBase {
   descuento: DescuentoIBR;
   /** Precio sucio dado (% del nominal). 0 o ausente = se calcula. */
   precioDado?: number;
+  /** Id de la curva FRAC a usar. Ausente = la que corresponde a la fecha de valoración. */
+  curvaFrac?: string;
 }
 
 export type Bono = BonoTF | BonoIPC | BonoUVR | BonoIBR;
@@ -224,6 +226,9 @@ export interface ResultadoIBR extends ResultadoSinFinish, Comunes {
   tasaNegEAV: number;
   fracStart: string;
   fracStale: boolean;
+  /** Curva FRAC usada (id y nombre). */
+  curvaFracId: string;
+  curvaFracNombre: string;
 }
 
 export type ResultadoValoracion = ResultadoTF | ResultadoIPC | ResultadoUVR | ResultadoIBR;
@@ -244,5 +249,26 @@ export interface ResultadoVenta {
   retorno: number;
 }
 
-export const esError = (v: Valoracion | ResultadoVenta | ErrorValoracion): v is ErrorValoracion =>
+/** Venta anticipada con la curva FRAC de la fecha de venta (hoja Rentabilidad, solo IBR). */
+export interface ResultadoVentaCurva extends ResultadoVenta {
+  /** Cupón corrido a la fecha de venta con el IBR de venta (%). */
+  corrido: number;
+  /** Precio limpio de venta (%). */
+  limpio: number;
+  /** IBR promedio proyectado con la curva de venta (N.A.). */
+  ibrPromVenta: number;
+  /** Tasa de negociación de venta (E.A.). */
+  tasaVenta: number;
+  /** TIR al vencimiento con flujos recibidos + estimados con la curva de venta (E.A.). */
+  tirVencimiento: number;
+  curvaId: string;
+  curvaNombre: string;
+  curvaFecha: string;
+  /** La curva de venta es de otra fecha (más de 10 días de diferencia). */
+  curvaDesfasada: boolean;
+  /** IBR aplicado a cada periodo pendiente después de la venta. */
+  periodos: { pay: number; ibr: number; flujo: number; vp: number }[];
+}
+
+export const esError =(v: Valoracion | ResultadoVenta | ErrorValoracion): v is ErrorValoracion =>
   "error" in v;

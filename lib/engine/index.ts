@@ -2,10 +2,11 @@
    excel/Calculadora_para_pagina.xlsx (validado con validacion/casos-prueba.json).
    Funciones puras: los datos de mercado se pasan explícitamente. */
 import { validate } from "./cronograma";
-import { holding } from "./holding";
+import { holding, holdingCurvaIBR } from "./holding";
 import { priceIBR } from "./ibr";
 import { priceIPC } from "./ipc";
 import {
+  elegirCurvaFrac,
   expect,
   frac,
   ibrPub,
@@ -17,7 +18,7 @@ import {
   type Mercado,
 } from "./mercado";
 import { priceTF } from "./tf";
-import type { Bono, ResultadoValoracion, Valoracion } from "./types";
+import type { Bono, BonoIBR, ResultadoIBR, ResultadoValoracion, Valoracion } from "./types";
 import { priceUVR } from "./uvr";
 
 /** Valora un título. Devuelve { error } si las entradas no permiten valorarlo. */
@@ -54,6 +55,9 @@ export function crearMotor(datos: DatosMercado) {
     mercado: M,
     price: (b: Bono) => price(M, b),
     holding,
+    holdingCurvaIBR: (b: BonoIBR, o: ResultadoIBR, ventaS: string, spreadVenta: number, curvaId?: string) =>
+      holdingCurvaIBR(M, b, o, ventaS, spreadVenta, curvaId),
+    elegirCurvaFrac: (n: number, id?: string) => elegirCurvaFrac(M, n, id),
     spot: (t: number) => spot(M, t),
     ipcVigente: (n: number) => ipcVigente(M, n),
     uvrAt: (n: number) => uvrAt(M, n),
@@ -64,7 +68,8 @@ export function crearMotor(datos: DatosMercado) {
 }
 export type Motor = ReturnType<typeof crearMotor>;
 
-export { holding } from "./holding";
+export { holding, holdingCurvaIBR } from "./holding";
+export { curvaCero, plazoTES, tirInterpolada, NODOS_CURVA } from "./curva";
 export { pfMetrics, type PosicionValorada, type MetricasPortafolio } from "./portafolio";
 export { priceTF } from "./tf";
 export { priceIPC } from "./ipc";

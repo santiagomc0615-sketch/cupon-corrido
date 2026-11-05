@@ -3,7 +3,7 @@
 import { baseSchedule, finish } from "./cronograma";
 import { toN } from "./fechas";
 import { solveYield, trunc3 } from "./finanzas";
-import { frac, ibrPub, type Mercado } from "./mercado";
+import { elegirCurvaFrac, fracEn, ibrPub, type Mercado } from "./mercado";
 import type { BonoIBR, ResultadoIBR } from "./types";
 
 const PLAZOS_IBR = ["", "", "IBR 1 mes", "IBR 3 meses", "IBR 6 meses", "IBR 12 meses"];
@@ -15,6 +15,9 @@ export function priceIBR(M: Mercado, b: BonoIBR): ResultadoIBR {
     lastN = lastIBR.n;
   const vig = ibrPub(M, S.val, col);
   const vigStale = S.val - 1 > lastN;
+  const curva = elegirCurvaFrac(M, S.val, b.curvaFrac);
+  const serieFrac = curva.serie;
+  if (b.metodologia === "Curva FRAC" && !serieFrac) throw new Error(`la curva FRAC «${curva.nombre}» aún no está cargada`);
   S.rows.forEach((r) => {
     let H: number;
     if (r.start <= S.val) {
@@ -24,7 +27,7 @@ export function priceIBR(M: Mercado, b: BonoIBR): ResultadoIBR {
       H = vig.v;
       r.fuente = "IBR vigente";
     } else {
-      H = frac(M, r.start);
+      H = fracEn(serieFrac!, r.start);
       r.fuente = "FRAC";
     }
     r.H = H;
@@ -80,7 +83,7 @@ export function priceIBR(M: Mercado, b: BonoIBR): ResultadoIBR {
       ? tirProm(b.spreadVenta)
       : solveYield(fl, dirtyV, tirProm(b.spreadVenta));
   const accrued = (S.cur.K * S.dc) / S.cur.D;
-  const fracStart = M.frac[0].f;
+  const fracStart = curva.fechaBase;
   const o = {
     tipo: "IBR" as const,
     rows: S.rows,
@@ -105,6 +108,8 @@ export function priceIBR(M: Mercado, b: BonoIBR): ResultadoIBR {
     tasaNegEAV: Math.pow(1 + (vig.v + b.spreadVenta) / p, p) - 1,
     fracStart,
     fracStale: b.metodologia === "Curva FRAC" && Math.abs(S.val - toN(fracStart)) > 10,
+    curvaFracId: curva.id,
+    curvaFracNombre: curva.nombre,
     notas: [[vig.v ? "IBR vigente (" + vig.f + ")" : "IBR", vig.v, "pct"]] as ResultadoIBR["notas"],
   };
   return finish(o, b, S, 1);

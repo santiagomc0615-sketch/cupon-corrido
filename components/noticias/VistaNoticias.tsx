@@ -1,7 +1,7 @@
 "use client";
+import { TablaFuentes } from "@/components/datos/EstadoFuentes";
 import { useApp } from "@/components/providers/AppProvider";
 import { Encabezado, Panel } from "@/components/ui";
-import { F, nf } from "@/lib/format";
 
 const ENLACES: [string, string, string, string][] = [
   ["Noticias", "Bloomberg Línea · Colombia", "Mercados, BanRep, inflación y deuda pública en español.", "https://www.bloomberglinea.com/latinoamerica/colombia/"],
@@ -14,17 +14,7 @@ const ENLACES: [string, string, string, string][] = [
 ];
 
 export function VistaNoticias() {
-  const { snap, mk, motor } = useApp();
-  const { macro } = snap;
-  const M = motor.mercado;
-  const filas: [string, string, string, string, string][] = [
-    ["Tasa de política", "BanRep", macro.tpmFecha, F.pct(macro.tpm, 2), "Tras cada junta directiva"],
-    ["IPC 12 meses", "DANE", mk.ipcLast.f, F.pct(mk.ipcLast.annual, 2), "Mensual, ~5.º día hábil"],
-    ["IBR (ON a 12M)", "BanRep", mk.ibrLast.f, nf(3).format(mk.ibrLast.d[1]) + "%", "Diaria"],
-    ["UVR", "BanRep", mk.ultimaUVR.f, nf(4).format(mk.ultimaUVR.d[1]), "Mensual (serie diaria)"],
-    ["Curva TES", "SEN / proveedor de precios", M.curveDate, mk.tesSorted.length + " referencias", "Diaria"],
-    ["Expectativas de inflación", "Encuesta BanRep", M.exp[0].f, M.exp.length + " meses", "Mensual"],
-  ];
+  const { snap } = useApp();
   return (
     <section className="view">
       <Encabezado
@@ -42,31 +32,12 @@ export function VistaNoticias() {
           </a>
         ))}
       </div>
-      <Panel titulo="Estado de los datos de la calculadora">
-        <div className="tbl" style={{ maxHeight: "none" }}>
-          <table>
-            <thead>
-              <tr>
-                <th>Serie</th>
-                <th>Fuente</th>
-                <th>Último dato</th>
-                <th>Valor</th>
-                <th>Actualización prevista</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filas.map((f) => (
-                <tr key={f[0]}>
-                  <td className="t">{f[0]}</td>
-                  <td className="t">{f[1]}</td>
-                  <td>{f[2]}</td>
-                  <td>{f[3]}</td>
-                  <td className="t">{f[4]}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      <Panel titulo="Estado de los datos de la calculadora" src={`Actualizado ${snap.actualizado.replace(" ", " · ")} (hora de Colombia)`}>
+        <TablaFuentes />
+        <p className="src" style={{ marginTop: 10 }}>
+          En vivo: servicio SDMX del Banco de la República (totoro.banrep.gov.co) y datos.gov.co, consultados desde el
+          servidor una vez al día. Si una fuente no responde, esa serie usa la última carga del Excel del curso.
+        </p>
       </Panel>
     </section>
   );

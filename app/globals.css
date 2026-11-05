@@ -1128,6 +1128,11 @@
       top: calc(env(safe-area-inset-top, 0px) + 49px);
     }
   }
+  @media (max-width: 700px) {
+    .vista-frac {
+      grid-template-columns: 1fr !important;
+    }
+  }
   @media (max-width: 520px) {
     .brand b {
       display: none;

@@ -63,8 +63,9 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
                 <footer className="site-foot">
                   <span>Herramienta académica, no es asesoría financiera.</span>
                   <span>
-                    Datos: BanRep, DANE y curva TES cargados del Excel del curso
-                    {snap.origen === "respaldo" ? " (carga fija, sin actualización automática todavía)" : ""}.
+                    {snap.origen === "en-vivo"
+                      ? `Datos: BanRep (SDMX), datos.gov.co, DANE y series cargadas · actualizado ${snap.actualizado.replace(" ", " ")} (hora de Colombia).`
+                      : "Datos: última carga del Excel del curso (las fuentes en vivo no respondieron)."}
                   </span>
                 </footer>
               </div>

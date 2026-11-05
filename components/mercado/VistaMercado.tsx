@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { Chart, nearest, type PuntoSerie } from "@/components/charts/Chart";
 import { CurvaMini } from "@/components/curva/CurvaMini";
+import { ResumenFuentes } from "@/components/datos/EstadoFuentes";
 import { useApp } from "@/components/providers/AppProvider";
 import { Guilloche, ROSETA } from "@/components/shell/Guilloche";
 import { Aviso, Kpi, Panel } from "@/components/ui";
@@ -47,30 +48,32 @@ export function VistaMercado() {
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 10, alignItems: "flex-start" }}>
           <span className="stamp">
-            Decisión {F.date(macro.tpmFecha)} · {macro.tpmDecision}
+            Decisión {F.date(macro.decisionFecha)} · {macro.decision}
           </span>
           <p className="lede" style={{ fontSize: 13 }}>
             Tasa de intervención vigente. La inflación anual sigue por encima del rango meta de 2–4 %, así que la tasa
             real ex post se mantiene alta. Eso favorece el carry de los títulos a tasa fija e IBR frente a duración
             larga.
           </p>
-          <span className="src">Fuente: {macro.tpmFuente}</span>
+          <span className="src">
+            Tasa: {macro.tpmFuente} · {F.date(macro.tpmFecha)} · Decisión: {macro.decisionFuente}
+          </span>
         </div>
       </div>
 
       <div className="kpis k4">
-        <Kpi l="Tasa de política" v={F.pct(macro.tpm, 2)} s={"BanRep · " + F.date(macro.tpmFecha)} />
+        <Kpi l="Tasa de política" v={F.pct(macro.tpm, 2)} s={macro.tpmFuente + " · " + F.date(macro.tpmFecha)} />
         <Kpi
           l="Inflación 12 meses"
           v={F.pct(ipcLast.annual, 2)}
           s={"DANE · " + ipcLast.f.slice(0, 7)}
           extra={<span className={"chip " + (dIpc > 0 ? "neg" : "pos")}>{(dIpc > 0 ? "▲ " : "▼ ") + F.bp(dIpc)}</span>}
         />
-        <Kpi l="Inflación núcleo" v={F.pct(macro.nucleo, 1)} s="sin alimentos ni regulados" />
+        <Kpi l="Inflación núcleo" v={F.pct(macro.nucleo, 1)} s={"sin alimentos ni regulados · " + macro.nucleoFecha.slice(0, 7)} />
         <Kpi l="Tasa real ex post" v={F.pct(realRate, 2)} s="(1+TPM)/(1+IPC)−1" />
-        <Kpi l="IBR overnight" v={nf(3).format(ibr[1]) + " %"} s={"N.A. · BanRep · " + F.date(ibrLast.f)} />
-        <Kpi l="IBR 3 meses" v={nf(3).format(ibr[3]) + " %"} s={"N.A. · BanRep · " + F.date(ibrLast.f)} />
-        <Kpi l="UVR hoy" v={nf(4).format(uvrHoy.v)} s={"$/UVR · BanRep · " + F.date(uvrHoy.f)} />
+        <Kpi l="IBR overnight" v={nf(3).format(ibr[1]) + " %"} s={`N.A. · ${snap.fuentes.ibr?.fuente ?? "BanRep"} · ${F.date(ibrLast.f)}`} />
+        <Kpi l="IBR 3 meses" v={nf(3).format(ibr[3]) + " %"} s={`N.A. · ${snap.fuentes.ibr?.fuente ?? "BanRep"} · ${F.date(ibrLast.f)}`} />
+        <Kpi l="UVR hoy" v={nf(4).format(uvrHoy.v)} s={`$/UVR · ${snap.fuentes.uvr?.fuente ?? "BanRep"} · ${F.date(uvrHoy.f)}`} />
         <Kpi l={"TES " + tes10[1].slice(0, 4)} v={F.pct(tes10[3], 3)} s={"TIR E.A. · curva " + F.date(M.curveDate)} />
       </div>
 
@@ -198,9 +201,7 @@ export function VistaMercado() {
       </div>
 
       <Aviso etiqueta="Datos">
-        Esta versión usa la última carga del Excel del curso (IBR, IPC, UVR, curva TES) más la decisión de tasa y el
-        IPC de septiembre verificados en prensa. La actualización automática desde el Banco de la República y
-        datos.gov.co llega en la siguiente fase.
+        <ResumenFuentes />
       </Aviso>
     </section>
   );

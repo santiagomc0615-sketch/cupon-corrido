@@ -1,12 +1,14 @@
 "use client";
 import type { ReactNode } from "react";
 import { Chart, nearest } from "@/components/charts/Chart";
-import { useApp } from "@/components/providers/AppProvider";
+import { useApp, useCurvaNecesaria } from "@/components/providers/AppProvider";
+import type { EstadoCalculadora, ModoVenta } from "@/lib/calculadora";
 import { KV, Panel } from "@/components/ui";
 import {
   edate,
   esError,
   holding,
+  holdingCurvaIBR,
   pvAt,
   toN,
   toS,
@@ -18,7 +20,7 @@ import {
 } from "@/lib/engine";
 import { F, nf } from "@/lib/format";
 
-export function Resultados({ b, o }: { b: Bono; o: Valoracion }) {
+export function Resultados({ b, o, avisosExtra = [] }: { b: Bono; o: Valoracion; avisosExtra?: string[] }) {
   if (esError(o)) {
     return (
       <div>
@@ -26,10 +28,10 @@ export function Resultados({ b, o }: { b: Bono; o: Valoracion }) {
       </div>
     );
   }
-  return <ResultadosOk b={b} o={o} />;
+  return <ResultadosOk b={b} o={o} avisosExtra={avisosExtra} />;
 }
 
-function ResultadosOk({ b, o }: { b: Bono; o: ResultadoValoracion }) {
+function ResultadosOk({ b, o, avisosExtra }: { b: Bono; o: ResultadoValoracion; avisosExtra: string[] }) {
   const t = o.tipo,
     fx = o.fx;
 
@@ -45,12 +47,14 @@ function ResultadosOk({ b, o }: { b: Bono; o: ResultadoValoracion }) {
     ["DV01", F.copM(o.dv01), "por 1 pb de tasa"],
   ];
 
-  const avisos: string[] = [];
+  const avisos: string[] = [...avisosExtra];
   if (o.aviso) avisos.push(o.aviso);
   if (o.tipo === "IBR" && o.ibrStale)
     avisos.push(`La fecha de valoración es posterior al último IBR cargado (${F.date(o.ibrFecha)}); se usa ese último dato publicado.`);
   if (o.tipo === "IBR" && o.fracStale)
-    avisos.push(`La curva FRAC cargada es del ${F.date(o.fracStart)}: actualízala para valorar en esta fecha.`);
+    avisos.push(
+      `La curva FRAC usada («${o.curvaFracNombre}») es del ${F.date(o.fracStart)}, más de 10 días antes o después de la valoración: cargue la curva de esta fecha en «Cargar datos».`,
+    );
   if (o.tipo === "UVR" && o.uvrExtrap) avisos.push("La UVR de la fecha de valoración se extrapoló con el IPC vigente.");
 
   let spec: [ReactNode, ReactNode, ReactNode?][] = [];
@@ -74,6 +78,9 @@ function ResultadosOk({ b, o }: { b: Bono; o: ResultadoValoracion }) {
       ["Tasa negociación IBR+spread (N.A.)", F.pct(o.tasaNeg, 3), F.pct(o.tasaNegV, 3)],
       ["Equivalente E.A.", F.pct(o.tasaNegEA, 3), F.pct(o.tasaNegEAV, 3)],
       ["IBR promedio proyectado", F.pct(o.ibrAvg, 3)],
+      ...(b.tipo === "IBR" && b.metodologia === "Curva FRAC"
+        ? ([[`Curva FRAC usada: ${o.curvaFracNombre}`, F.date(o.fracStart)]] as [ReactNode, ReactNode][])
+        : []),
     ];
   if (o.tipo === "UVR")
     spec = [
@@ -265,51 +272,148 @@ function ResultadosOk({ b, o }: { b: Bono; o: ResultadoValoracion }) {
 }
 
 function VentaAnticipada({ b, o }: { b: Bono; o: ResultadoValoracion }) {
-  const { calc, setCalc } = useApp();
+  const { calc, setCalc, motor, curvas, pedirCurva } = useApp();
   const t = o.tipo;
-  const d = calc.hv?.d || toS(edate(toN(b.valoracion), 12));
-  const r = calc.hv?.r ?? +(o.irr * 100 - 1).toFixed(2);
-  const h = holding(b, o, d, +r / 100);
-  const fijar = (nd: string, nr: number | "") => setCalc((c) => ({ ...c, hv: { d: nd, r: nr === "" ? 0 : nr } }));
-  return (
-    <Panel titulo="Simular venta antes del vencimiento">
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
-        <div className="f">
-          <label htmlFor="hvDate">Fecha de venta</label>
-          <input id="hvDate" type="date" value={d} onChange={(e) => fijar(e.target.value, r)} />
+  const hv = calc.hv;
+  const d = hv?.d || toS(edate(toN(b.valoracion), 12));
+  const r = hv?.r ?? +(o.irr * 100 - 1).toFixed(2);
+  const modo: ModoVenta = t === "IBR" && hv?.modo === "curva" ? "curva" : "tasa";
+  const spreadV = hv?.spread ?? (b.tipo === "IBR" ? +(b.spreadVenta * 100).toFixed(3) : 0);
+  const curvaSel = hv?.curva ?? "";
+  const fijar = (cambio: Partial<NonNullable<EstadoCalculadora["hv"]>>) =>
+    setCalc((c) => ({ ...c, hv: { d, r, modo, spread: spreadV, curva: curvaSel, ...c.hv, ...cambio } }));
+
+  // Curva FRAC de venta (elegida a mano o la de la fecha de venta)
+  const curvaVenta = modo === "curva" && d ? motor.elegirCurvaFrac(toN(d), curvaSel || undefined) : null;
+  const falta = curvaVenta && !curvaVenta.serie ? curvaVenta.id : null;
+  useCurvaNecesaria(falta);
+
+  let cuerpo: ReactNode;
+  if (falta && curvaVenta) {
+    cuerpo =
+      curvas[falta] === "error" ? (
+        <div className="alert">
+          No se pudo descargar la curva «{curvaVenta.nombre}».{" "}
+          <button type="button" className="btn sm" onClick={() => pedirCurva(falta)}>
+            Reintentar
+          </button>
         </div>
-        <div className="f">
-          <label htmlFor="hvRate">
-            Tasa de venta {t === "IBR" ? "(E.A. equivalente)" : t === "UVR" ? "(real E.A.)" : "(E.A.)"}
-          </label>
-          <div className="u">
-            <input
-              id="hvRate"
-              type="number"
-              step="0.01"
-              inputMode="decimal"
-              value={r}
-              onChange={(e) => fijar(d, e.target.value === "" ? "" : +e.target.value)}
-            />
-            <span>%</span>
-          </div>
-        </div>
-      </div>
-      {esError(h) ? (
-        <div className="alert">{h.error}</div>
       ) : (
+        <p className="src">Descargando la curva FRAC «{curvaVenta.nombre}»…</p>
+      );
+  } else if (modo === "curva" && b.tipo === "IBR" && o.tipo === "IBR") {
+    const h = holdingCurvaIBR(motor.mercado, b, o, d, (+spreadV || 0) / 100, curvaSel || undefined);
+    cuerpo = esError(h) ? (
+      <div className="alert">{h.error}</div>
+    ) : (
+      <>
+        {h.curvaDesfasada && (
+          <div className="alert" style={{ marginBottom: 10 }}>
+            La curva de venta («{h.curvaNombre}», {F.date(h.curvaFecha)}) es de otra fecha: cargue la curva FRAC del día de
+            la venta en «Cargar datos».
+          </div>
+        )}
         <KV
           rows={[
+            [`Curva de venta: ${h.curvaNombre}`, F.date(h.curvaFecha)],
+            ["IBR promedio proyectado (N.A.)", F.pct(h.ibrPromVenta, 3)],
+            ["Tasa de negociación de venta (E.A.)", F.pct(h.tasaVenta, 3)],
             ["Precio sucio de venta", F.n(h.pVenta, 3) + " %"],
+            ["Cupón corrido a la venta", F.n(h.corrido, 4) + " %"],
+            ["Precio limpio de venta", F.n(h.limpio, 3) + " %"],
             ["Cupones recibidos", h.ncup + " · " + F.n(h.cupones, 3) + " %"],
             ["Días de tenencia", h.dias],
             ["Retorno del periodo", F.pct(h.retorno, 2)],
             ["TIR de la inversión (E.A.)", <b key="tir" style={{ color: `var(--${h.tir >= o.irr ? "pos" : "neg"})` }}>{F.pct(h.tir, 3)}</b>],
+            ["TIR al vencimiento con curva de venta", F.pct(h.tirVencimiento, 3)],
             ["Ganancia / pérdida", F.cop(h.gan)],
-            ["vs. TIR de compra", F.bp((h.tir - o.irr) * 1e4)],
           ]}
         />
-      )}
+      </>
+    );
+  } else {
+    const h = holding(b, o, d, +r / 100);
+    cuerpo = esError(h) ? (
+      <div className="alert">{h.error}</div>
+    ) : (
+      <KV
+        rows={[
+          ["Precio sucio de venta", F.n(h.pVenta, 3) + " %"],
+          ["Cupones recibidos", h.ncup + " · " + F.n(h.cupones, 3) + " %"],
+          ["Días de tenencia", h.dias],
+          ["Retorno del periodo", F.pct(h.retorno, 2)],
+          ["TIR de la inversión (E.A.)", <b key="tir" style={{ color: `var(--${h.tir >= o.irr ? "pos" : "neg"})` }}>{F.pct(h.tir, 3)}</b>],
+          ["Ganancia / pérdida", F.cop(h.gan)],
+          ["vs. TIR de compra", F.bp((h.tir - o.irr) * 1e4)],
+        ]}
+      />
+    );
+  }
+
+  return (
+    <Panel titulo="Simular venta antes del vencimiento">
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
+        {t === "IBR" && (
+          <div className="f w" style={{ gridColumn: "1/-1" }}>
+            <label htmlFor="hvModo">¿Cómo se fija el precio de venta?</label>
+            <select id="hvModo" value={modo} onChange={(e) => fijar({ modo: e.target.value as ModoVenta })}>
+              <option value="tasa">Tasa de venta</option>
+              <option value="curva">Curva de venta (solo IBR)</option>
+            </select>
+          </div>
+        )}
+        <div className="f">
+          <label htmlFor="hvDate">Fecha de venta</label>
+          <input id="hvDate" type="date" value={d} onChange={(e) => fijar({ d: e.target.value })} />
+        </div>
+        {modo === "tasa" ? (
+          <div className="f">
+            <label htmlFor="hvRate">Tasa de venta {t === "IBR" ? "(E.A. equivalente)" : t === "UVR" ? "(real E.A.)" : "(E.A.)"}</label>
+            <div className="u">
+              <input
+                id="hvRate"
+                type="number"
+                step="0.01"
+                inputMode="decimal"
+                value={r}
+                onChange={(e) => fijar({ r: e.target.value === "" ? 0 : +e.target.value })}
+              />
+              <span>%</span>
+            </div>
+          </div>
+        ) : (
+          <div className="f">
+            <label htmlFor="hvSpread">Spread de venta (IBR + x, N.A.)</label>
+            <div className="u">
+              <input
+                id="hvSpread"
+                type="number"
+                step="0.001"
+                inputMode="decimal"
+                value={spreadV}
+                onChange={(e) => fijar({ spread: e.target.value === "" ? 0 : +e.target.value })}
+              />
+              <span>%</span>
+            </div>
+          </div>
+        )}
+        {modo === "curva" && (
+          <div className="f" style={{ gridColumn: "1/-1" }}>
+            <label htmlFor="hvCurva">Curva FRAC de venta</label>
+            <select id="hvCurva" value={curvaSel} onChange={(e) => fijar({ curva: e.target.value })}>
+              <option value="">
+                Automática: {curvaVenta && !curvaSel ? `${curvaVenta.nombre} (${F.date(curvaVenta.fechaBase)})` : "la de la fecha de venta"}
+              </option>
+              {motor.mercado.curvasFrac.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.nombre} · {F.date(c.fechaBase)}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+      </div>
+      {cuerpo}
     </Panel>
   );
 }

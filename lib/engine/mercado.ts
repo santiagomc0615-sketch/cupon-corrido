@@ -21,9 +21,30 @@ export interface DatosMercado {
   ibr: TuplaIBR[];
   ipc: TuplaIPC[];
   exp: TuplaFecha[];
+  /** Curva FRAC por defecto (hoja Curva_FRAC del Excel). */
   frac: TuplaFecha[];
   uvr: TuplaFecha[];
+  /** Curvas FRAC adicionales cargadas por el usuario. `datos` puede faltar si aún no se descargó. */
+  curvasFrac?: CurvaFRACDatos[];
 }
+
+/** Curva FRAC tal como se guarda y se transmite: [fecha ISO, IBR forward en fracción]. */
+export interface CurvaFRACDatos {
+  id: string;
+  nombre: string;
+  /** Primera fecha de la curva (fecha de la curva). */
+  fechaBase: string;
+  /** Cantidad de filas. */
+  filas: number;
+  /** Hoja o archivo de origen. */
+  origen?: string;
+  /** Fecha y hora de carga (ISO). */
+  cargada?: string;
+  datos?: TuplaFecha[];
+}
+
+/** Id de la curva FRAC que viene en el Excel del curso. */
+export const CURVA_EXCEL = "excel";
 
 /* ---------- Datos preparados ---------- */
 export interface FilaSerie<T> {
@@ -56,6 +77,19 @@ export interface Mercado {
   ipc: FilaIPC[];
   /** IPC con variación anual disponible. */
   ipcV: FilaIPCV[];
+  /** Todas las curvas FRAC disponibles: la del Excel primero y luego las cargadas. */
+  curvasFrac: CurvaFRAC[];
+}
+
+export interface CurvaFRAC {
+  id: string;
+  nombre: string;
+  fechaBase: string;
+  /** fechaBase como número de días */
+  n0: number;
+  filas: number;
+  /** null si la curva aún no se ha descargado. */
+  serie: FilaSerie<TuplaFecha>[] | null;
 }
 
 const prep = <T extends [string, ...unknown[]]>(a: T[]): FilaSerie<T>[] =>
@@ -67,17 +101,52 @@ export function prepararMercado(D: DatosMercado): Mercado {
     r.annual = i >= 12 ? r.d[1] / ipc[i - 12].d[1] - 1 : null;
     r.vig = addBizDays(r.n, 5) + 1;
   });
+  const frac = prep(D.frac);
+  const curvasFrac: CurvaFRAC[] = [
+    { id: CURVA_EXCEL, nombre: "Excel del curso (Curva_FRAC)", fechaBase: frac[0].f, n0: frac[0].n, filas: frac.length, serie: frac },
+    ...(D.curvasFrac ?? []).map((c) => ({
+      id: c.id,
+      nombre: c.nombre,
+      fechaBase: c.fechaBase,
+      n0: toN(c.fechaBase),
+      filas: c.filas,
+      serie: c.datos ? prep(c.datos) : null,
+    })),
+  ];
   return {
     curveDate: D.curveDate,
     tes: D.tes,
     zero: D.zero.slice().sort((a, b) => a[0] - b[0]),
     ibr: prep(D.ibr),
     uvr: prep(D.uvr),
-    frac: prep(D.frac),
+    frac,
     exp: prep(D.exp),
     ipc,
     ipcV: ipc.filter((r): r is FilaIPCV => r.annual != null),
+    curvasFrac,
   };
+}
+
+/** Curva FRAC para una fecha: la pedida por id; si no, la de fecha base igual a n;
+    si no, la más reciente con fecha base anterior a n; si no, la más antigua. */
+export function elegirCurvaFrac(M: Mercado, n: number, id?: string): CurvaFRAC {
+  const cs = M.curvasFrac;
+  if (id) {
+    const c = cs.find((x) => x.id === id);
+    if (c) return c;
+  }
+  const exacta = cs.find((x) => x.n0 === n);
+  if (exacta) return exacta;
+  let mejor: CurvaFRAC | null = null;
+  for (const c of cs) if (c.n0 <= n && (!mejor || c.n0 > mejor.n0)) mejor = c;
+  if (mejor) return mejor;
+  return cs.reduce((a, b) => (b.n0 < a.n0 ? b : a));
+}
+
+/** IBR forward de una curva en la fecha n (último dato con fecha ≤ n; el primero si n es anterior). */
+export function fracEn(serie: FilaSerie<TuplaFecha>[], n: number): number {
+  const i = lastLE(serie, n);
+  return serie[Math.max(0, i)].d[1];
 }
 
 /** Índice del último elemento con fecha ≤ n (búsqueda binaria), o −1. */
@@ -132,8 +201,7 @@ export function ibrPub(M: Mercado, n: number, col: number): { v: number; f: stri
 
 /** Tasa de la curva FRAC en la fecha n. */
 export function frac(M: Mercado, n: number): number {
-  const i = lastLE(M.frac, n);
-  return M.frac[Math.max(0, i)].d[1];
+  return fracEn(M.frac, n);
 }
 
 /** Curva cero cupón TES: interpolación lineal, plana fuera de rango. */

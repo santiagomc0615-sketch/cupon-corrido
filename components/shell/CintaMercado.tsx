@@ -13,6 +13,9 @@ export function CintaMercado() {
     ["IBR 3M", nf(3).format(ibr[3]) + "%", ""],
     ["IBR 12M", nf(3).format(ibr[5]) + "%", ""],
     ["UVR", nf(4).format(mk.uvrHoy.v), "up"],
+    ...(snap.trm
+      ? [["TRM", nf(2).format(snap.trm.valor), snap.trm.anterior == null ? "" : snap.trm.valor >= snap.trm.anterior ? "up" : "dn"] as [string, string, string]]
+      : []),
     ...mk.tesSorted.map((r): [string, string, string] => ["TES " + r[1].slice(2, 4) + "/" + r[1].slice(5, 7), F.pct(r[3], 3), ""]),
     ["TASA REAL", F.pct(mk.realRate, 2), ""],
   ];

@@ -45,6 +45,16 @@ const SECCIONES: { href: string; nombre: string; icono: ReactNode }[] = [
     nombre: "Noticias y fuentes",
     icono: <path d="M4 5h12v14H4zM16 9h4v8a2 2 0 0 1-4 0M7 9h6M7 12h6M7 15h4" />,
   },
+  {
+    href: "/datos",
+    nombre: "Cargar datos",
+    icono: (
+      <>
+        <ellipse cx="12" cy="5.5" rx="7" ry="2.5" />
+        <path d="M5 5.5v13c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5v-13M5 12c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5" />
+      </>
+    ),
+  },
 ];
 
 export function Riel() {
