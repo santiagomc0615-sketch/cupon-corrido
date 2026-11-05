@@ -6,6 +6,7 @@
 import "server-only";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
+import { BRAND } from "@/lib/brand";
 
 export const CONSULTAS_POR_HORA = 20;
 const HORA_MS = 60 * 60 * 1000;
@@ -39,28 +40,28 @@ export function limiteEnMemoria(id: string, ahora = Date.now(), max = CONSULTAS_
 
 /* ---------- Upstash ---------- */
 let upstash: Ratelimit | null | undefined;
-function limitadorUpstash(): Ratelimit | null {
+function limitadorUpstash(max: number): Ratelimit | null {
   if (upstash !== undefined) return upstash;
   upstash =
     process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
       ? new Ratelimit({
           redis: Redis.fromEnv(),
-          limiter: Ratelimit.slidingWindow(CONSULTAS_POR_HORA, "1 h"),
-          prefix: "cupon-corrido:asesor",
+          limiter: Ratelimit.slidingWindow(max, "1 h"),
+          prefix: `${BRAND.slug}:asesor`,
         })
       : null;
   return upstash;
 }
 
-export async function revisarLimite(ip: string): Promise<ResultadoLimite> {
-  const u = limitadorUpstash();
-  if (!u) return limiteEnMemoria(ip);
+export async function revisarLimite(ip: string, max = CONSULTAS_POR_HORA): Promise<ResultadoLimite> {
+  const u = limitadorUpstash(max);
+  if (!u) return limiteEnMemoria(ip, Date.now(), max);
   try {
     const r = await u.limit(ip);
     return { permitido: r.success, restantes: r.remaining, reinicio: r.reset, almacen: "upstash" };
   } catch (e) {
     console.warn("[asesor] Upstash no respondió; se usa el contador en memoria.", e);
-    return limiteEnMemoria(ip);
+    return limiteEnMemoria(ip, Date.now(), max);
   }
 }
 

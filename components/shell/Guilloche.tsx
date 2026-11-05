@@ -2,6 +2,7 @@
 /* Grabado guilloché (papel de seguridad) dibujado en canvas con el color --engrave del tema.
    Se redibuja al cambiar de tema claro/oscuro. */
 import { useEffect, useRef } from "react";
+import { BRAND } from "@/lib/brand";
 
 export interface OpcionesGuilloche {
   /** Radio relativo (0–1). */
@@ -17,8 +18,9 @@ export interface OpcionesGuilloche {
   lw?: number;
 }
 
-export const SELLO: OpcionesGuilloche = { R: 0.95, a: 0.32, n: 9, m: 2, lines: 14, alpha: 0.7, lw: 0.8 };
-export const ROSETA: OpcionesGuilloche = { R: 0.92, a: 0.22, n: 18, m: 3, lines: 46, alpha: 0.38, lw: 1 };
+/** Parámetros del logo (lib/brand.ts). */
+export const SELLO: OpcionesGuilloche = BRAND.logo.sello;
+export const ROSETA: OpcionesGuilloche = BRAND.logo.roseta;
 
 function dibujar(cv: HTMLCanvasElement, opt: OpcionesGuilloche) {
   const ctx = cv.getContext("2d");

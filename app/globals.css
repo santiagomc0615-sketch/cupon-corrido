@@ -5,8 +5,17 @@
    Los estilos de componentes vienen del prototipo (prototipo/app-plantilla.html); Tailwind se usa
    para utilidades de maquetación y expone los mismos colores (bg-paper, text-ink, border-rule…). */
 
-/* ---------- Tokens ---------- */
+/* ===================================================================================
+   TOKENS DE DISEÑO — el único lugar para cambiar colores, tipografías, radios, sombras y
+   animaciones. Los componentes solo usan estas variables (o las utilidades de Tailwind que
+   se generan desde ellas en @theme más abajo).
+   - Colores: bloque :root (tema claro) y los dos bloques del tema oscuro (iguales entre sí:
+     uno aplica con el modo del sistema y otro cuando el usuario elige "Oscuro").
+   - Tipografías: --f-display / --f-body / --f-mono. Las fuentes web se cargan en app/fuentes.ts.
+   - Nombre, eslogan, logo y dominio: lib/brand.ts.
+   =================================================================================== */
 :root {
+  /* Colores — tema claro */
   --paper: #e9ede8;
   --sheet: #f8faf7;
   --sheet-2: #f0f3ef;
@@ -20,10 +29,29 @@
   --pos: #1d7a4b;
   --neg: #b23f2e;
   --warn: #9c6b12;
-  --f-display: var(--font-bodoni), "Didot", "Bodoni 72", Georgia, serif;
-  --f-body: var(--font-plex-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
-  --f-mono: var(--font-plex-mono), ui-monospace, "SF Mono", Menlo, monospace;
-  --r: 6px;
+  /* Cinta de mercado: fondo oscuro en ambos temas, así que sus alzas/bajas no cambian */
+  --tape-up: #7fd3a6;
+  --tape-dn: #f2967f;
+
+  /* Tipografías (las variables --font-* las crea app/fuentes.ts) */
+  --f-display: var(--font-display-web), "Didot", "Bodoni 72", Georgia, serif;
+  --f-body: var(--font-body-web), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: var(--font-mono-web), ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* Radios */
+  --r: 6px; /* paneles, botones, tablas */
+  --r-sm: 4px; /* campos, gráficos de barras, tooltips */
+  --r-xs: 3px; /* etiquetas pequeñas */
+  --r-pill: 999px; /* chips y sellos */
+  --r-circle: 50%;
+
+  /* Sombras y efectos */
+  --sombra-foco: 0 0 0 3px var(--engrave-soft);
+  --brillo-hover: brightness(1.08);
+
+  /* Animaciones (nombres reutilizables; se desactivan con prefers-reduced-motion) */
+  --dur-cinta: 60s;
+  --anim-cinta: cc-desplazar var(--dur-cinta) linear infinite;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
@@ -78,6 +106,35 @@
   --font-sans: var(--f-body);
   --font-mono: var(--f-mono);
   --radius-sheet: var(--r);
+  --radius-sm: var(--r-sm);
+  --radius-xs: var(--r-xs);
+  --radius-pill: var(--r-pill);
+  --shadow-foco: var(--sombra-foco);
+  --animate-cinta: var(--anim-cinta);
+}
+
+/* ---------- Animaciones ---------- */
+@keyframes cc-desplazar {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+/* Quien pide menos movimiento en su sistema no ve animaciones ni transiciones. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .tape-track {
+    animation: none !important;
+  }
 }
 
 /* ---------- Base ---------- */
@@ -298,7 +355,7 @@
     display: inline-flex;
     gap: 34px;
     padding: 8px 0;
-    animation: tape 60s linear infinite;
+    animation: var(--anim-cinta);
     font: 500 12px var(--f-mono);
   }
   .tape:hover .tape-track {
@@ -311,23 +368,10 @@
     letter-spacing: 0.06em;
   }
   .tape .up {
-    color: #7fd3a6;
+    color: var(--tape-up);
   }
   .tape .dn {
-    color: #f2967f;
-  }
-  @keyframes tape {
-    from {
-      transform: translateX(0);
-    }
-    to {
-      transform: translateX(-50%);
-    }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .tape-track {
-      animation: none;
-    }
+    color: var(--tape-dn);
   }
 
   .wrap {
@@ -429,7 +473,7 @@
     align-items: center;
     border: 1px solid var(--seal);
     color: var(--seal);
-    border-radius: 999px;
+    border-radius: var(--r-pill);
     padding: 3px 10px;
     font: 500 11px var(--f-mono);
     letter-spacing: 0.06em;
@@ -489,7 +533,7 @@
     gap: 6px;
     font: 500 11px var(--f-mono);
     padding: 2px 8px;
-    border-radius: 999px;
+    border-radius: var(--r-pill);
     border: 1px solid var(--rule);
     color: var(--ink-2);
     white-space: nowrap;
@@ -509,7 +553,7 @@
   .dot {
     width: 7px;
     height: 7px;
-    border-radius: 50%;
+    border-radius: var(--r-circle);
     background: currentColor;
   }
 
@@ -599,7 +643,7 @@
     color: var(--paper);
     font: 11px/1.45 var(--f-mono);
     padding: 6px 9px;
-    border-radius: 4px;
+    border-radius: var(--r-sm);
     white-space: nowrap;
     transform: translate(-50%, -110%);
     z-index: 5;
@@ -647,7 +691,7 @@
     border: 0;
     background: none;
     padding: 7px 14px;
-    border-radius: 4px;
+    border-radius: var(--r-sm);
     cursor: pointer;
     font-weight: 500;
     color: var(--ink-2);
@@ -713,7 +757,7 @@
     width: 100%;
     padding: 8px 10px;
     border: 1px solid var(--rule);
-    border-radius: 4px;
+    border-radius: var(--r-sm);
     background: var(--paper);
     font-family: var(--f-mono);
     font-size: 13px;
@@ -723,7 +767,7 @@
   .f select:focus {
     border-color: var(--engrave);
     outline: none;
-    box-shadow: 0 0 0 3px var(--engrave-soft);
+    box-shadow: var(--sombra-foco);
   }
   .f .u {
     position: relative;
@@ -766,7 +810,7 @@
     color: var(--sheet);
   }
   .btn.primary:hover {
-    filter: brightness(1.08);
+    filter: var(--brillo-hover);
   }
   .btn.ghost {
     background: none;
@@ -881,14 +925,14 @@
   .tag {
     font: 500 10px var(--f-mono);
     padding: 2px 6px;
-    border-radius: 3px;
+    border-radius: var(--r-xs);
     background: var(--engrave-soft);
     color: var(--engrave);
   }
   .alloc {
     display: flex;
     height: 34px;
-    border-radius: 4px;
+    border-radius: var(--r-sm);
     overflow: hidden;
     border: 1px solid var(--rule);
   }
@@ -1055,6 +1099,12 @@
     letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--engrave);
+  }
+  .demo-asesor {
+    border-style: solid;
+    border-color: color-mix(in srgb, var(--seal) 45%, var(--rule));
+    background: color-mix(in srgb, var(--seal) 6%, transparent);
+    align-items: center;
   }
   /* modo clase */
   .clase {

@@ -72,7 +72,7 @@ export function VistaCurva() {
             Forward 1 año implícito
           </span>
           <span>
-            <i className="b" style={{ height: 8, width: 8, borderRadius: "50%" }} />
+            <i className="b" style={{ height: 8, width: 8, borderRadius: "var(--r-circle)" }} />
             TES de mercado
           </span>
           <span>

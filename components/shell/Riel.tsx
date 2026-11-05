@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+import { BRAND } from "@/lib/brand";
 import { Guilloche, SELLO } from "./Guilloche";
 import { SelectorTema } from "./SelectorTema";
 
@@ -61,11 +62,11 @@ export function Riel() {
   const ruta = usePathname();
   return (
     <aside className="rail">
-      <Link href="/mercado" className="brand" aria-label="Cupón Corrido, inicio">
+      <Link href={BRAND.inicio} className="brand" aria-label={`${BRAND.nombre}, inicio`}>
         <Guilloche opt={SELLO} size={88} />
         <div>
-          <b>Cupón Corrido</b>
-          <small>Mesa de renta fija · COL</small>
+          <b>{BRAND.nombre}</b>
+          <small>{BRAND.eslogan}</small>
         </div>
       </Link>
       <nav className="nav" aria-label="Secciones">
@@ -86,7 +87,7 @@ export function Riel() {
       </nav>
       <div className="rail-foot">
         <SelectorTema />
-        <div>Herramienta académica, no es asesoría financiera.</div>
+        <div>{BRAND.avisoLegal}</div>
       </div>
     </aside>
   );

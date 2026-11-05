@@ -1,18 +1,16 @@
 /* Asesor de IA: recibe la pregunta, un historial corto y el contexto de mercado y portafolio,
    y responde en streaming (texto plano) con la API de Anthropic.
-   - Clave en ANTHROPIC_API_KEY (.env.local / variables de Vercel). Nunca llega al navegador.
-   - Límite: 20 consultas por hora por IP (lib/asesor/limite.ts). */
+   - Sin ANTHROPIC_API_KEY funciona en modo demo: GET informa el estado y POST responde 503 con
+     { demo: true } sin llamar a la API. Al configurar la clave se activa sin tocar código.
+   - Control de costos (lib/asesor/config.ts): 20 consultas/hora por IP, longitud máxima de
+     respuesta, modelo y esfuerzo por variables de entorno, y caché de 24 h para
+     "Resumen de la economía" (no consume el límite). */
 import Anthropic from "@anthropic-ai/sdk";
+import { claveCache, guardarCache, leerCache } from "@/lib/asesor/cache";
+import { configAsesor, HORAS_CACHE_RESUMEN, MENSAJE_DEMO } from "@/lib/asesor/config";
 import { SYS } from "@/lib/asesor/contexto";
 import { ipDe, revisarLimite } from "@/lib/asesor/limite";
 import { validarPeticion } from "@/lib/asesor/peticion";
-
-/** Modelo y esfuerzo configurables sin tocar código. */
-const MODELO = process.env.ASESOR_MODELO || "claude-opus-5-5";
-type Esfuerzo = "low" | "medium" | "high" | "xhigh" | "max";
-const ESFUERZO: Esfuerzo = (["low", "medium", "high", "xhigh", "max"] as const).includes(process.env.ASESOR_ESFUERZO as Esfuerzo)
-  ? (process.env.ASESOR_ESFUERZO as Esfuerzo)
-  : "medium";
 
 /** Instrucción adicional para un chat: empezar a responder pronto. */
 const SISTEMA = `${SYS}
@@ -24,10 +22,13 @@ const anthropic = () => (cliente ??= new Anthropic());
 const json = (cuerpo: unknown, status: number, headers: Record<string, string> = {}) =>
   Response.json(cuerpo, { status, headers: { "Cache-Control": "no-store", ...headers } });
 
-function errorDeApi(e: unknown): Response {
+const texto = (t: string, headers: Record<string, string>) =>
+  new Response(t, { headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store", ...headers } });
+
+function errorDeApi(e: unknown, modelo: string): Response {
   if (e instanceof Anthropic.AuthenticationError || e instanceof Anthropic.PermissionDeniedError)
     return json({ error: "La clave de la API de Anthropic no es válida o no tiene permisos. Revise ANTHROPIC_API_KEY." }, 500);
-  if (e instanceof Anthropic.NotFoundError) return json({ error: `El modelo «${MODELO}» no está disponible para esta cuenta.` }, 500);
+  if (e instanceof Anthropic.NotFoundError) return json({ error: `El modelo «${modelo}» no está disponible para esta cuenta.` }, 500);
   if (e instanceof Anthropic.RateLimitError) return json({ error: "El servicio de IA está recibiendo muchas consultas. Intente en un minuto." }, 503);
   if (e instanceof Anthropic.BadRequestError) return json({ error: "La consulta no es válida para la API: " + e.message }, 400);
   if (e instanceof Anthropic.APIError) return json({ error: `El servicio de IA respondió con un error (${e.status ?? "sin estado"}). Intente de nuevo.` }, 502);
@@ -35,10 +36,24 @@ function errorDeApi(e: unknown): Response {
   return json({ error: "No se pudo completar el análisis." }, 500);
 }
 
+/** Estado del asesor para la interfaz (sin revelar la clave). */
+export async function GET() {
+  const c = configAsesor();
+  return json(
+    {
+      activo: c.activo,
+      mensajeDemo: c.activo ? null : MENSAJE_DEMO,
+      modelo: c.activo ? c.modelo : null,
+      consultasPorHora: c.consultasPorHora,
+      horasCacheResumen: HORAS_CACHE_RESUMEN,
+    },
+    200,
+  );
+}
+
 export async function POST(req: Request) {
-  if (!process.env.ANTHROPIC_API_KEY && !process.env.ANTHROPIC_AUTH_TOKEN) {
-    return json({ error: "El asesor no está configurado: falta ANTHROPIC_API_KEY en el servidor." }, 503);
-  }
+  const cfg = configAsesor();
+  if (!cfg.activo) return json({ error: MENSAJE_DEMO, demo: true }, 503);
 
   let cuerpo: unknown;
   try {
@@ -48,19 +63,26 @@ export async function POST(req: Request) {
   }
   const v = validarPeticion(cuerpo);
   if (!v.ok) return json({ error: v.error }, 400);
+  const { pregunta, historial, contexto, rapida } = v.p;
 
-  const limite = await revisarLimite(ipDe(req));
+  // "Resumen de la economía": si ya se respondió con estos mismos datos de mercado, se reutiliza.
+  const clave = rapida && historial.length === 0 ? claveCache(rapida, cfg.modelo, contexto) : null;
+  if (clave) {
+    const guardada = await leerCache(clave);
+    if (guardada) return texto(guardada, { "X-Asesor-Cache": "HIT", "X-Modelo": cfg.modelo });
+  }
+
+  const limite = await revisarLimite(ipDe(req), cfg.consultasPorHora);
   const cabecerasLimite = { "X-Consultas-Restantes": String(limite.restantes) };
   if (!limite.permitido) {
     const minutos = Math.max(1, Math.ceil((limite.reinicio - Date.now()) / 60_000));
     return json(
-      { error: `Alcanzó el límite de 20 consultas por hora. Podrá preguntar de nuevo en ${minutos} min.` },
+      { error: `Alcanzó el límite de ${cfg.consultasPorHora} consultas por hora. Podrá preguntar de nuevo en ${minutos} min.` },
       429,
       { ...cabecerasLimite, "Retry-After": String(minutos * 60) },
     );
   }
 
-  const { pregunta, historial, contexto } = v.p;
   const system: Anthropic.Beta.BetaTextBlockParam[] = [
     { type: "text", text: SISTEMA },
     {
@@ -72,11 +94,11 @@ export async function POST(req: Request) {
   const messages: Anthropic.Beta.BetaMessageParam[] = [...historial, { role: "user", content: pregunta }];
 
   const stream = anthropic().beta.messages.stream({
-    model: MODELO,
-    max_tokens: 16000,
+    model: cfg.modelo,
+    max_tokens: cfg.maxTokens,
     system,
     messages,
-    output_config: { effort: ESFUERZO },
+    output_config: { effort: cfg.esfuerzo },
     // Si los filtros de seguridad declinan, la API reintenta en el modelo de respaldo recomendado.
     betas: ["server-side-fallback-2026-07-01"],
     fallbacks: "default",
@@ -89,14 +111,18 @@ export async function POST(req: Request) {
     primero = await eventos.next();
   } catch (e) {
     console.error("[asesor] Error al iniciar la respuesta:", e);
-    return errorDeApi(e);
+    return errorDeApi(e, cfg.modelo);
   }
 
   const cod = new TextEncoder();
   const cuerpoRespuesta = new ReadableStream<Uint8Array>({
     async start(ctrl) {
+      let completo = "";
       const emitir = (ev: Anthropic.Beta.BetaRawMessageStreamEvent) => {
-        if (ev.type === "content_block_delta" && ev.delta.type === "text_delta") ctrl.enqueue(cod.encode(ev.delta.text));
+        if (ev.type === "content_block_delta" && ev.delta.type === "text_delta") {
+          completo += ev.delta.text;
+          ctrl.enqueue(cod.encode(ev.delta.text));
+        }
       };
       try {
         if (!primero.done) emitir(primero.value);
@@ -109,6 +135,7 @@ export async function POST(req: Request) {
         if (final.stop_reason === "refusal")
           ctrl.enqueue(cod.encode("\n\n_El asesor no puede responder esta consulta. Reformúlela en términos del curso._"));
         else if (final.stop_reason === "max_tokens") ctrl.enqueue(cod.encode("\n\n_(Respuesta recortada por longitud.)_"));
+        else if (clave && final.stop_reason === "end_turn" && completo.trim()) await guardarCache(clave, completo);
       } catch (e) {
         console.error("[asesor] Error durante la respuesta:", e);
         ctrl.enqueue(cod.encode("\n\n_Se interrumpió la respuesta. Intente de nuevo._"));
@@ -125,7 +152,8 @@ export async function POST(req: Request) {
     headers: {
       "Content-Type": "text/plain; charset=utf-8",
       "Cache-Control": "no-store",
-      "X-Modelo": MODELO,
+      "X-Modelo": cfg.modelo,
+      ...(clave ? { "X-Asesor-Cache": "MISS" } : {}),
       ...cabecerasLimite,
     },
   });

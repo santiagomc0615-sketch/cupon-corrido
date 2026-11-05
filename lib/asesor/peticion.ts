@@ -5,7 +5,13 @@ export interface TurnoHistorial {
   content: string;
 }
 
+/** Consultas rápidas cuya respuesta no depende del portafolio y se puede guardar en caché. */
+export const RAPIDAS_CACHEABLES = ["resumen"] as const;
+export type RapidaCacheable = (typeof RAPIDAS_CACHEABLES)[number];
+
 export interface PeticionAsesor {
+  /** Consulta rápida cacheable, si la pregunta es una de ellas. */
+  rapida?: RapidaCacheable;
   pregunta: string;
   /** Turnos anteriores (solo texto), los más recientes. */
   historial: TurnoHistorial[];
@@ -45,5 +51,6 @@ export function validarPeticion(cuerpo: unknown): { ok: true; p: PeticionAsesor 
     if (texto.length > LIMITES.contexto) return { ok: false, error: "El contexto enviado es demasiado grande." };
     contexto = c.contexto;
   }
-  return { ok: true, p: { pregunta, historial: alternado, contexto } };
+  const rapida = RAPIDAS_CACHEABLES.find((r) => r === c.rapida);
+  return { ok: true, p: { pregunta, historial: alternado, contexto, ...(rapida ? { rapida } : {}) } };
 }

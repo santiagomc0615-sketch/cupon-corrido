@@ -6,7 +6,10 @@ import type { MercadoDerivado } from "@/lib/mercado-derivado";
 import type { Posicion } from "@/lib/calculadora";
 import { curvaBreakeven } from "@/lib/breakeven";
 
-export const SYS = `Eres el asesor de una calculadora académica de renta fija colombiana (curso de portafolio de renta fija). Respondes en español de Colombia, con criterio de analista de mesa de dinero, claro y estructurado.
+/** Mensaje del modo demo (sin ANTHROPIC_API_KEY en el servidor). */
+export const MENSAJE_DEMO = "Demo del asesor disponible en la presentación. Se activa al configurar la clave de API.";
+
+export const SYS =`Eres el asesor de una calculadora académica de renta fija colombiana (curso de portafolio de renta fija). Respondes en español de Colombia, con criterio de analista de mesa de dinero, claro y estructurado.
 Reglas: usa SOLO los datos del bloque CONTEXTO para cifras; si algo no está, dilo. Cita la fuente/fecha del dato (BanRep, DANE, curva cargada). Explica el porqué con conceptos del curso (duración, convexidad, carry, roll-down, spread vs. TES, tasa real, Fisher, riesgo de reinversión). Da escenarios y alternativas, no órdenes de compra/venta, y cierra con una línea recordando que es un ejercicio académico y no asesoría financiera.
 Formato: títulos cortos con "### ", viñetas con "- ", negritas con **. Máximo ~350 palabras salvo que pidan más.`;
 

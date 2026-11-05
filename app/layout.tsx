@@ -1,43 +1,26 @@
 import type { Metadata, Viewport } from "next";
-import { Bodoni_Moda, IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
 import { AppProvider } from "@/components/providers/AppProvider";
 import { CintaMercado } from "@/components/shell/CintaMercado";
 import { Riel } from "@/components/shell/Riel";
 import { SCRIPT_TEMA } from "@/components/shell/SelectorTema";
+import { BRAND } from "@/lib/brand";
 import { obtenerMercado } from "@/lib/data/mercado";
+import { clasesFuentes } from "./fuentes";
 import "./globals.css";
 
-const bodoni = Bodoni_Moda({
-  subsets: ["latin"],
-  style: ["normal", "italic"],
-  axes: ["opsz"],
-  variable: "--font-bodoni",
-  display: "swap",
-});
-const plexSans = IBM_Plex_Sans({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  variable: "--font-plex-sans",
-  display: "swap",
-});
-const plexMono = IBM_Plex_Mono({
-  subsets: ["latin"],
-  weight: ["400", "500"],
-  variable: "--font-plex-mono",
-  display: "swap",
-});
-
 export const metadata: Metadata = {
-  title: { default: "Cupón Corrido", template: "%s · Cupón Corrido" },
-  description:
-    "Calculadora académica de renta fija colombiana: valoración de bonos tasa fija, IBR, IPC y UVR, portafolio, curva TES y datos de mercado.",
+  metadataBase: new URL(BRAND.dominio),
+  title: { default: BRAND.nombre, template: `%s · ${BRAND.nombre}` },
+  description: BRAND.descripcion,
+  applicationName: BRAND.nombre,
+  openGraph: { title: BRAND.nombre, description: BRAND.descripcion, siteName: BRAND.nombre, locale: "es_CO", type: "website" },
 };
 
 export const viewport: Viewport = {
   viewportFit: "cover",
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#E9EDE8" },
-    { media: "(prefers-color-scheme: dark)", color: "#0B1411" },
+    { media: "(prefers-color-scheme: light)", color: BRAND.colorBarra.claro },
+    { media: "(prefers-color-scheme: dark)", color: BRAND.colorBarra.oscuro },
   ],
 };
 
@@ -46,7 +29,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="es-CO"
-      className={`${bodoni.variable} ${plexSans.variable} ${plexMono.variable}`}
+      className={clasesFuentes}
       suppressHydrationWarning
     >
       <head>
@@ -61,7 +44,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
               <div className="wrap">
                 {children}
                 <footer className="site-foot">
-                  <span>Herramienta académica, no es asesoría financiera.</span>
+                  <span>{BRAND.avisoLegal}</span>
                   <span>
                     {snap.origen === "en-vivo"
                       ? `Datos: BanRep (SDMX), datos.gov.co, DANE y series cargadas · actualizado ${snap.actualizado.replace(" ", " ")} (hora de Colombia).`
