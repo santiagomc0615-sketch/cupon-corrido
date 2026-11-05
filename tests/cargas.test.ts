@@ -61,7 +61,7 @@ describe("Excel del curso (todas las hojas)", () => {
   });
 
   it("lee las referencias TES y la curva cero calculada coincide con la del Excel", () => {
-    const tes = de("tes")[0];
+    const tes = det.find((d) => d.tipo === "tes") as { fecha: string; refs: [string, string, number, number][] };
     expect(tes.fecha).toBe(D.curveDate);
     expect(tes.refs.length).toBe(D.tes.length);
     const tuplas: TuplaTES[] = tes.refs.map(([t, v, c, r]) => [t, v, c, r, plazoTES(tes.fecha, v)]);

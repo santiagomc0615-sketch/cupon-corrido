@@ -14,6 +14,7 @@ import {
   type CargaTES,
   type CargasServidor,
   type IndiceCargas,
+  type TipoEliminable,
   type TipoSerieCargada,
 } from "@/lib/cargas/tipos";
 
@@ -90,7 +91,8 @@ export async function leerCargas(): Promise<CargasServidor> {
     if (s) series[t] = s;
   }
   const tes = indice.tes ? ((await leerJSON<CargaTES>("tes.json")) ?? undefined) : undefined;
-  return { indice, series, tes };
+  const tesuvr = indice.tesuvr ? ((await leerJSON<CargaTES>("tesuvr.json")) ?? undefined) : undefined;
+  return { indice, series, tes, tesuvr };
 }
 
 export async function leerCurvaFrac(id: string): Promise<CargaFRAC | null> {
@@ -114,10 +116,10 @@ export async function guardarCarga(c: Carga): Promise<IndiceCargas> {
     void _datos;
     void _tipo;
     indice.frac = [...indice.frac.filter((x) => x.id !== c.id), m].sort((x, y) => (x.fechaBase < y.fechaBase ? 1 : -1));
-  } else if (c.tipo === "tes") {
-    await a.escribir("tes.json", JSON.stringify(c));
+  } else if ("refs" in c) {
+    await a.escribir(`${c.tipo}.json`, JSON.stringify(c));
     const filas = c.refs.map((r) => [r[1], 0] as [string, unknown]).sort();
-    indice.tes = { ...meta(c.origen, c.cargada, filas), fecha: c.fecha };
+    indice[c.tipo] = { ...meta(c.origen, c.cargada, filas), fecha: c.fecha };
   } else {
     await a.escribir(`${c.tipo}.json`, JSON.stringify(c));
     indice.series = { ...indice.series, [c.tipo]: meta(c.origen, c.cargada, c.datos) };
@@ -126,16 +128,16 @@ export async function guardarCarga(c: Carga): Promise<IndiceCargas> {
   return indice;
 }
 
-export async function eliminarCarga(tipo: "frac" | "tes" | TipoSerieCargada, id?: string): Promise<IndiceCargas> {
+export async function eliminarCarga(tipo: TipoEliminable, id?: string): Promise<IndiceCargas> {
   const a = almacen();
   const indice = await leerIndice();
   if (tipo === "frac") {
     if (!id) throw new Error("Falta el id de la curva");
     await a.borrar(archivoFrac(id));
     indice.frac = indice.frac.filter((x) => x.id !== id);
-  } else if (tipo === "tes") {
-    await a.borrar("tes.json");
-    delete indice.tes;
+  } else if (tipo === "tes" || tipo === "tesuvr") {
+    await a.borrar(`${tipo}.json`);
+    delete indice[tipo];
   } else {
     await a.borrar(`${tipo}.json`);
     const { [tipo]: _quitar, ...resto } = indice.series;

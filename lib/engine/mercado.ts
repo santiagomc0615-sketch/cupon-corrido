@@ -26,6 +26,8 @@ export interface DatosMercado {
   uvr: TuplaFecha[];
   /** Curvas FRAC adicionales cargadas por el usuario. `datos` puede faltar si aún no se descargó. */
   curvasFrac?: CurvaFRACDatos[];
+  /** Curva TES UVR (real) cargada: referencias y curva cero real. Opcional. */
+  curvaUVR?: { fecha: string; tes: TuplaTES[]; zero: [number, number][] };
 }
 
 /** Curva FRAC tal como se guarda y se transmite: [fecha ISO, IBR forward en fracción]. */
@@ -206,7 +208,11 @@ export function frac(M: Mercado, n: number): number {
 
 /** Curva cero cupón TES: interpolación lineal, plana fuera de rango. */
 export function spot(M: Mercado, t: number): number {
-  const z = M.zero;
+  return spotEn(M.zero, t);
+}
+
+/** Interpolación lineal en una curva cero [plazo, tasa] ordenada; plana fuera de rango. */
+export function spotEn(z: [number, number][], t: number): number {
   if (t <= z[0][0]) return z[0][1];
   if (t >= z[z.length - 1][0]) return z[z.length - 1][1];
   for (let i = 1; i < z.length; i++)

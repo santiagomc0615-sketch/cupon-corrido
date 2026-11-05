@@ -21,7 +21,7 @@ export const MAX_FILAS = 40_000;
 export function validarCarga(c: Carga): string[] {
   const e: string[] = [];
   if (!c.origen?.trim()) e.push("Falta el origen (archivo u hoja).");
-  if (c.tipo === "tes") {
+  if ("refs" in c) {
     if (!fechaOk(c.fecha)) e.push("La fecha de la curva TES no es válida.");
     if (c.refs.length < 2) e.push("Se necesitan al menos 2 referencias TES.");
     if (c.refs.length > 60) e.push("Demasiadas referencias TES (máximo 60).");

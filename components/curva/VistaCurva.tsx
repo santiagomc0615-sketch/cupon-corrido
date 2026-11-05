@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { Chart, nearest, type PuntoSerie } from "@/components/charts/Chart";
 import { useApp } from "@/components/providers/AppProvider";
+import { Breakeven } from "./Breakeven";
 import { Encabezado, Kpi, Panel } from "@/components/ui";
 import { F, pctAx } from "@/lib/format";
 
@@ -80,6 +81,8 @@ export function VistaCurva() {
           </span>
         </div>
       </Panel>
+
+      <Breakeven />
 
       <div className="grid-c g2">
         <Panel titulo="Referencias TES" src={"Cierre " + F.date(motor.mercado.curveDate)}>

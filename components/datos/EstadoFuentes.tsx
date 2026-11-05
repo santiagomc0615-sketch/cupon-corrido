@@ -13,11 +13,13 @@ export const NOMBRES_FUENTE: Record<ClaveFuente, string> = {
   ipc: "IPC (índice DANE)",
   exp: "Expectativas de inflación",
   tes: "Curva TES",
+  tesuvr: "Curva TES UVR (real)",
   frac: "Curvas FRAC",
   trm: "TRM",
 };
 
 const ACTUALIZACION: Record<ClaveFuente, string> = {
+  tesuvr: "Carga manual",
   tpm: "Diaria (automática)",
   ibr: "Diaria (automática)",
   ibr12: "Carga manual",

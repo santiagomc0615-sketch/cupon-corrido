@@ -9,7 +9,7 @@ import { TablaFuentes } from "@/components/datos/EstadoFuentes";
 import { useApp } from "@/components/providers/AppProvider";
 import { Aviso, Encabezado, Panel } from "@/components/ui";
 import { detectarCSV, detectarHojas, idCurva, type Detectada, type HojaLeida, type TipoCSV } from "@/lib/cargas/leer";
-import { NOMBRE_SERIE, type Carga, type TipoSerieCargada } from "@/lib/cargas/tipos";
+import { NOMBRE_SERIE, type Carga, type TipoEliminable, type TipoSerieCargada } from "@/lib/cargas/tipos";
 import { validarCarga } from "@/lib/cargas/validar";
 import { CURVA_EXCEL, toN } from "@/lib/engine";
 import { F, nf, pctAx } from "@/lib/format";
@@ -31,12 +31,15 @@ interface EstadoServidor {
 
 const CLAVE_SESION = "cc_admin";
 
+/** Hoja de referencias TES (tasa fija o UVR). */
+const esTES = (d: Item["d"]): d is Extract<Item["d"], { refs: unknown }> => "refs" in d;
+
 function aCarga(it: Item, archivo: string): Carga {
   const origen = `${archivo} · ${it.d.hoja}`;
   const d = it.d;
   if (d.tipo === "frac")
     return { tipo: "frac", id: it.id, nombre: it.nombre.trim(), fechaBase: d.datos[0]?.[0] ?? "", filas: d.datos.length, origen, cargada: "", datos: d.datos };
-  if (d.tipo === "tes") return { tipo: "tes", origen, cargada: "", fecha: it.fecha, refs: d.refs };
+  if ("refs" in d) return { tipo: d.tipo, origen, cargada: "", fecha: it.fecha, refs: d.refs };
   return { tipo: d.tipo, origen, cargada: "", datos: d.datos };
 }
 
@@ -86,10 +89,10 @@ export function VistaDatos() {
           const fb = d.tipo === "frac" ? (d.datos[0]?.[0] ?? "") : "";
           return {
             d,
-            incluir: d.tipo === "tes" ? d.refs.length > 0 : d.datos.length > 0,
+            incluir: esTES(d) ? d.refs.length > 0 : d.datos.length > 0,
             id: idCurva(fb || "sin-fecha"),
             nombre: d.tipo === "frac" ? `${d.sugerido} · ${fb ? F.date(fb) : d.hoja}` : "",
-            fecha: d.tipo === "tes" ? d.fecha : "",
+            fecha: esTES(d) ? d.fecha : "",
           };
         }),
     );
@@ -163,7 +166,7 @@ export function VistaDatos() {
     }
   };
 
-  const eliminar = async (tipo: "frac" | "tes" | TipoSerieCargada, id: string | undefined, nombre: string) => {
+  const eliminar = async (tipo: TipoEliminable, id: string | undefined, nombre: string) => {
     if (!confirm(`¿Eliminar «${nombre}»? Esta acción no se puede deshacer.`)) return;
     try {
       await enviar({ accion: "eliminar", tipo, id });
@@ -238,14 +241,14 @@ export function VistaDatos() {
               <div className="f">
                 <label htmlFor="tipoCSV">El CSV contiene</label>
                 <select id="tipoCSV" value={tipoCSV} onChange={(e) => releerCSV(e.target.value as TipoCSV, fechaCSV)}>
-                  {(["frac", "exp", "ipc", "ibr12", "tes"] as TipoCSV[]).map((t) => (
+                  {(["frac", "exp", "ipc", "ibr12", "tes", "tesuvr"] as TipoCSV[]).map((t) => (
                     <option key={t} value={t}>
                       {NOMBRE_SERIE[t]}
                     </option>
                   ))}
                 </select>
               </div>
-              {tipoCSV === "tes" && (
+              {(tipoCSV === "tes" || tipoCSV === "tesuvr") && (
                 <div className="f">
                   <label htmlFor="fechaCSV">Fecha de la curva</label>
                   <input id="fechaCSV" type="date" value={fechaCSV} onChange={(e) => releerCSV(tipoCSV, e.target.value)} />
@@ -350,7 +353,7 @@ export function VistaDatos() {
       </Panel>
 
       <Panel titulo="Otras series cargadas">
-        {Object.keys(snap.cargas.series).length || snap.cargas.tes ? (
+        {Object.keys(snap.cargas.series).length || snap.cargas.tes || snap.cargas.tesuvr ? (
           <div className="tbl" style={{ maxHeight: "none" }}>
             <table>
               <thead>
@@ -380,20 +383,24 @@ export function VistaDatos() {
                     </td>
                   </tr>
                 ))}
-                {snap.cargas.tes && (
-                  <tr>
-                    <td className="t">{NOMBRE_SERIE.tes}</td>
-                    <td>{snap.cargas.tes.fecha}</td>
-                    <td>{snap.cargas.tes.hasta}</td>
-                    <td>{snap.cargas.tes.filas}</td>
-                    <td className="t">{snap.cargas.tes.origen}</td>
-                    <td>
-                      <button type="button" className="btn sm ghost" disabled={sinClave} onClick={() => eliminar("tes", undefined, NOMBRE_SERIE.tes)}>
-                        Eliminar
-                      </button>
-                    </td>
-                  </tr>
-                )}
+                {(["tes", "tesuvr"] as const).map((k) => {
+                  const m = snap.cargas[k];
+                  if (!m) return null;
+                  return (
+                    <tr key={k}>
+                      <td className="t">{NOMBRE_SERIE[k]}</td>
+                      <td>{m.fecha}</td>
+                      <td>{m.hasta}</td>
+                      <td>{m.filas}</td>
+                      <td className="t">{m.origen}</td>
+                      <td>
+                        <button type="button" className="btn sm ghost" disabled={sinClave} onClick={() => eliminar(k, undefined, NOMBRE_SERIE[k])}>
+                          Eliminar
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -416,7 +423,7 @@ export function VistaDatos() {
 
 function TarjetaHoja({ it, problemas, onCambio }: { it: Item; problemas: string[]; onCambio: (c: Partial<Item>) => void }) {
   const d = it.d;
-  const serie = d.tipo === "tes" ? null : d.datos;
+  const serie = esTES(d) ? null : d.datos;
   const desde = serie?.[0]?.[0],
     hasta = serie?.[serie.length - 1]?.[0];
   const unidad = d.tipo === "ipc" ? (v: number) => nf(2).format(v) : (v: number) => F.pct(v, 3);
@@ -436,7 +443,7 @@ function TarjetaHoja({ it, problemas, onCambio }: { it: Item; problemas: string[
           <span className="tag">{d.hoja}</span>
         </label>
         <span className="src">
-          {d.tipo === "tes"
+          {esTES(d)
             ? `${d.refs.length} referencias`
             : `${nf(0).format(serie!.length)} filas · ${desde ?? "—"} a ${hasta ?? "—"}`}
         </span>
@@ -458,7 +465,7 @@ function TarjetaHoja({ it, problemas, onCambio }: { it: Item; problemas: string[
         </div>
       )}
 
-      {d.tipo === "tes" && (
+      {esTES(d) && (
         <div style={{ marginTop: 10 }}>
           <div className="f" style={{ maxWidth: 240 }}>
             <label htmlFor={"f" + it.id}>Fecha de la curva</label>

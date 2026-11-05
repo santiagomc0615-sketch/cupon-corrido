@@ -4,6 +4,7 @@ import type { Motor, MetricasPortafolio, PosicionValorada } from "@/lib/engine";
 import type { SnapshotMercado } from "@/lib/data/mercado";
 import type { MercadoDerivado } from "@/lib/mercado-derivado";
 import type { Posicion } from "@/lib/calculadora";
+import { curvaBreakeven } from "@/lib/breakeven";
 
 export const SYS = `Eres el asesor de una calculadora académica de renta fija colombiana (curso de portafolio de renta fija). Respondes en español de Colombia, con criterio de analista de mesa de dinero, claro y estructurado.
 Reglas: usa SOLO los datos del bloque CONTEXTO para cifras; si algo no está, dilo. Cita la fuente/fecha del dato (BanRep, DANE, curva cargada). Explica el porqué con conceptos del curso (duración, convexidad, carry, roll-down, spread vs. TES, tasa real, Fisher, riesgo de reinversión). Da escenarios y alternativas, no órdenes de compra/venta, y cierra con una línea recordando que es un ejercicio académico y no asesoría financiera.
@@ -45,6 +46,14 @@ export function ctxSnapshot(
       ipc_ultimos_12m: mk.ipcV.slice(-12).map((r) => [r.f.slice(0, 7), +r.annual.toFixed(4)]),
       expectativas_ipc: motor.mercado.exp.slice(0, 12).map((r) => [r.f.slice(0, 7), +r.d[1].toFixed(4)]),
     },
+    inflacion_implicita: (() => {
+      const be = curvaBreakeven(snap.datos);
+      if (!be) return null;
+      return {
+        fecha_curva_uvr: be.fechaReal,
+        breakeven: be.puntos.filter((p) => [1, 2, 3, 5, 7, 10].includes(p.t)).map((p) => [p.t, +p.breakeven.toFixed(4)]),
+      };
+    })(),
     curva_tes: {
       fecha: motor.mercado.curveDate,
       spot: [0.5, 1, 2, 3, 5, 7, 10].map((t) => [t, +z(t).toFixed(4)]),

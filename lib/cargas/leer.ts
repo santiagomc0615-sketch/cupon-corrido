@@ -8,7 +8,7 @@
    - Curva_Rendimiento: Fecha de la curva + Título | Emisión | Vencimiento | Cupón | TIR mercado
    Funciones puras: reciben las filas ya leídas del archivo. */
 import { toN, toS, type TuplaFecha } from "@/lib/engine";
-import type { RefTES, TipoSerieCargada } from "./tipos";
+import type { RefTES, TipoCurvaTES, TipoSerieCargada } from "./tipos";
 
 export type Celda = string | number | boolean | Date | null | undefined;
 export interface HojaLeida {
@@ -23,7 +23,7 @@ interface Base {
 export type Detectada =
   | (Base & { tipo: "frac"; titulo: string; datos: TuplaFecha[]; sugerido: string })
   | (Base & { tipo: TipoSerieCargada; datos: TuplaFecha[] })
-  | (Base & { tipo: "tes"; fecha: string; refs: RefTES[] })
+  | (Base & { tipo: TipoCurvaTES; fecha: string; refs: RefTES[] })
   | (Base & { tipo: "ignorada"; motivo: string });
 
 /** Texto en minúsculas y sin tildes, para comparar encabezados. */
@@ -146,7 +146,10 @@ export function detectarHoja({ hoja, filas }: HojaLeida): Detectada {
       refs.push([nombre, venc, cup >= 1 ? cup / 100 : cup, tir >= 1 ? tir / 100 : tir]);
     }
     if (!fecha) avisos.push("No se encontró la «Fecha de la curva»: escríbala antes de guardar.");
-    return { tipo: "tes", hoja, avisos, fecha: fecha ?? "", refs };
+    // Curva real si la hoja, su título o los títulos de las referencias hablan de UVR
+    const esUVR = /uvr/.test(norm(hoja)) || /uvr/.test(t) || (refs.length > 0 && refs.every(([n]) => /uvr/i.test(n)));
+    if (esUVR) avisos.push("Se reconoció como curva TES UVR (tasas reales): se usa para la inflación implícita.");
+    return { tipo: esUVR ? "tesuvr" : "tes", hoja, avisos, fecha: fecha ?? "", refs };
   }
 
   /* Curva FRAC (una o varias hojas) */
@@ -203,7 +206,7 @@ export function detectarHojas(hojas: HojaLeida[]): Detectada[] {
 
 /* ---------- CSV ---------- */
 
-export type TipoCSV = "frac" | TipoSerieCargada | "tes";
+export type TipoCSV = "frac" | TipoSerieCargada | TipoCurvaTES;
 
 /** Separa un CSV en filas y celdas (separador ; , o tabulador, comillas dobles). */
 export function filasCSV(texto: string): { filas: string[][]; comaDecimal: boolean } {
@@ -231,9 +234,10 @@ export function filasCSV(texto: string): { filas: string[][]; comaDecimal: boole
 export function detectarCSV(nombre: string, texto: string, tipo: TipoCSV, fechaTES = ""): Detectada {
   const avisos: string[] = [];
   const { filas, comaDecimal } = filasCSV(texto);
-  const sinEncabezado = filas.filter((f) => (tipo === "tes" ? fechaCelda(f[1]) : fechaCelda(f[0])));
+  const esTES = tipo === "tes" || tipo === "tesuvr";
+  const sinEncabezado = filas.filter((f) => (esTES ? fechaCelda(f[1]) : fechaCelda(f[0])));
   if (filas.length > sinEncabezado.length) avisos.push(`${filas.length - sinEncabezado.length} filas de encabezado o sin fecha se omitieron.`);
-  if (tipo === "tes") {
+  if (esTES) {
     const refs: RefTES[] = sinEncabezado
       .map((f): RefTES | null => {
         const v = fechaCelda(f[1]),
@@ -242,7 +246,7 @@ export function detectarCSV(nombre: string, texto: string, tipo: TipoCSV, fechaT
         return f[0] && v && c != null && r != null ? [f[0], v, c >= 1 ? c / 100 : c, r >= 1 ? r / 100 : r] : null;
       })
       .filter((x): x is RefTES => x != null);
-    return { tipo: "tes", hoja: nombre, avisos, fecha: fechaTES, refs };
+    return { tipo, hoja: nombre, avisos, fecha: fechaTES, refs };
   }
   const crudo = sinEncabezado
     .map((f): TuplaFecha | null => {

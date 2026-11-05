@@ -16,7 +16,7 @@ export interface InfoFuente {
   detalle?: string;
 }
 
-export type ClaveFuente = "tpm" | "ibr" | "ibr12" | "uvr" | "ipc" | "exp" | "tes" | "frac" | "trm";
+export type ClaveFuente = "tpm" | "ibr" | "ibr12" | "uvr" | "ipc" | "exp" | "tes" | "tesuvr" | "frac" | "trm";
 
 export interface DatosEnVivo {
   tpm?: [string, number][];
@@ -102,11 +102,20 @@ export function combinar(respaldo: DatosMercado, vivo: DatosEnVivo, cargas: Carg
     fuentes.tes = { fuente: "Cargado · " + cargas.tes.origen, estado: "cargado", hasta: curveDate };
   } else fuentes.tes = { fuente: "SEN / proveedor de precios · Excel del curso", estado: "respaldo", hasta: curveDate };
 
+  /* ---- Curva TES UVR (real): solo si se cargó; sirve para la inflación implícita ---- */
+  let curvaUVR: DatosMercado["curvaUVR"];
+  if (cargas.tesuvr?.refs.length) {
+    const f = cargas.tesuvr.fecha;
+    const tesU = cargas.tesuvr.refs.map(([t, venc, cup, tir]): TuplaTES => [t, venc, cup, tir, plazoTES(f, venc)]).sort((a, b) => a[4] - b[4]);
+    curvaUVR = { fecha: f, tes: tesU, zero: curvaCero(tesU) };
+    fuentes.tesuvr = { fuente: "Cargado · " + cargas.tesuvr.origen, estado: "cargado", hasta: f };
+  }
+
   /* ---- Curvas FRAC: la del Excel siempre; las cargadas solo con su información ---- */
   fuentes.frac = cargas.indice.frac.length
     ? { fuente: `${cargas.indice.frac.length + 1} curvas (Excel + cargadas)`, estado: "cargado", hasta: cargas.indice.frac[0].fechaBase }
     : { fuente: "Excel del curso", estado: "respaldo", hasta: respaldo.frac[0][0] };
 
-  const datos: DatosMercado = { ...respaldo, ibr, uvr, ipc, exp, curveDate, tes, zero, curvasFrac: cargas.indice.frac };
+  const datos: DatosMercado = { ...respaldo, ibr, uvr, ipc, exp, curveDate, tes, zero, curvasFrac: cargas.indice.frac, curvaUVR };
   return { datos, fuentes };
 }

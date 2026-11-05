@@ -4,12 +4,12 @@ import { revalidateTag } from "next/cache";
 import { claveConfigurada, claveValida } from "@/lib/data/admin";
 import { eliminarCarga, guardarCarga, puedeGuardar, renombrarCurva } from "@/lib/data/almacen";
 import { TAG_CARGAS } from "@/lib/data/mercado";
-import type { Carga, TipoSerieCargada } from "@/lib/cargas/tipos";
+import type { Carga, TipoEliminable } from "@/lib/cargas/tipos";
 import { validarCarga } from "@/lib/cargas/validar";
 
 type Accion =
   | { accion: "guardar"; carga: Carga }
-  | { accion: "eliminar"; tipo: "frac" | "tes" | TipoSerieCargada; id?: string }
+  | { accion: "eliminar"; tipo: TipoEliminable; id?: string }
   | { accion: "renombrar"; id: string; nombre: string };
 
 const json = (cuerpo: unknown, status = 200) => Response.json(cuerpo, { status });
