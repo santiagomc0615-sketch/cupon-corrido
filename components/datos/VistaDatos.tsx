@@ -264,7 +264,11 @@ export function VistaDatos() {
       </div>
 
       {leyendo && <div className="panel empty">Leyendo el archivo…</div>}
-      {error && <div className="alert">{error}</div>}
+      {error && (
+        <div className="alert" role="alert">
+          {error}
+        </div>
+      )}
 
       {items.length > 0 && archivo && (
         <Panel titulo={`3 · Vista previa · ${archivo.nombre}`} src={`${items.length} hoja(s) reconocida(s)`}>

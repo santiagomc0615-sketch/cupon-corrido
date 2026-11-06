@@ -36,7 +36,7 @@ export function VistaMercado() {
       <div className="hero">
         <Guilloche opt={ROSETA} size={1040} className="gl" />
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          <span className="eyebrow">Política monetaria · Banco de la República</span>
+          <h1 className="eyebrow">Política monetaria · Banco de la República</h1>
           <div className="big num">
             {nf(2).format(macro.tpm * 100)}
             <small>%</small>

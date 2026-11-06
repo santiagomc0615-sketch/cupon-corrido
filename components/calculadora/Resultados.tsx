@@ -37,7 +37,9 @@ export function Resultados({
   if (esError(o)) {
     return (
       <div>
-        <div className="alert">{o.error}</div>
+        <div className="alert" role="alert">
+          {o.error}
+        </div>
       </div>
     );
   }
@@ -337,7 +339,7 @@ function VentaAnticipada({ b, o }: { b: Bono; o: ResultadoValoracion }) {
   if (falta && curvaVenta) {
     cuerpo =
       curvas[falta] === "error" ? (
-        <div className="alert">
+        <div className="alert" role="alert">
           No se pudo descargar la curva «{curvaVenta.nombre}».{" "}
           <button type="button" className="btn sm" onClick={() => pedirCurva(falta)}>
             Reintentar
@@ -349,7 +351,9 @@ function VentaAnticipada({ b, o }: { b: Bono; o: ResultadoValoracion }) {
   } else if (modo === "curva" && b.tipo === "IBR" && o.tipo === "IBR") {
     const h = holdingCurvaIBR(motor.mercado, b, o, d, (+spreadV || 0) / 100, curvaSel || undefined);
     cuerpo = esError(h) ? (
-      <div className="alert">{h.error}</div>
+      <div className="alert" role="alert">
+        {h.error}
+      </div>
     ) : (
       <>
         {h.curvaDesfasada && (
@@ -379,7 +383,9 @@ function VentaAnticipada({ b, o }: { b: Bono; o: ResultadoValoracion }) {
   } else {
     const h = holding(b, o, d, +r / 100);
     cuerpo = esError(h) ? (
-      <div className="alert">{h.error}</div>
+      <div className="alert" role="alert">
+        {h.error}
+      </div>
     ) : (
       <KV
         rows={[

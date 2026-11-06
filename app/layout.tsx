@@ -37,12 +37,15 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         <script dangerouslySetInnerHTML={{ __html: SCRIPT_TEMA }} />
       </head>
       <body>
+        <a href="#contenido" className="saltar">
+          Saltar al contenido
+        </a>
         <AppProvider snap={snap}>
           <div className="shell">
             <Riel />
             <main>
               <CintaMercado />
-              <div className="wrap">
+              <div className="wrap" id="contenido" tabIndex={-1}>
                 {children}
                 <footer className="site-foot">
                   <span>{BRAND.avisoLegal}</span>

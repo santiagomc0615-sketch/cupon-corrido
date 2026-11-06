@@ -29,7 +29,8 @@ export function CintaMercado() {
       </span>
     ));
   return (
-    <div className="tape" aria-label="Cinta de mercado">
+    // Región enfocable: con teclado se pausa (:focus-within) y, con movimiento reducido, se desplaza a mano.
+    <div className="tape" role="region" aria-label="Cinta de mercado" tabIndex={0}>
       <div className="tape-track">
         {lista(false)}
         {lista(true)}

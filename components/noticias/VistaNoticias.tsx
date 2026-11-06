@@ -77,7 +77,9 @@ export function VistaNoticias({ noticias }: { noticias: Noticias }) {
         Titulares leídos el {noticias.leidas.replace(" ", " a las ")} (hora de Colombia). Los portales del BanRep, el DANE y
         MinHacienda no publican un RSS vigente; sus titulares vienen del RSS de Google Noticias limitado a cada sitio oficial.
       </p>
-      <h3 style={{ marginTop: 6 }}>Portales y análisis</h3>
+      <h2 className="h-sub" style={{ marginTop: 6 }}>
+        Portales y análisis
+      </h2>
       <div className="links">
         {ENLACES.map(([tipo, titulo, desc, url]) => (
           <a key={url} className="link" href={url} target="_blank" rel="noopener noreferrer">

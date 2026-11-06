@@ -14,6 +14,9 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Prototipo de referencia (JavaScript original, no se modifica)
     "prototipo/**",
+    // Skills instaladas (scripts de terceros empaquetados) e historial local de críticas
+    ".claude/**",
+    ".impeccable/**",
   ]),
 ]);
 

@@ -81,7 +81,9 @@ export function Riel() {
               {s.icono}
             </svg>
             <span>{s.nombre}</span>
-            <i className="k">{String(i + 1).padStart(2, "0")}</i>
+            <i className="k" aria-hidden="true">
+              {String(i + 1).padStart(2, "0")}
+            </i>
           </Link>
         ))}
       </nav>

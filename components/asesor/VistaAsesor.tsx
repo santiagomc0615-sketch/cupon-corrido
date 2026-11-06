@@ -207,7 +207,7 @@ export function VistaAsesor() {
           )}
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          <h3>Consultas rápidas</h3>
+          <h2 className="h-sub">Consultas rápidas</h2>
           <div className="prompts">
             {QUICK.map(([t, d, q]) => (
               <button key={t} type="button" disabled={ocupado} onClick={() => void preguntar(q)}>
