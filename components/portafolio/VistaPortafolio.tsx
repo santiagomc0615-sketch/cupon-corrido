@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { BarrasH } from "@/components/charts/BarrasH";
 import { Chart, nearest, type PuntoSerie } from "@/components/charts/Chart";
 import { useApp } from "@/components/providers/AppProvider";
 import { CarryRoll } from "./CarryRoll";
@@ -235,28 +236,15 @@ function Cuerpo() {
           </p>
         </Panel>
         <Panel titulo="Pruebas de estrés de tasa" src="Revaloración completa · Δ valor">
-          <Chart
-            series={[]}
-            bars={{ data: m.stress.map((s) => [s[0], s[1] / 1e6]) }}
-            yf={(v) => nf(0).format(v) + "M"}
-            label="Pruebas de estrés"
-            pl={56}
-            tip={(x) => {
-              const i = Math.round(x),
-                s = m.stress[i];
-              if (!s) return null;
-              return {
-                x: i,
-                y: s[1] / 1e6,
-                content: (
-                  <>
-                    {s[0]}
-                    <br />
-                    {F.copM(s[1])} · {F.pct(s[1] / m.mv, 2)}
-                  </>
-                ),
-              };
-            }}
+          <BarrasH
+            label="Pruebas de estrés: cambio de valor del portafolio"
+            filas={m.stress.map(([nombre, d]) => ({
+              etiqueta: nombre,
+              valor: d,
+              texto: F.copM(d),
+              sub: F.pct(d / m.mv, 2) + " del valor",
+              descripcion: `${nombre}: ${F.copM(d)}, ${F.pct(d / m.mv, 2)} del valor`,
+            }))}
           />
           <p className="src" style={{ marginTop: 8 }}>
             Empinamiento: tasas cortas −, largas + (0,15 pb por cada año de duración frente a 3 años). Aplanamiento: lo

@@ -1,7 +1,7 @@
 "use client";
 /* Escenario de política monetaria sobre el portafolio: "si el BanRep mueve la tasa X pb". */
 import { useDeferredValue, useMemo } from "react";
-import { Chart } from "@/components/charts/Chart";
+import { BarrasH } from "@/components/charts/BarrasH";
 import { useApp } from "@/components/providers/AppProvider";
 import { Kpi, Panel } from "@/components/ui";
 import { TYPE_LBL } from "@/lib/calculadora";
@@ -73,13 +73,19 @@ export function EscenarioBanRep() {
           <Kpi l="IBR overnight del escenario" v={nf(3).format(mk.ibrLast.d[1] + (s.pb * s.ibr) / 100) + " %"} s={"hoy " + nf(3).format(mk.ibrLast.d[1]) + " %"} />
         </div>
         {r.filas.length > 0 && (
-          <Chart
-            series={[]}
-            bars={{ data: r.filas.map((f) => [f.tipo, f.delta / 1e6]) }}
-            yf={(v) => nf(0).format(v) + "M"}
-            label="Cambio de valor por posición en millones de pesos"
-            pl={56}
-            h={190}
+          <BarrasH
+            label="Cambio de valor por posición en el escenario"
+            filas={r.filas.map((f) => {
+              const nombre = (f.p as { inputs: { nombre: string } }).inputs.nombre;
+              return {
+                etiqueta: nombre,
+                tag: f.tipo,
+                valor: f.delta,
+                texto: F.copM(f.delta),
+                sub: F.pct(f.deltaPct, 2) + " · " + F.bp(f.deltaPb),
+                descripcion: `${nombre} (${f.tipo}): ${F.copM(f.delta)}, ${F.pct(f.deltaPct, 2)} del valor. ${f.supuesto}.`,
+              };
+            })}
           />
         )}
         <div className="tbl" style={{ maxHeight: "none" }}>

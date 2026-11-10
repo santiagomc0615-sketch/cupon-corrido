@@ -118,7 +118,9 @@ function Lienzo({
 
   const yTicks = nice(y0, y1, 5);
   const xTicks = o.bars ? [] : o.xticks ? o.xticks(x0, x1) : nice(x0, x1, Math.max(3, Math.floor(W / 110)));
-  const bw = o.bars ? Math.max(3, ((W - P.l - P.r) / o.bars.data.length) * 0.62) : 0;
+  // Barras: 62 % del espacio de cada categoría, sin pasar de 44 px (con pocas categorías no se vuelven bloques).
+  const bw = o.bars ? Math.min(44, Math.max(3, ((W - P.l - P.r) / o.bars.data.length) * 0.62)) : 0;
+  const barraFoco = o.bars && estado ? Math.round(estado.x) : null;
   const step = o.bars ? Math.ceil(o.bars.data.length / (W / 70)) : 1;
 
   const mover = (ev: React.PointerEvent<SVGSVGElement>) => {
@@ -168,7 +170,7 @@ function Lienzo({
             </text>
           </g>
         ))}
-        {y0 < 0 && y1 > 0 && <line className="ax" x1={P.l} x2={W - P.r} y1={Y(0)} y2={Y(0)} />}
+        {y0 < 0 && y1 > 0 && <line className="ax cero" x1={P.l} x2={W - P.r} y1={Y(0)} y2={Y(0)} />}
         <line className="ax" x1={P.l} x2={W - P.r} y1={H - P.b} y2={H - P.b} />
         {o.bars?.data.map((d, i) => {
           const v = d[1],
@@ -176,7 +178,14 @@ function Lienzo({
             h = Math.abs(Y(v) - Y(0));
           return (
             <g key={"b" + i}>
-              <rect className={d[2] || (v >= 0 ? "bar-pos" : "bar-neg")} x={X(i) - bw / 2} y={y} width={bw} height={Math.max(1, h)} rx={1.5} />
+              <rect
+                className={(d[2] || (v >= 0 ? "bar-pos" : "bar-neg")) + (barraFoco != null && barraFoco !== i ? " apagada" : "")}
+                x={X(i) - bw / 2}
+                y={y}
+                width={bw}
+                height={Math.max(1, h)}
+                rx={1.5}
+              />
               {i % step === 0 && (
                 <text x={X(i)} y={H - P.b + 16} textAnchor="middle">
                   {d[0]}
@@ -227,7 +236,7 @@ function Lienzo({
         {estado && (
           <>
             <line className="guia" y1={P.t} y2={H - P.b} x1={estado.xx} x2={estado.xx} />
-            <circle className="foco" cx={estado.xx} cy={estado.yy} r={4.5} />
+            {!o.bars && <circle className="foco" cx={estado.xx} cy={estado.yy} r={4.5} />}
           </>
         )}
       </svg>
