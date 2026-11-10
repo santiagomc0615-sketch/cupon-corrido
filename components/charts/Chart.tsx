@@ -2,7 +2,7 @@
 /* Gráfico SVG propio (el chart() del prototipo en React): líneas, áreas, puntos, barras por
    categoría, banda de referencia y tooltip con línea guía. Usa las clases de color de globals.css
    (s-a, s-b, pt-a, bar-pos…), así respeta el tema claro/oscuro. */
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 
 export type PuntoSerie = [number, number, string?];
 
@@ -73,7 +73,7 @@ function useAncho<T extends HTMLElement>() {
 
 export function Chart(props: ChartProps) {
   const [ref, ancho] = useAncho<HTMLDivElement>();
-  const [tip, setTip] = useState<(Tip & { left: number; top: number; xx: number }) | null>(null);
+  const [tip, setTip] = useState<(Tip & { left: number; top: number; xx: number; yy: number }) | null>(null);
   return (
     <div className="chart" ref={ref}>
       {ancho > 0 && <Lienzo {...props} ancho={ancho} tip={props.tip} estado={tip} setEstado={setTip} />}
@@ -88,9 +88,10 @@ function Lienzo({
   ...o
 }: ChartProps & {
   ancho: number;
-  estado: (Tip & { left: number; top: number; xx: number }) | null;
-  setEstado: (t: (Tip & { left: number; top: number; xx: number }) | null) => void;
+  estado: (Tip & { left: number; top: number; xx: number; yy: number }) | null;
+  setEstado: (t: (Tip & { left: number; top: number; xx: number; yy: number }) | null) => void;
 }) {
+  const idArea = "area" + useId().replace(/:/g, "");
   const W = Math.max(300, ancho || 600),
     H = o.h || Math.round(Math.min(300, Math.max(210, W * 0.42)));
   const P = { l: o.pl || 48, r: 14, t: 12, b: 28 };
@@ -134,6 +135,7 @@ function Lienzo({
     setEstado({
       ...h,
       xx,
+      yy: Y(h.y),
       left: Math.min(r.width - 70, Math.max(70, (xx * r.width) / W)),
       top: (Y(h.y) * r.height) / H,
     });
@@ -148,6 +150,13 @@ function Lienzo({
         onPointerMove={mover}
         onPointerLeave={() => setEstado(null)}
       >
+        <defs>
+          {/* Área con degradado: intensa junto a la línea y transparente hacia el eje. */}
+          <linearGradient id={idArea} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" style={{ stopColor: "var(--engrave)", stopOpacity: 0.2 }} />
+            <stop offset="1" style={{ stopColor: "var(--engrave)", stopOpacity: 0 }} />
+          </linearGradient>
+        </defs>
         {o.band && (
           <rect className="band" x={P.l} width={W - P.l - P.r} y={Y(o.band[1])} height={Y(o.band[0]) - Y(o.band[1])} />
         )}
@@ -190,6 +199,7 @@ function Lienzo({
               {se.area && (
                 <path
                   className="area-a"
+                  fill={`url(#${idArea})`}
                   d={`${d}L${X(ult[0])} ${Y(Math.max(y0, 0))}L${X(se.data[0][0])} ${Y(Math.max(y0, 0))}Z`}
                 />
               )}
@@ -205,18 +215,21 @@ function Lienzo({
                     )}
                   </g>
                 ))}
-              {se.end && <circle className={se.end} cx={X(ult[0])} cy={Y(ult[1])} r={4} />}
+              {se.end && (
+                <>
+                  <circle className={se.end + " halo"} cx={X(ult[0])} cy={Y(ult[1])} r={9} />
+                  <circle className={se.end + " fin"} cx={X(ult[0])} cy={Y(ult[1])} r={4.5} />
+                </>
+              )}
             </g>
           );
         })}
-        <line
-          className="ax"
-          y1={P.t}
-          y2={H - P.b}
-          x1={estado ? estado.xx : -10}
-          x2={estado ? estado.xx : -10}
-          style={{ stroke: "var(--ink-3)" }}
-        />
+        {estado && (
+          <>
+            <line className="guia" y1={P.t} y2={H - P.b} x1={estado.xx} x2={estado.xx} />
+            <circle className="foco" cx={estado.xx} cy={estado.yy} r={4.5} />
+          </>
+        )}
       </svg>
       {estado && (
         <div className="tip" style={{ left: estado.left, top: estado.top }}>

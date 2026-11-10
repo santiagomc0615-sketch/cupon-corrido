@@ -134,13 +134,18 @@ function ResultadosOk({ b, o, avisosExtra, clase }: { b: Bono; o: ResultadoValor
               onClick={() => setExplicando(activa === CLAVES_HEAD[i] ? null : CLAVES_HEAD[i])}
             >
               <span className="l">{h[0]} ⓘ</span>
-              <span className="v">{h[1]}</span>
+              <span className="v" key={h[1]}>
+                {h[1]}
+              </span>
               <span className="s">{h[2]}</span>
             </button>
           ) : (
             <div className="kpi" key={h[0]}>
               <span className="l">{h[0]}</span>
-              <span className="v">{h[1]}</span>
+              {/* key = valor: al recalcular, la cifra se vuelve a montar y entra con un fundido corto. */}
+              <span className="v" key={h[1]}>
+                {h[1]}
+              </span>
               <span className="s">{h[2]}</span>
             </div>
           ),
