@@ -40,5 +40,5 @@ export const BRAND = {
     roseta: { R: 0.92, a: 0.22, n: 18, m: 3, lines: 46, alpha: 0.38, lw: 1 },
   },
   /** Color de la barra del navegador en celulares (debe coincidir con --paper de globals.css). */
-  colorBarra: { claro: "#E9EDE8", oscuro: "#0B1411" },
+  colorBarra: { claro: "#F6F7F9", oscuro: "#0B1220" },
 } as const;

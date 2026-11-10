@@ -15,23 +15,30 @@
    - Nombre, eslogan, logo y dominio: lib/brand.ts.
    =================================================================================== */
 :root {
-  /* Colores — tema claro */
-  --paper: #e9ede8;
-  --sheet: #f8faf7;
-  --sheet-2: #f0f3ef;
-  --ink: #0e1e19;
-  --ink-2: #4b5c55;
-  --ink-3: #7d8c85;
-  --rule: #c9d2cb;
-  --engrave: #1c5a46;
-  --engrave-soft: rgba(28, 90, 70, 0.1);
-  --seal: #8c6a2a;
-  --pos: #1d7a4b;
-  --neg: #b23f2e;
-  --warn: #9c6b12;
-  /* Cinta de mercado: fondo oscuro en ambos temas, así que sus alzas/bajas no cambian */
-  --tape-up: #7fd3a6;
-  --tape-dn: #f2967f;
+  /* Colores — tema claro (banca institucional: neutros fríos, azul marino de acento, dorado sobrio).
+     --engrave es el acento principal y --seal el dorado; conservan su nombre para no tocar componentes. */
+  --paper: #f6f7f9; /* fondo */
+  --sheet: #ffffff; /* superficies */
+  --sheet-2: #eef1f5; /* superficie secundaria */
+  --ink: #0f1b2d; /* texto */
+  --ink-2: #4a5568; /* texto secundario */
+  /* Texto terciario: #8a94a6 no llega a AA (3,1:1 sobre blanco); este tono da ≥4,7:1 en las tres superficies. */
+  --ink-3: #5f6b7e;
+  --rule: #dde2ea; /* líneas */
+  --engrave: #1e3a5f; /* acento principal: azul marino */
+  --engrave-soft: rgba(30, 58, 95, 0.08);
+  --seal: #a07c3b; /* acento secundario: dorado sobrio (filetes, bordes, trazos) */
+  --seal-texto: #8a6a2e; /* dorado para texto pequeño: ≥4,6:1 (el #a07c3b da 3,9:1) */
+  --pos: #1f7a4d;
+  --neg: #b42318;
+  --warn: #b7791f;
+  --warn-texto: #855d23; /* advertencia para texto: 5,8:1 (el #b7791f da 3,6:1) */
+  /* Cinta de mercado: oscura en ambos temas */
+  --tape-bg: #0f1b2d;
+  --tape-fg: #e6eaf0;
+  --tape-label: #d2b06a;
+  --tape-up: #4cc38a;
+  --tape-dn: #f07a6a;
 
   /* Tipografías (las variables --font-* las crea app/fuentes.ts) */
   --f-display: var(--font-display-web), "Didot", "Bodoni 72", Georgia, serif;
@@ -62,42 +69,54 @@
   --stagger: 40ms; /* separación entre indicadores */
 
   /* Acento en los elementos clave: botón principal, pestaña activa, cifra principal. */
-  --acento-fondo: var(--engrave);
-  --acento-sobre: var(--sheet);
-  --acento-cifra: var(--engrave);
+  --acento-fondo: #1e3a5f;
+  --acento-sobre: #ffffff;
+  --acento-cifra: #1e3a5f;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --paper: #0b1411;
-    --sheet: #111d19;
-    --sheet-2: #15231e;
-    --ink: #e2eae5;
-    --ink-2: #9aaea5;
-    --ink-3: #6c7f77;
-    --rule: #23352e;
-    --engrave: #72c6a3;
-    --engrave-soft: rgba(114, 198, 163, 0.1);
-    --seal: #d4b067;
-    --pos: #5dc58f;
-    --neg: #ef836f;
+    --paper: #0b1220;
+    --sheet: #111a2b;
+    --sheet-2: #16213a;
+    --ink: #e6eaf0;
+    --ink-2: #a3aec2;
+    --ink-3: #8592a8;
+    --rule: #22304a;
+    --engrave: #7fa6d6;
+    --engrave-soft: rgba(127, 166, 214, 0.1);
+    --seal: #d2b06a;
+    --seal-texto: #d2b06a;
+    --pos: #4cc38a;
+    --neg: #f07a6a;
     --warn: #e0b054;
+    --warn-texto: #e0b054;
+    --acento-fondo: #7fa6d6;
+    --acento-sobre: #0b1220;
+    --acento-cifra: #7fa6d6;
+    --tape-bg: #0f1b2d;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --paper: #0b1411;
-  --sheet: #111d19;
-  --sheet-2: #15231e;
-  --ink: #e2eae5;
-  --ink-2: #9aaea5;
-  --ink-3: #6c7f77;
-  --rule: #23352e;
-  --engrave: #72c6a3;
-  --engrave-soft: rgba(114, 198, 163, 0.1);
-  --seal: #d4b067;
-  --pos: #5dc58f;
-  --neg: #ef836f;
+  --paper: #0b1220;
+  --sheet: #111a2b;
+  --sheet-2: #16213a;
+  --ink: #e6eaf0;
+  --ink-2: #a3aec2;
+  --ink-3: #8592a8;
+  --rule: #22304a;
+  --engrave: #7fa6d6;
+  --engrave-soft: rgba(127, 166, 214, 0.1);
+  --seal: #d2b06a;
+  --seal-texto: #d2b06a;
+  --pos: #4cc38a;
+  --neg: #f07a6a;
   --warn: #e0b054;
+  --warn-texto: #e0b054;
+  --acento-fondo: #7fa6d6;
+  --acento-sobre: #0b1220;
+  --acento-cifra: #7fa6d6;
+  --tape-bg: #0f1b2d;
   color-scheme: dark;
 }
 
@@ -224,7 +243,7 @@
   }
   h1 em {
     font-style: italic;
-    color: var(--engrave);
+    color: inherit;
   }
   h2 {
     font: 600 17px/1.3 var(--f-body);
@@ -305,6 +324,7 @@
     width: 44px;
     height: 44px;
     flex: none;
+    opacity: 0.6; /* sello en el acento, discreto */
   }
   .brand b {
     font: 700 21px/1 var(--f-display);
@@ -397,8 +417,8 @@
     position: sticky;
     top: env(safe-area-inset-top, 0px);
     z-index: 20;
-    background: var(--ink);
-    color: var(--paper);
+    background: var(--tape-bg);
+    color: var(--tape-fg);
     overflow: hidden;
     white-space: nowrap;
     border-bottom: 1px solid var(--rule);
@@ -423,7 +443,7 @@
     mask-image: linear-gradient(90deg, transparent, #000 24px, #000 calc(100% - 24px), transparent);
   }
   .tape span b {
-    color: var(--seal);
+    color: var(--tape-label);
     font-weight: 500;
     margin-right: 6px;
     letter-spacing: 0.06em;
@@ -480,7 +500,7 @@
     font: 500 11px var(--f-mono);
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: var(--engrave);
+    color: var(--ink-2);
   }
   .lede {
     color: var(--ink-2);
@@ -529,18 +549,33 @@
     gap: 24px;
     align-items: end;
   }
+  /* Guilloché: un cuarto de roseta en la esquina superior derecha, detrás del contenido, a
+     opacidad 0,12 y desvanecido hacia el texto. La columna derecha deja libre esa esquina.
+     Bajo 900 px se oculta. */
   .hero canvas.gl {
     position: absolute;
-    right: -90px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 460px;
-    height: 460px;
-    opacity: 0.5;
+    z-index: 0;
+    right: -120px;
+    top: -120px;
+    width: 240px;
+    height: 240px;
+    opacity: 0.12;
     pointer-events: none;
+    mask-image: radial-gradient(circle at center, #000 0 35%, transparent 70%);
   }
   .hero > * {
     position: relative;
+    z-index: 1;
+  }
+  @media (min-width: 900px) {
+    .hero > :last-child {
+      padding-right: 96px;
+    }
+  }
+  @media (max-width: 899px) {
+    .hero canvas.gl {
+      display: none;
+    }
   }
   /* Marco doble de título valor: un filete interior a 5 px del borde. */
   .hero::after {
@@ -566,7 +601,7 @@
     gap: 8px;
     align-items: center;
     border: 1px solid var(--seal);
-    color: var(--seal);
+    color: var(--seal-texto);
     border-radius: var(--r-pill);
     padding: 3px 10px;
     font: 500 11px var(--f-mono);
@@ -690,7 +725,7 @@
     border-color: color-mix(in srgb, var(--neg) 40%, transparent);
   }
   .chip.warn {
-    color: var(--warn);
+    color: var(--warn-texto);
     border-color: color-mix(in srgb, var(--warn) 40%, transparent);
   }
   .dot {
@@ -1140,7 +1175,7 @@
     padding: 10px 14px;
     border-radius: var(--r);
     border: 1px solid color-mix(in srgb, var(--warn) 45%, transparent);
-    color: var(--warn);
+    color: var(--warn-texto);
     background: color-mix(in srgb, var(--warn) 8%, transparent);
     font-size: 13px;
   }
@@ -1207,7 +1242,7 @@
   details summary::before {
     content: "+";
     font-family: var(--f-mono);
-    color: var(--engrave);
+    color: var(--ink-3);
     width: 12px;
   }
   details[open] summary::before {
@@ -1219,8 +1254,8 @@
     font: 500 10px var(--f-mono);
     padding: 2px 6px;
     border-radius: var(--r-xs);
-    background: var(--engrave-soft);
-    color: var(--engrave);
+    background: var(--sheet-2);
+    color: var(--ink-2);
   }
   .alloc {
     display: flex;
@@ -1312,7 +1347,7 @@
     font: 500 10px var(--f-mono);
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--engrave);
+    color: var(--ink-2);
     margin-bottom: 6px;
   }
   .composer {
@@ -1351,7 +1386,7 @@
     font-size: 13px;
   }
   .prompts button:hover {
-    border-color: var(--engrave);
+    border-color: var(--ink-3);
   }
   .prompts button:active:not(:disabled) {
     scale: 0.98;
@@ -1384,7 +1419,7 @@
     color: var(--ink);
   }
   .link:hover {
-    border-color: var(--engrave);
+    border-color: var(--ink-3);
   }
   .link b {
     font-weight: 600;
@@ -1397,7 +1432,7 @@
     font: normal 500 10px var(--f-mono);
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: var(--engrave);
+    color: var(--ink-2);
   }
   /* páginas legales */
   .legal {
@@ -1491,7 +1526,7 @@
   .pasos li::before {
     content: counter(paso);
     font: 500 11px var(--f-mono);
-    color: var(--engrave);
+    color: var(--ink-3);
     grid-row: span 2;
   }
   .pasos .lbl {
@@ -1553,7 +1588,7 @@
     line-height: 1.4;
   }
   .titulares a:hover {
-    color: var(--engrave);
+    color: var(--ink);
     text-decoration: underline;
   }
   .toast {

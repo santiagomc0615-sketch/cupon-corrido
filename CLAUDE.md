@@ -27,8 +27,11 @@ Proyecto académico para la clase de Portafolio de Renta Fija. Página web que v
 
 ## Diseño (no hacerlo genérico)
 - Concepto: título valor grabado (guilloché de papel de seguridad) + terminal de mesa de dinero.
-- Colores claro: papel #E9EDE8, hoja #F8FAF7, tinta #0E1E19, tinta-2 #4B5C55, línea #C9D2CB, grabado #1C5A46, sello #8C6A2A, positivo #1D7A4B, negativo #B23F2E.
-- Colores oscuro: papel #0B1411, hoja #111D19, tinta #E2EAE5, línea #23352E, grabado #72C6A3, sello #D4B067.
+- Paleta de banca institucional (tokens en `app/globals.css`; `--engrave` = acento azul marino, `--seal` = dorado).
+- Colores claro: fondo #F6F7F9, superficie #FFFFFF, superficie 2 #EEF1F5, texto #0F1B2D, texto 2 #4A5568, texto 3 #5F6B7E (el #8A94A6 pedido no llega a AA), línea #DDE2EA, acento #1E3A5F, dorado #A07C3B (texto: #8A6A2E), positivo #1F7A4D, negativo #B42318, advertencia #B7791F (texto: #855D23).
+- Colores oscuro: fondo #0B1220, superficie #111A2B, superficie 2 #16213A, texto #E6EAF0, texto 2 #A3AEC2, texto 3 #8592A8, línea #22304A, acento #7FA6D6, dorado #D2B06A, positivo #4CC38A, negativo #F07A6A.
+- Acento solo en elementos clave (pestaña activa, botón principal, cifra principal, línea principal de gráficos); lo demás en neutros. Todo texto ≥ AA en ambos temas.
+- Guilloché del héroe: esquina superior derecha, opacidad ≤ 0,12, detrás del contenido, oculto bajo 900 px.
 - Tipografías: Bodoni Moda (títulos y cifra principal), IBM Plex Sans (texto), IBM Plex Mono (todas las cifras, tabular-nums).
 - Riel de navegación a la izquierda, cinta de mercado arriba, cifras en tablas alineadas a la derecha.
 - Nada de gradientes morados, emojis como íconos ni tarjetas redondeadas iguales para todo.
