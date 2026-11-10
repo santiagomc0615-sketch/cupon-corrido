@@ -40,7 +40,8 @@ no se suben (están en `.gitignore`).
 | Variable | ¿Obligatoria? | Valor |
 |---|---|---|
 | `ADMIN_KEY` | Sí, para usar «Cargar datos» | Una clave larga inventada por usted (mínimo 8 caracteres; mejor 20 o más). Puede reutilizar la de su `.env.local`. |
-| `CRON_SECRET` | Sí, para el refresco diario | Otra clave larga inventada. Vercel la envía al cron (`vercel.json`, todos los días a las 12:00 de Bogotá). |
+| `CRON_SECRET` | Sí, para el refresco automático | Otra clave larga inventada. Vercel la envía al cron (`vercel.json`: todos los días a las 12:00 y a las 21:00 de Bogotá; en el plan Hobby la hora exacta puede variar dentro de esa hora). |
+| `ACTUALIZAR_KEY` | No | Clave para forzar la actualización con `POST /api/actualizar`. Si falta, sirve la `ADMIN_KEY` (también desde el botón «Actualizar datos en vivo ahora» de /datos). |
 | `ANTHROPIC_API_KEY` | No | Sin ella, el asesor queda en **modo demo**. Para activarlo: <https://console.anthropic.com> → *API Keys* → *Create Key*. |
 | `NEXT_PUBLIC_SITIO_URL` | No | La dirección pública, p. ej. `https://cuponcorrido.co`. Si falta se usa la de Vercel. |
 | `ASESOR_MODELO`, `ASESOR_ESFUERZO`, `ASESOR_MAX_TOKENS`, `ASESOR_CONSULTAS_HORA` | No | Control de costos del asesor (ver `.env.example`). |

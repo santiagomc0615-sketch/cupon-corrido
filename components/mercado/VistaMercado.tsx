@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { Chart, nearest, type PuntoSerie } from "@/components/charts/Chart";
 import { CurvaMini } from "@/components/curva/CurvaMini";
-import { ResumenFuentes } from "@/components/datos/EstadoFuentes";
+import { fechaHora, ResumenFuentes } from "@/components/datos/EstadoFuentes";
 import { useApp } from "@/components/providers/AppProvider";
 import { Guilloche, ROSETA } from "@/components/shell/Guilloche";
 import { Aviso, Kpi, Panel } from "@/components/ui";
@@ -66,7 +66,17 @@ export function VistaMercado() {
         <Kpi
           l="Inflación 12 meses"
           v={F.pct(ipcLast.annual, 2)}
-          s={"DANE · " + ipcLast.f.slice(0, 7)}
+          s={
+            <>
+              {(snap.fuentes.ipc?.estado === "en-vivo" ? "DANE" : snap.fuentes.ipc?.fuente ?? "DANE") + " · " + F.mes(ipcLast.f)}
+              {snap.fuentes.ipc?.consultado && (
+                <>
+                  <br />
+                  Actualizado {fechaHora(snap.fuentes.ipc.consultado)}
+                </>
+              )}
+            </>
+          }
           extra={<span className={"chip " + (dIpc > 0 ? "neg" : "pos")}>{(dIpc > 0 ? "▲ " : "▼ ") + F.bp(dIpc)}</span>}
         />
         <Kpi l="Inflación núcleo" v={F.pct(macro.nucleo, 1)} s={"sin alimentos ni regulados · " + macro.nucleoFecha.slice(0, 7)} />

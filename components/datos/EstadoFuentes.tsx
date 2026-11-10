@@ -20,16 +20,19 @@ export const NOMBRES_FUENTE: Record<ClaveFuente, string> = {
 
 const ACTUALIZACION: Record<ClaveFuente, string> = {
   tesuvr: "Carga manual",
-  tpm: "Diaria (automática)",
-  ibr: "Diaria (automática)",
+  tpm: "Dos veces al día (automática)",
+  ibr: "Dos veces al día (automática)",
   ibr12: "Carga manual",
-  uvr: "Diaria (automática)",
-  ipc: "Mensual · carga manual",
+  uvr: "Dos veces al día (automática)",
+  ipc: "Mensual · DANE, automática (carga manual como respaldo)",
   exp: "Mensual · carga manual",
   tes: "Carga manual",
   frac: "Carga manual",
-  trm: "Diaria (automática)",
+  trm: "Dos veces al día (automática)",
 };
+
+/** "2026-11-09 20:25" → "09·nov·2026 20:25" */
+export const fechaHora = (s: string) => `${F.date(s.slice(0, 10))} ${s.slice(11, 16)}`;
 
 const ETIQUETA: Record<EstadoFuente, [string, string]> = {
   "en-vivo": ["En vivo", "pos"],
@@ -77,7 +80,10 @@ export function TablaFuentes() {
                   {f.detalle && <span className="src"> · {f.detalle}</span>}
                 </td>
                 <td>{f.hasta ? F.date(f.hasta) : "—"}</td>
-                <td className="t">{ACTUALIZACION[k]}</td>
+                <td className="t">
+                  {ACTUALIZACION[k]}
+                  {f.consultado && <span className="src"> · última lectura exitosa {fechaHora(f.consultado)}</span>}
+                </td>
               </tr>
             );
           })}

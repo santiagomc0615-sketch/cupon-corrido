@@ -56,6 +56,8 @@ export function VistaDatos() {
   const [leyendo, setLeyendo] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [actualizando, setActualizando] = useState(false);
+  const [resultado, setResultado] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/datos")
@@ -189,6 +191,30 @@ export function VistaDatos() {
     }
   };
 
+  /** Fuerza la actualización de las fuentes en vivo (IPC del DANE incluido) con la clave escrita. */
+  const actualizarAhora = async () => {
+    setActualizando(true);
+    setResultado(null);
+    try {
+      const r = await fetch("/api/actualizar", { method: "POST", headers: { Authorization: `Bearer ${clave.trim()}` } });
+      const j = await r.json();
+      if (!r.ok && !j.ipc) throw new Error(j.error ?? `HTTP ${r.status}`);
+      const i = j.ipc;
+      setResultado(
+        i.ultimoMes
+          ? `IPC del DANE hasta ${i.ultimoMes}: ${String(i.inflacionAnual).replace(".", ",")} % anual${i.nuevo ? " (dato nuevo)" : ""}. ` +
+              (i.ultimoMes < i.esperado ? `Aún no aparece ${i.esperado}. ` : "") +
+              "Recargando la página…"
+          : `El DANE no respondió: ${i.error ?? "sin detalle"}.`,
+      );
+      if (i.ultimoMes) setTimeout(() => router.refresh(), 1200);
+    } catch (e) {
+      setResultado(e instanceof Error ? e.message : "No se pudo actualizar.");
+    } finally {
+      setActualizando(false);
+    }
+  };
+
   const problemasDe = (it: Item) => (archivo ? validarCarga(aCarga(it, archivo.nombre)) : []);
   const elegidos = items.filter((x) => x.incluir);
   const hayProblemas = elegidos.some((x) => problemasDe(x).length > 0);
@@ -221,6 +247,17 @@ export function VistaDatos() {
           <p className="src" style={{ marginTop: 8 }}>
             Cualquiera puede ver las curvas cargadas; solo quien tiene la clave puede subir, renombrar o eliminar.
           </p>
+          <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginTop: 12 }}>
+            <button type="button" className="btn sm" disabled={sinClave || actualizando} onClick={() => void actualizarAhora()}>
+              {actualizando ? "Actualizando…" : "Actualizar datos en vivo ahora"}
+            </button>
+            <span className="src">BanRep, TRM e IPC del DANE; se hace solo a las 12:00 y 21:00.</span>
+          </div>
+          {resultado && (
+            <p className="src" role="status" style={{ marginTop: 8 }}>
+              {resultado}
+            </p>
+          )}
         </Panel>
         <Panel titulo="2 · Archivo" src=".xlsx (varias hojas) o .csv">
           <div className="f">

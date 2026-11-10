@@ -1,5 +1,5 @@
 /* Combina las tres fuentes de cada serie, en este orden de prioridad:
-   1. en vivo (BanRep SDMX), 2. cargada por el administrador, 3. respaldo del Excel del curso.
+   1. en vivo (BanRep SDMX; IPC del DANE), 2. cargada por el administrador, 3. respaldo del Excel del curso.
    Función pura: se prueba sin red. */
 import { curvaCero, plazoTES, type DatosMercado, type TuplaFecha, type TuplaIBR, type TuplaIPC, type TuplaTES } from "@/lib/engine";
 import type { CargasServidor } from "@/lib/cargas/tipos";
@@ -14,15 +14,29 @@ export interface InfoFuente {
   hasta: string;
   /** Explicación corta (p. ej. por qué se usa el respaldo). */
   detalle?: string;
+  /** Fecha y hora (Bogotá) de la última consulta exitosa a la fuente en vivo. */
+  consultado?: string;
 }
 
 export type ClaveFuente = "tpm" | "ibr" | "ibr12" | "uvr" | "ipc" | "exp" | "tes" | "tesuvr" | "frac" | "trm";
+
+export interface IpcEnVivo {
+  /** [fin de mes, índice base dic-2018, —, fecha de publicación] */
+  serie: [string, number, null, string | null][];
+  /** Fecha de publicación del último mes según el anexo del DANE. */
+  publicado: string | null;
+  /** Fecha y hora (Bogotá) de la consulta exitosa. */
+  consultado: string;
+  /** true: el DANE no respondió ahora y se usa la última lectura guardada. */
+  guardado?: boolean;
+}
 
 export interface DatosEnVivo {
   tpm?: [string, number][];
   ibr?: [string, number, number, number, number][];
   uvr?: [string, number][];
-  errores: Partial<Record<"tpm" | "ibr" | "uvr" | "trm", string>>;
+  ipc?: IpcEnVivo;
+  errores: Partial<Record<"tpm" | "ibr" | "uvr" | "trm" | "ipc", string>>;
 }
 
 const ultimo = <T extends [string, ...unknown[]]>(a: T[]) => a[a.length - 1]?.[0] ?? "";
@@ -76,13 +90,26 @@ export function combinar(respaldo: DatosMercado, vivo: DatosEnVivo, cargas: Carg
     fuentes.uvr = { fuente: "BanRep · SDMX", estado: "en-vivo", hasta: ultimo(uvr) };
   } else fuentes.uvr = { fuente: "Excel del curso", estado: "respaldo", hasta: ultimo(uvr), detalle: vivo.errores.uvr };
 
-  /* ---- IPC (índice mensual, fin de mes) ---- */
+  /* ---- IPC (índice mensual, fin de mes): DANE en vivo > cargado > Excel, mes por mes ---- */
+  const mes = (f: string) => f.slice(0, 7);
   let ipc: TuplaIPC[] = respaldo.ipc;
   const cargaIpc = cargas.series.ipc;
   if (cargaIpc?.datos.length) {
-    ipc = fusionar<TuplaIPC>(respaldo.ipc, cargaIpc.datos.map(([f, v]) => [f, v]), (f) => f.slice(0, 7));
+    ipc = fusionar<TuplaIPC>(respaldo.ipc, cargaIpc.datos.map(([f, v]) => [f, v]), mes);
     fuentes.ipc = { fuente: "DANE · cargado (" + cargaIpc.origen + ")", estado: "cargado", hasta: ultimo(ipc) };
   } else fuentes.ipc = { fuente: "DANE · Excel del curso", estado: "respaldo", hasta: ultimo(ipc) };
+  if (vivo.ipc?.serie.length) {
+    ipc = fusionar<TuplaIPC>(ipc, vivo.ipc.serie, mes);
+    fuentes.ipc = vivo.ipc.guardado
+      ? {
+          fuente: "DANE · última lectura guardada",
+          estado: "respaldo",
+          hasta: ultimo(ipc),
+          consultado: vivo.ipc.consultado,
+          detalle: vivo.errores.ipc,
+        }
+      : { fuente: "DANE · anexo IPC", estado: "en-vivo", hasta: ultimo(ipc), consultado: vivo.ipc.consultado };
+  } else if (vivo.errores.ipc) fuentes.ipc = { ...fuentes.ipc, detalle: vivo.errores.ipc };
 
   /* ---- Expectativas de inflación ---- */
   const cargaExp = cargas.series.exp;

@@ -44,6 +44,8 @@ export const F = {
     const [y, m, d] = s.split("-");
     return d + "·" + MESES[+m - 1] + "·" + y;
   },
+  /** Mes de referencia: "2026-10-31" → "oct·2026" */
+  mes: (s: string) => MESES[+s.slice(5, 7) - 1] + "·" + s.slice(0, 4),
 };
 
 /** Eje de porcentaje para gráficos. */

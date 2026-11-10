@@ -99,6 +99,25 @@ export async function leerCurvaFrac(id: string): Promise<CargaFRAC | null> {
   return leerJSON<CargaFRAC>(archivoFrac(id));
 }
 
+/** Último IPC leído con éxito del DANE (lo escribe la actualización; sirve si el DANE no responde). */
+export interface IpcDaneGuardado {
+  serie: [string, number, null, string | null][];
+  publicado: string | null;
+  mes: string;
+  url: string;
+  /** Fecha y hora (Bogotá) de la última consulta exitosa. */
+  consultado: string;
+}
+
+export async function leerIpcDane(): Promise<IpcDaneGuardado | null> {
+  return leerJSON<IpcDaneGuardado>("vivo-ipc-dane.json");
+}
+
+export async function guardarIpcDane(d: IpcDaneGuardado): Promise<void> {
+  if (!puedeGuardar()) return;
+  await almacen().escribir("vivo-ipc-dane.json", JSON.stringify(d));
+}
+
 const meta = (origen: string, cargada: string, datos: [string, unknown][]) => ({
   origen,
   cargada,
