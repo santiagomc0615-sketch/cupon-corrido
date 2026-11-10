@@ -25,7 +25,7 @@ const ACTUALIZACION: Record<ClaveFuente, string> = {
   ibr12: "Carga manual",
   uvr: "Dos veces al día (automática)",
   ipc: "Mensual · DANE, automática (carga manual como respaldo)",
-  exp: "Mensual · carga manual",
+  exp: "Mensual · carga manual (Excel de la encuesta del BanRep, tal cual)",
   tes: "Carga manual",
   frac: "Carga manual",
   trm: "Dos veces al día (automática)",

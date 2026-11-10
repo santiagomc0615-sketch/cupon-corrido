@@ -226,7 +226,7 @@ export function VistaDatos() {
     <section className="view">
       <Encabezado
         eyebrow="Series sin API oficial"
-        lede="Aquí se cargan las curvas FRAC (pueden ser varias: por ejemplo la de compra y la de venta), el índice IPC del DANE, las expectativas de inflación, el IBR a 12 meses y las referencias TES. Un Excel puede traer varias hojas: cada una se reconoce por sus encabezados, como en el Excel del curso."
+        lede="Aquí se cargan las curvas FRAC (pueden ser varias: por ejemplo la de compra y la de venta), el índice IPC del DANE, las expectativas de inflación, el IBR a 12 meses y las referencias TES. Un Excel puede traer varias hojas: cada una se reconoce por sus encabezados, como en el Excel del curso. Las expectativas también se pueden subir con el Excel de la Encuesta mensual de expectativas del BanRep tal como se descarga: se usa la mediana de la hoja de inflación total."
       >
         Cargar <em>datos</em>
       </Encabezado>

@@ -6,8 +6,10 @@
    - Datos_IPC:        Mes (fin de mes) | Índice IPC
    - Datos_IBR:        Fecha | … | IBR 12 meses (en %)            → se toma solo el IBR 12M
    - Curva_Rendimiento: Fecha de la curva + Título | Emisión | Vencimiento | Cupón | TIR mercado
+   - Encuesta del BanRep (EME) tal como se descarga: hoja «INFLACION TOT» → expectativas (ver encuesta-banrep.ts)
    Funciones puras: reciben las filas ya leídas del archivo. */
 import { toN, toS, type TuplaFecha } from "@/lib/engine";
+import { esEncuestaBanRep, esInflacionTotal, leerEncuestaBanRep } from "./encuesta-banrep";
 import type { RefTES, TipoCurvaTES, TipoSerieCargada } from "./tipos";
 
 export type Celda = string | number | boolean | Date | null | undefined;
@@ -117,6 +119,19 @@ export function detectarHoja({ hoja, filas }: HojaLeida): Detectada {
   const avisos: string[] = [];
   const titulo = String(filas[0]?.find((c) => c != null && String(c).trim()) ?? "");
   const t = norm(titulo);
+
+  /* Encuesta Mensual de Expectativas del BanRep, tal como se descarga */
+  if (esEncuestaBanRep(filas)) {
+    if (!esInflacionTotal(hoja, filas))
+      return { tipo: "ignorada", hoja, avisos, motivo: "Encuesta del BanRep: solo se usa la hoja de inflación total (INFLACION TOT)." };
+    try {
+      const e = leerEncuestaBanRep(filas);
+      if (e.realizacion) e.avisos.push(e.realizacion + ".");
+      return { tipo: "exp", hoja, avisos: e.avisos, datos: e.datos };
+    } catch (err) {
+      return { tipo: "ignorada", hoja, avisos, motivo: err instanceof Error ? err.message : String(err) };
+    }
+  }
 
   /* Curva_Rendimiento: referencias TES */
   const hTes = filaEncabezado(filas, (c) => c.includes("titulo") && c.includes("vencimiento") && c.some((x) => x.startsWith("tir")));
