@@ -37,6 +37,8 @@ export const F = {
             : nf(0).format(a))
     );
   },
+  /** Millones de pesos con d decimales: 3541500 → "$ 3,5415 M" (cifras diarias del carry). */
+  mill: (x: number | null | undefined, d = 4) => (ok(x) ? (x < 0 ? "−" : "") + "$ " + nf(d).format(Math.abs(x) / 1e6) + " M" : "—"),
   /** Puntos básicos con signo. */
   bp: (x: number | null | undefined) => (ok(x) ? (x > 0 ? "+" : "") + nf(1).format(x) + " pb" : "—"),
   /** "2026-10-30" → "30·oct·2026" */

@@ -1,6 +1,7 @@
 "use client";
 import { useState, type ReactNode } from "react";
 import type { ClaveClase } from "@/lib/clase";
+import { CarryFondeo } from "./CarryFondeo";
 import { ETIQUETAS_CLASE, PasoAPaso } from "./PasoAPaso";
 import { Chart, nearest } from "@/components/charts/Chart";
 import { useApp, useCurvaNecesaria } from "@/components/providers/AppProvider";
@@ -310,6 +311,8 @@ function ResultadosOk({ b, o, avisosExtra, clase }: { b: Bono; o: ResultadoValor
         </Panel>
         <VentaAnticipada b={b} o={o} />
       </div>
+
+      <CarryFondeo b={b} o={o} />
 
       <div className="panel">
         <details>

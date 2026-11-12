@@ -1,5 +1,6 @@
 /* Punto único de entrada de los datos de mercado para la interfaz (solo servidor).
-   - En vivo: BanRep SDMX (TPM, IBR ON–6M, UVR), datos.gov.co (TRM) y DANE (IPC, anexo de índices).
+   - En vivo: BanRep SDMX (TPM, IBR ON–6M, UVR), datos.gov.co (TRM), DANE (IPC, anexo de índices) y
+     Fed de Nueva York (SOFR, para el fondeo en dólares).
      Si el DANE no responde se usa su última lectura guardada (lib/data/actualizar.ts la escribe).
    - Cargado: series que sube el administrador en /datos (FRAC, IPC, expectativas, IBR 12M, TES).
    - Respaldo: data/datos-mercado.json (última carga del Excel del curso), serie por serie.
@@ -13,6 +14,7 @@ import { combinar, type ClaveFuente, type DatosEnVivo, type InfoFuente, type Ipc
 import { ibrBanRep, tpmBanRep, uvrBanRep } from "./fuentes/banrep";
 import { enVentanaDane, ipcDane, mesEsperado } from "./fuentes/dane";
 import { trmDatosGov, type TRM } from "./fuentes/datosgov";
+import { sofrNYFed, type SOFR } from "./fuentes/nyfed";
 import { MACRO, type Macro } from "./macro";
 
 /** Todo el conjunto de datos de mercado. */
@@ -31,6 +33,8 @@ export interface SnapshotMercado {
   origen: "respaldo" | "en-vivo";
   fuentes: Partial<Record<ClaveFuente, InfoFuente>>;
   trm?: TRM;
+  /** SOFR en vivo (Fed de Nueva York), para el fondeo en dólares. */
+  sofr?: SOFR;
   /** Lo que está cargado en /datos. */
   cargas: IndiceCargas;
   /** Fecha y hora (Bogotá) en que se armó este conjunto de datos. */
@@ -55,16 +59,17 @@ const motivo = (r: PromiseSettledResult<unknown>) => {
 
 /** Fuentes en vivo. Si alguna falla, o si es temporada de publicación del IPC y el DANE aún no
     trae el mes esperado, se guarda solo una hora para reintentar pronto. */
-async function datosEnVivo(): Promise<{ vivo: DatosEnVivo; trm?: TRM; pendienteDane: boolean }> {
+async function datosEnVivo(): Promise<{ vivo: DatosEnVivo; trm?: TRM; sofr?: SOFR; pendienteDane: boolean }> {
   "use cache";
   cacheTag(TAG_VIVO);
   const hoy = hoyBogota();
-  const [tpm, ibr, uvr, trm, ipc] = await Promise.allSettled([
+  const [tpm, ibr, uvr, trm, ipc, sofr] = await Promise.allSettled([
     tpmBanRep("2023-01-01"),
     ibrBanRep("2023-01-01"),
     uvrBanRep("2025-01-01"),
     trmDatosGov(),
     ipcDane(hoy),
+    sofrNYFed(),
   ]);
   let ipcVivo: IpcEnVivo | undefined;
   if (ipc.status === "fulfilled") {
@@ -78,7 +83,7 @@ async function datosEnVivo(): Promise<{ vivo: DatosEnVivo; trm?: TRM; pendienteD
     ibr: ibr.status === "fulfilled" ? ibr.value : undefined,
     uvr: uvr.status === "fulfilled" ? uvr.value : undefined,
     ipc: ipcVivo,
-    errores: { tpm: motivo(tpm), ibr: motivo(ibr), uvr: motivo(uvr), trm: motivo(trm), ipc: motivo(ipc) },
+    errores: { tpm: motivo(tpm), ibr: motivo(ibr), uvr: motivo(uvr), trm: motivo(trm), ipc: motivo(ipc), sofr: motivo(sofr) },
   };
   const ultimoIpc = ipcVivo?.serie[ipcVivo.serie.length - 1]?.[0].slice(0, 7) ?? "";
   const pendienteDane = enVentanaDane(hoy) && ultimoIpc < mesEsperado(hoy);
@@ -86,7 +91,12 @@ async function datosEnVivo(): Promise<{ vivo: DatosEnVivo; trm?: TRM; pendienteD
     if (Object.values(vivo.errores).some(Boolean)) console.warn("[mercado] Fuentes en vivo con errores:", vivo.errores);
     cacheLife("hours");
   } else cacheLife("days");
-  return { vivo, trm: trm.status === "fulfilled" ? trm.value : undefined, pendienteDane };
+  return {
+    vivo,
+    trm: trm.status === "fulfilled" ? trm.value : undefined,
+    sofr: sofr.status === "fulfilled" ? sofr.value : undefined,
+    pendienteDane,
+  };
 }
 
 /** Series cargadas por el administrador. */
@@ -107,7 +117,7 @@ export async function obtenerMercado(): Promise<SnapshotMercado> {
   cacheTag(TAG_MERCADO, TAG_VIVO, TAG_CARGAS);
 
   const base = respaldo as unknown as DatosMercado;
-  const [{ vivo, trm, pendienteDane }, c] = await Promise.all([datosEnVivo(), cargasGuardadas()]);
+  const [{ vivo, trm, sofr, pendienteDane }, c] = await Promise.all([datosEnVivo(), cargasGuardadas()]);
   // Con alguna fuente caída, o esperando el IPC del mes en los días de publicación del DANE,
   // se reintenta en una hora; si todo respondió, un día.
   if (Object.values(vivo.errores).some(Boolean) || pendienteDane) cacheLife("hours");
@@ -125,6 +135,9 @@ export async function obtenerMercado(): Promise<SnapshotMercado> {
     fuentes.tpm = { fuente: MACRO.tpmFuente, estado: "respaldo", hasta: MACRO.tpmFecha, detalle: vivo.errores.tpm };
   }
   if (trm) fuentes.trm = { fuente: "datos.gov.co · Superfinanciera", estado: "en-vivo", hasta: trm.fecha };
+  fuentes.sofr = sofr
+    ? { fuente: "Fed de Nueva York", estado: "en-vivo", hasta: sofr.fecha }
+    : { fuente: "Fed de Nueva York", estado: "respaldo", hasta: "", detalle: (vivo.errores.sofr ?? "sin dato") + " · ingrésela a mano en el fondeo" };
 
   const enVivo = Object.values(fuentes).some((f) => f?.estado === "en-vivo");
 
@@ -135,6 +148,7 @@ export async function obtenerMercado(): Promise<SnapshotMercado> {
     origen: enVivo ? "en-vivo" : "respaldo",
     fuentes,
     trm,
+    sofr,
     cargas: c.indice,
     actualizado: ahoraBogota(),
   };

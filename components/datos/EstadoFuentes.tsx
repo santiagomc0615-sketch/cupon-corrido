@@ -16,6 +16,7 @@ export const NOMBRES_FUENTE: Record<ClaveFuente, string> = {
   tesuvr: "Curva TES UVR (real)",
   frac: "Curvas FRAC",
   trm: "TRM",
+  sofr: "SOFR (fondeo en USD)",
 };
 
 const ACTUALIZACION: Record<ClaveFuente, string> = {
@@ -29,6 +30,7 @@ const ACTUALIZACION: Record<ClaveFuente, string> = {
   tes: "Carga manual",
   frac: "Carga manual",
   trm: "Dos veces al día (automática)",
+  sofr: "Dos veces al día (automática)",
 };
 
 /** "2026-11-09 20:25" → "09·nov·2026 20:25" */

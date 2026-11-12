@@ -6,6 +6,7 @@ import { Chart, nearest, type PuntoSerie } from "@/components/charts/Chart";
 import { useApp } from "@/components/providers/AppProvider";
 import { CarryRoll } from "./CarryRoll";
 import { EscenarioBanRep } from "./EscenarioBanRep";
+import { FondeoPortafolio } from "./FondeoPortafolio";
 import { Aviso, Kpi, Panel } from "@/components/ui";
 import { TYPE_CLR, TYPE_LBL } from "@/lib/calculadora";
 import type { TipoBono } from "@/lib/engine";
@@ -254,6 +255,8 @@ function Cuerpo() {
       </div>
 
       <EscenarioBanRep />
+
+      <FondeoPortafolio />
 
       <CarryRoll />
 

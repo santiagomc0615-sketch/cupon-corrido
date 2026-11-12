@@ -18,7 +18,7 @@ export interface InfoFuente {
   consultado?: string;
 }
 
-export type ClaveFuente = "tpm" | "ibr" | "ibr12" | "uvr" | "ipc" | "exp" | "tes" | "tesuvr" | "frac" | "trm";
+export type ClaveFuente = "tpm" | "ibr" | "ibr12" | "uvr" | "ipc" | "exp" | "tes" | "tesuvr" | "frac" | "trm" | "sofr";
 
 export interface IpcEnVivo {
   /** [fin de mes, índice base dic-2018, —, fecha de publicación] */
@@ -36,7 +36,7 @@ export interface DatosEnVivo {
   ibr?: [string, number, number, number, number][];
   uvr?: [string, number][];
   ipc?: IpcEnVivo;
-  errores: Partial<Record<"tpm" | "ibr" | "uvr" | "trm" | "ipc", string>>;
+  errores: Partial<Record<"tpm" | "ibr" | "uvr" | "trm" | "ipc" | "sofr", string>>;
 }
 
 const ultimo = <T extends [string, ...unknown[]]>(a: T[]) => a[a.length - 1]?.[0] ?? "";
