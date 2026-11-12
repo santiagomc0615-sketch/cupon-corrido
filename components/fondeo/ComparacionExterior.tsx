@@ -1,6 +1,6 @@
 "use client";
 /* Tabla comparativa: fondeo local en pesos vs. exterior sin cubrir vs. exterior cubierto. */
-import { comparacion } from "@/lib/carry/config";
+import { comparacion, faltante } from "@/lib/carry/config";
 import { NOMBRE_ALTERNATIVA } from "@/lib/carry/exterior";
 import { F, nf } from "@/lib/format";
 import { useFondeo, useMercadoFondeo } from "./ControlesFondeo";
@@ -12,7 +12,7 @@ export function ComparacionExterior({ montoFondeado }: { montoFondeado: number }
   if (!cmp)
     return (
       <p className="src" role="status">
-        {m.spot ? "Falta la SOFR: no llegó el dato en vivo. Ingrésela arriba para comparar." : "Falta la TRM del día para comparar con el exterior."}
+        {faltante({ ...c, tipo: "exterior" }, m)}
       </p>
     );
   return (
@@ -44,16 +44,16 @@ export function ComparacionExterior({ montoFondeado }: { montoFondeado: number }
       </div>
       <p className="src" style={{ marginTop: 8 }}>
         Tasa USD (SOFR + spread) {F.pct(cmp.tasaUSD, 3)} E.A. · forward {nf(2).format(cmp.forward)} a {c.exterior.plazoDias} días (
-        {cmp.origenForward === "puntos" ? "puntos ingresados" : "paridad cubierta"}), devaluación implícita {F.pct(cmp.devForward, 2)} E.A. · TRM{" "}
-        {nf(2).format(m.spot ?? 0)}
-        {m.trmFecha ? ` (${F.date(m.trmFecha)})` : ""}.
+        {cmp.origenForward === "puntos" ? "puntos ingresados" : "paridad cubierta con IBR y SOFR del día"}), devaluación implícita{" "}
+        {F.pct(cmp.devForward, 2)} E.A. · sin cubrir con devaluación {F.pct(cmp.devEsperada, 2)}
+        {c.exterior.devEsperada == null ? " (la implícita: sin una expectativa propia)" : " (su supuesto)"}.
         <br />
         <b>Devaluación de equilibrio {F.pct(cmp.devEquilibrio, 2)}</b>: si el peso se devalúa más que eso, fondearse en dólares sin cubrir sale más
         caro que en pesos.
         {cmp.masBarata === "sinCubrir" && (
           <>
             {" "}
-            Sin cubrir sale más barato solo con el supuesto de {F.pct(c.exterior.devEsperada, 2)} de devaluación: el riesgo cambiario queda
+            Sin cubrir sale más barato solo con el supuesto de {F.pct(cmp.devEsperada, 2)} de devaluación: el riesgo cambiario queda
             abierto.
           </>
         )}

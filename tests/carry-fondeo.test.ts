@@ -2,8 +2,21 @@
    fondeo 12,25 % E.A., haircut 10 %, DV01 3.301.416. */
 import { describe, expect, it } from "vitest";
 import datos from "@/data/datos-mercado.json";
-import { carryPortafolioFondeo, comparacion, CONFIG_INICIAL, tasaEfectiva, type ConfigFondeo } from "@/lib/carry/config";
-import { compararExterior, costoEnPesos, devEquilibrio, tasaUSD } from "@/lib/carry/exterior";
+import {
+  carryPortafolioFondeo,
+  comparacion,
+  CONFIG_INICIAL,
+  devUltimos12m,
+  faltante,
+  ibrEA,
+  ibrParaPlazo,
+  tasaCOPMercado,
+  tasaEfectiva,
+  tasaLocalEA,
+  type ConfigFondeo,
+  type MercadoFondeo,
+} from "@/lib/carry/config";
+import { compararExterior, costoEnPesos, devEquilibrio, devParidad, tasaUSD } from "@/lib/carry/exterior";
 import { calcularCarry, montos, tasaFondeoEA } from "@/lib/carry/fondeo";
 import { causacionDiaria, posicionDesdeMotor } from "@/lib/carry/posicion";
 import { eaDesdeNominal, eaDesdeOvernight360, tasaDiaria } from "@/lib/carry/tasas";
@@ -67,19 +80,23 @@ describe("Tasas y tipos de fondeo", () => {
 });
 
 describe("Fondeo en el exterior", () => {
-  const base = { sofr: 0.0389, spread: 0.015, tasaCOP: 0.1225, devEsperada: 0.03, spot: 4000, plazoDias: 90 };
+  const base = { sofr: 0.0389, spread: 0.015, tasaCOP: 0.1225, tasaCOPMercado: 0.11, devEsperada: 0.03, spot: 4000, plazoDias: 90 };
 
   it("tasa USD = SOFR + spread con base 360 llevada a E.A.", () => {
     expect(tasaUSD(0.0389, 0.015)).toBeCloseTo(eaDesdeOvernight360(0.0539), 15);
     expect(tasaUSD(0.0389, 0.015)).toBeGreaterThan(0.0539);
   });
 
-  it("sin puntos forward, la paridad cubierta deja el costo cubierto igual a la tasa en pesos", () => {
+  it("sin puntos forward, el forward sale de la paridad cubierta con tasas de mercado (IBR y SOFR, sin el spread)", () => {
     const c = compararExterior(9e9, base);
-    const cub = c.filas.find((f) => f.alternativa === "cubierto")!;
     expect(c.origenForward).toBe("paridad");
-    expect(cub.tasaEA).toBeCloseTo(0.1225, 12);
-    expect(c.devForward).toBeCloseTo(c.devEquilibrio, 12);
+    expect(c.sofrEA).toBeCloseTo(eaDesdeOvernight360(0.0389), 15);
+    expect(c.devForward).toBeCloseTo(devParidad(0.11, c.sofrEA), 15);
+    expect(c.forward).toBeCloseTo(4000 * Math.pow(1.11 / (1 + c.sofrEA), 90 / 365), 9);
+    // cubierto ≈ tasa en pesos de mercado + el spread del crédito
+    const cub = c.filas.find((f) => f.alternativa === "cubierto")!;
+    expect(cub.tasaEA).toBeCloseTo((1 + c.tasaUSD) * (1.11 / (1 + c.sofrEA)) - 1, 12);
+    expect(cub.tasaEA).toBeGreaterThan(0.11);
   });
 
   it("devaluación de equilibrio: sin cubrir con esa devaluación cuesta lo mismo que en pesos", () => {
@@ -89,23 +106,63 @@ describe("Fondeo en el exterior", () => {
     expect(costoEnPesos(t, dEq)).toBeCloseTo(0.1225, 12);
   });
 
+  it("sin expectativa propia, sin cubrir usa la devaluación implícita y en empate gana cubierto (menos riesgo)", () => {
+    const c = compararExterior(9e9, { ...base, devEsperada: null, tasaCOP: 0.2 });
+    expect(c.devEsperada).toBe(c.devForward);
+    const [, sin, cub] = c.filas;
+    expect(sin.tasaEA).toBeCloseTo(cub.tasaEA, 15);
+    expect(c.masBarata).toBe("cubierto");
+  });
+
   it("con devaluación esperada baja, sin cubrir es lo más barato; con puntos caros, el forward encarece", () => {
-    const c = compararExterior(9e9, base);
-    expect(c.masBarata).toBe("sinCubrir");
+    expect(compararExterior(9e9, base).masBarata).toBe("sinCubrir");
     const caro = compararExterior(9e9, { ...base, devEsperada: 0.15, puntosForward: 200 });
     expect(caro.origenForward).toBe("puntos");
     expect(caro.forward).toBe(4200);
     expect(caro.devForward).toBeCloseTo(Math.pow(1.05, 365 / 90) - 1, 12);
     expect(caro.masBarata).toBe("local");
   });
+});
 
-  it("la configuración usa la SOFR en vivo salvo que se ingrese otra, y la cobertura elegida", () => {
-    const c: ConfigFondeo = { ...CONFIG_INICIAL, tipo: "exterior", exterior: { ...CONFIG_INICIAL.exterior, tasaCOP: 0.1225 } };
-    expect(tasaEfectiva(c, { sofr: null, spot: 4000 })).toBeNull(); // sin SOFR no se inventa
-    expect(tasaEfectiva(c, { sofr: 0.0389, spot: 4000 })).toBeCloseTo(0.1225, 12); // cubierto por paridad
-    const sin = { ...c, exterior: { ...c.exterior, cobertura: "sinCubrir" as const, sofr: 0.05 } };
-    expect(tasaEfectiva(sin, { sofr: 0.0389, spot: 4000 })).toBeCloseTo(costoEnPesos(tasaUSD(0.05, 0.015), 0.03), 12);
-    expect(comparacion(CONFIG_INICIAL, { sofr: 0.0389, spot: 4000 }, 1)?.filas[0].tasaEA).toBe(0.1225);
+describe("Datos del día por defecto", () => {
+  const ibr = { fecha: "2026-11-11", on: 0.114, m1: 0.1147, m3: 0.1163, m6: 0.1185 };
+  const mercado: MercadoFondeo = { sofr: 0.0389, spot: 3297.07, spot12m: { valor: 3760.93, fecha: "2025-11-11" }, tpm: 0.1225, ibr };
+
+  it("simultánea usa la TPM del día; interbancario, el IBR overnight + spread; manual manda", () => {
+    expect(tasaLocalEA(CONFIG_INICIAL, mercado)).toBe(0.1225);
+    expect(tasaLocalEA({ ...CONFIG_INICIAL, tipo: "ibr", spreadIbr: 0.005 }, mercado)).toBeCloseTo(eaDesdeOvernight360(0.119), 15);
+    expect(tasaLocalEA({ ...CONFIG_INICIAL, tasa: 0.13 }, mercado)).toBe(0.13);
+    expect(tasaLocalEA({ ...CONFIG_INICIAL, tasa: 0.12, modalidad: "NA", capitalizacion: "trimestral" }, mercado)).toBeCloseTo(Math.pow(1.03, 4) - 1, 15);
+  });
+
+  it("sin dato del día no se inventa una tasa", () => {
+    expect(tasaLocalEA(CONFIG_INICIAL, { ...mercado, tpm: null })).toBeNull();
+    expect(tasaLocalEA({ ...CONFIG_INICIAL, tipo: "credito" }, mercado)).toBeNull(); // el crédito no tiene dato público
+    expect(faltante({ ...CONFIG_INICIAL, tipo: "credito" }, mercado)).toMatch(/crédito/);
+    const ext: ConfigFondeo = { ...CONFIG_INICIAL, tipo: "exterior" };
+    expect(tasaEfectiva(ext, { ...mercado, sofr: null })).toBeNull();
+    expect(faltante(ext, { ...mercado, sofr: null })).toMatch(/SOFR/);
+  });
+
+  it("la tasa en pesos de mercado es el IBR del plazo del forward, en E.A.", () => {
+    expect(ibrEA(0.1163, 90)).toBeCloseTo(Math.pow(1 + (0.1163 * 90) / 360, 365 / 90) - 1, 15);
+    expect(ibrParaPlazo(ibr, 90).plazo).toBe("3 meses");
+    expect(ibrParaPlazo(ibr, 40).plazo).toBe("1 mes");
+    expect(ibrParaPlazo(ibr, 1).ea).toBeCloseTo(eaDesdeOvernight360(0.114), 15);
+    expect(tasaCOPMercado(CONFIG_INICIAL, mercado)).toBeCloseTo(ibrEA(0.1163, 90), 15);
+  });
+
+  it("exterior con todo automático: SOFR, TRM, IBR y devaluación implícita del día", () => {
+    const ext: ConfigFondeo = { ...CONFIG_INICIAL, tipo: "exterior" };
+    const cmp = comparacion(ext, mercado, 1e9)!;
+    expect(cmp.devForward).toBeCloseTo(devParidad(ibrEA(0.1163, 90), eaDesdeOvernight360(0.0389)), 15);
+    expect(tasaEfectiva(ext, mercado)).toBeCloseTo(cmp.filas.find((f) => f.alternativa === "cubierto")!.tasaEA, 15);
+    expect(cmp.filas[0].tasaEA).toBeCloseTo(ibrEA(0.1163, 90), 15); // referencia local = IBR del plazo
+  });
+
+  it("devaluación de los últimos 12 meses con la TRM de hace un año", () => {
+    expect(devUltimos12m(mercado)).toBeCloseTo(3297.07 / 3760.93 - 1, 15);
+    expect(devUltimos12m({ ...mercado, spot12m: null })).toBeNull();
   });
 });
 
@@ -139,7 +196,7 @@ describe("Con salidas reales del motor", () => {
   });
 
   it("portafolio: suma posiciones y calcula % fondeado y costo total", () => {
-    const t = carryPortafolioFondeo([CASO, { ...CASO, giro: CASO.giro / 2, dv01: CASO.dv01 / 2 }], CONFIG_INICIAL, { sofr: null, spot: null })!;
+    const t = carryPortafolioFondeo([CASO, { ...CASO, giro: CASO.giro / 2, dv01: CASO.dv01 / 2 }], CONFIG_INICIAL, { sofr: null, spot: null, tpm: 0.1225 })!;
     const uno = calcularCarry(CASO, REPO, 0.1225);
     expect(t.pctFondeado).toBeCloseTo(0.9, 12);
     expect(t.carryDia).toBeCloseTo(uno.carryDia * 1.5, 6);

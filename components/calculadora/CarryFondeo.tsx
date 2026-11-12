@@ -6,7 +6,7 @@ import { ComparacionExterior } from "@/components/fondeo/ComparacionExterior";
 import { ControlesExterior, ControlesFondeo, useFondeo, useMercadoFondeo } from "@/components/fondeo/ControlesFondeo";
 import { TablaHorizontes } from "@/components/fondeo/TablaHorizontes";
 import { Kpi, Panel } from "@/components/ui";
-import { carryConConfig } from "@/lib/carry/config";
+import { carryConConfig, faltante } from "@/lib/carry/config";
 import { NOMBRE_FONDEO } from "@/lib/carry/fondeo";
 import { posicionDesdeMotor } from "@/lib/carry/posicion";
 import type { Bono, ResultadoValoracion } from "@/lib/engine";
@@ -46,7 +46,7 @@ export function CarryFondeo({ b, o }: { b: Bono; o: ResultadoValoracion }) {
         </>
       ) : (
         <p className="src" role="status" style={{ marginTop: 12 }}>
-          Para fondear en dólares falta la SOFR o la TRM: ingrese la SOFR en «Fondeo en el exterior».
+          {faltante(c, m)}
         </p>
       )}
 

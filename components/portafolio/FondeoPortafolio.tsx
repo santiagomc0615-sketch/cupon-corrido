@@ -7,7 +7,7 @@ import { ControlesExterior, ControlesFondeo, useFondeo, useMercadoFondeo } from 
 import { TablaHorizontes } from "@/components/fondeo/TablaHorizontes";
 import { useApp } from "@/components/providers/AppProvider";
 import { Kpi, Panel } from "@/components/ui";
-import { carryPortafolioFondeo } from "@/lib/carry/config";
+import { carryPortafolioFondeo, faltante } from "@/lib/carry/config";
 import { NOMBRE_FONDEO } from "@/lib/carry/fondeo";
 import { posicionDesdeMotor } from "@/lib/carry/posicion";
 import { F, nf } from "@/lib/format";
@@ -45,7 +45,7 @@ export function FondeoPortafolio() {
         </>
       ) : (
         <p className="src" role="status" style={{ marginTop: 12 }}>
-          Para fondear en dólares falta la SOFR o la TRM: ingrese la SOFR en «Fondeo en el exterior».
+          {faltante(c, m)}
         </p>
       )}
       <details className="fondeo-ext">
