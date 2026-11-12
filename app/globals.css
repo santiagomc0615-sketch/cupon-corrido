@@ -196,7 +196,10 @@
   .view,
   .kpis > .kpi,
   .headline .v,
-  .bh-barra {
+  .bh-barra,
+  .tarjeta,
+  .progreso > span,
+  .linea-tiempo li {
     animation-name: cc-aparecer !important;
   }
   .btn:active,
@@ -837,6 +840,210 @@
   .pt-d {
     fill: var(--neg);
   }
+  /* Vista cliente (components/cliente): tarjetas con profundidad y números protagonistas */
+  .cliente {
+    --sombra-tarjeta: 0 1px 2px rgba(15, 27, 45, 0.06), 0 10px 28px -14px rgba(15, 27, 45, 0.22);
+    --sombra-heroe: 0 2px 4px rgba(15, 27, 45, 0.1), 0 22px 44px -18px rgba(15, 27, 45, 0.45);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  :root[data-theme="dark"] .cliente {
+    --sombra-tarjeta: 0 1px 2px rgba(0, 0, 0, 0.4), 0 12px 30px -14px rgba(0, 0, 0, 0.7);
+    --sombra-heroe: 0 2px 6px rgba(0, 0, 0, 0.5), 0 24px 48px -18px rgba(0, 0, 0, 0.8);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .cliente {
+      --sombra-tarjeta: 0 1px 2px rgba(0, 0, 0, 0.4), 0 12px 30px -14px rgba(0, 0, 0, 0.7);
+      --sombra-heroe: 0 2px 6px rgba(0, 0, 0, 0.5), 0 24px 48px -18px rgba(0, 0, 0, 0.8);
+    }
+  }
+  .cliente-cab h2 {
+    font: 500 clamp(24px, 3vw, 32px) / 1.1 var(--f-display);
+    letter-spacing: -0.015em;
+    margin: 4px 0 2px;
+  }
+  /* Escritorio: ganancia en 2×2, próximo cupón y colchón al lado, CDT debajo de ellos. */
+  .cliente-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+  }
+  .cliente-grid > .tarjeta-cdt {
+    grid-column: span 2;
+  }
+  @media (max-width: 1100px) {
+    .cliente-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  .tarjeta {
+    position: relative;
+    background: var(--sheet);
+    border: 1px solid color-mix(in srgb, var(--rule) 70%, transparent);
+    border-radius: 14px;
+    padding: 20px 22px;
+    box-shadow: var(--sombra-tarjeta);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+    --desde: 10px;
+    animation: cc-entrar 360ms var(--ease-out) backwards;
+    animation-delay: calc(var(--n, 0) * 60ms);
+  }
+  .cliente-grid > .tarjeta:nth-child(2) {
+    --n: 1;
+  }
+  .cliente-grid > .tarjeta:nth-child(3) {
+    --n: 2;
+  }
+  .cliente-grid > .tarjeta:nth-child(4) {
+    --n: 3;
+  }
+  .tarjeta-pagos {
+    --n: 4;
+  }
+  .tarjeta h3 {
+    font: 600 12px/1.3 var(--f-body);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+  }
+  .tarjeta p {
+    margin: 0;
+    color: var(--ink-2);
+    font-size: 13px;
+  }
+  .tarjeta p b {
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .cifra-heroe,
+  .cifra {
+    font-family: var(--f-display);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums lining-nums;
+    line-height: 1;
+    white-space: nowrap;
+  }
+  .cifra-heroe {
+    font-size: clamp(44px, 6vw, 68px);
+    letter-spacing: -0.03em;
+  }
+  .cifra {
+    font-size: clamp(30px, 3.4vw, 40px);
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+  .cifra-sec {
+    font: 500 18px var(--f-mono);
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+  }
+  /* La tarjeta de la ganancia es la protagonista: acento de fondo y la sombra más profunda. */
+  .tarjeta-heroe {
+    grid-column: span 2;
+    grid-row: span 2;
+    background: var(--acento-fondo);
+    border-color: transparent;
+    box-shadow: var(--sombra-heroe);
+    color: var(--acento-sobre);
+    justify-content: space-between;
+  }
+  .tarjeta-heroe h3,
+  .tarjeta-heroe p,
+  .tarjeta-heroe .cifra-sec {
+    color: color-mix(in srgb, var(--acento-sobre) 82%, transparent);
+  }
+  .tarjeta-heroe .cifra-sec {
+    color: var(--acento-sobre);
+  }
+  @media (max-width: 1100px) {
+    .tarjeta-heroe {
+      grid-row: auto;
+    }
+  }
+  @media (max-width: 560px) {
+    .cliente-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .tarjeta-heroe,
+    .cliente-grid > .tarjeta-cdt {
+      grid-column: auto;
+    }
+  }
+  .progreso {
+    height: 8px;
+    border-radius: var(--r-pill);
+    background: var(--sheet-2);
+    overflow: hidden;
+    margin: 6px 0 2px;
+  }
+  .progreso > span {
+    display: block;
+    height: 100%;
+    background: var(--engrave);
+    border-radius: inherit;
+    transform-origin: left center;
+    transition: transform 400ms var(--ease-out);
+    animation: cc-barra 700ms var(--ease-out) 200ms backwards;
+  }
+  .cdt-tasa {
+    margin-top: auto;
+    padding-top: 8px;
+    max-width: 200px;
+  }
+  .pagos-cab {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .linea-tiempo {
+    list-style: none;
+    margin: 6px 0 0;
+    padding: 0 0 4px;
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+  .linea-tiempo li {
+    flex: 1 0 72px;
+    display: grid;
+    grid-template-rows: 96px auto auto;
+    align-items: end;
+    justify-items: center;
+    gap: 4px;
+    text-align: center;
+    animation: cc-aparecer 300ms ease-out backwards;
+    animation-delay: calc(200ms + var(--i, 0) * 30ms);
+  }
+  .lt-barra {
+    width: 60%;
+    max-width: 28px;
+    min-height: 4px;
+    border-radius: 3px 3px 0 0;
+    background: color-mix(in srgb, var(--engrave) 70%, transparent);
+    align-self: end;
+  }
+  .linea-tiempo li:last-child .lt-barra {
+    background: var(--seal);
+  }
+  .lt-monto {
+    font: 500 11px var(--f-mono);
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+  .lt-fecha {
+    font: 400 11px var(--f-mono);
+    color: var(--ink-3);
+    white-space: nowrap;
+  }
+
   /* Carry y fondeo (components/fondeo, components/calculadora/CarryFondeo.tsx) */
   .fondeo-campos {
     display: grid;

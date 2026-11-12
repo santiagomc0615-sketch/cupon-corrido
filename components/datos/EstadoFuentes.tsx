@@ -17,6 +17,7 @@ export const NOMBRES_FUENTE: Record<ClaveFuente, string> = {
   frac: "Curvas FRAC",
   trm: "TRM",
   sofr: "SOFR (fondeo en USD)",
+  dtf: "DTF (referencia CDT 90 días)",
 };
 
 const ACTUALIZACION: Record<ClaveFuente, string> = {
@@ -31,6 +32,7 @@ const ACTUALIZACION: Record<ClaveFuente, string> = {
   frac: "Carga manual",
   trm: "Dos veces al día (automática)",
   sofr: "Dos veces al día (automática)",
+  dtf: "Dos veces al día (automática)",
 };
 
 /** "2026-11-09 20:25" → "09·nov·2026 20:25" */

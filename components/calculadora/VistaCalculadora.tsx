@@ -5,6 +5,7 @@ import { LAYOUT, OPTS, toEngine, type Campo, type EntradasUI } from "@/lib/calcu
 import { esError, toN, type TipoBono } from "@/lib/engine";
 import { F } from "@/lib/format";
 import { useGuardado, useHidratado } from "@/lib/storage";
+import { ClienteTitulo, InterruptorCliente, useVistaCliente } from "@/components/cliente/Interruptor";
 import { Resultados } from "./Resultados";
 
 const TIPOS: [TipoBono, string][] = [
@@ -18,6 +19,7 @@ export function VistaCalculadora() {
   const { calc, setCalc, setEditingId, defaults } = useApp();
   const hidratado = useHidratado();
   const [modoClase, setModoClase] = useGuardado<boolean>("modoClase", false);
+  const [cliente] = useVistaCliente();
   const cambiarTipo = (t: TipoBono) => {
     setEditingId(null);
     setCalc((c) => ({ ...c, type: t }));
@@ -44,8 +46,10 @@ export function VistaCalculadora() {
               Modo clase
             </button>
           </div>
+          <InterruptorCliente />
         </div>
       </div>
+      {hidratado && cliente && <ClienteCalculadora />}
       {hidratado ? (
         <div className="calc">
           <Formulario />
@@ -56,6 +60,18 @@ export function VistaCalculadora() {
       )}
     </section>
   );
+}
+
+/** Vista cliente del título que está en la calculadora (misma valoración que los resultados). */
+function ClienteCalculadora() {
+  const { calc, defaults, motor } = useApp();
+  const inputs = useDeferredValue(calc.inputs[calc.type] ?? defaults[calc.type]);
+  const v = useMemo(() => {
+    const b = toEngine(inputs);
+    return { b, o: motor.price(b) };
+  }, [inputs, motor]);
+  if (esError(v.o)) return null;
+  return <ClienteTitulo b={v.b} o={v.o} nombre={String(inputs.nombre || "Título")} />;
 }
 
 function ResultadosDiferidos({ inputs, clase }: { inputs: EntradasUI; clase: boolean }) {

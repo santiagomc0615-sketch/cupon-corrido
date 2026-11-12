@@ -11,7 +11,7 @@ import type { DatosMercado } from "@/lib/engine";
 import { INDICE_VACIO, type CargasServidor, type IndiceCargas } from "@/lib/cargas/tipos";
 import { leerCargas, leerIpcDane } from "./almacen";
 import { combinar, type ClaveFuente, type DatosEnVivo, type InfoFuente, type IpcEnVivo } from "./combinar";
-import { ibrBanRep, tpmBanRep, uvrBanRep } from "./fuentes/banrep";
+import { dtfBanRep, ibrBanRep, tpmBanRep, uvrBanRep } from "./fuentes/banrep";
 import { enVentanaDane, ipcDane, mesEsperado } from "./fuentes/dane";
 import { trmDatosGov, type TRM } from "./fuentes/datosgov";
 import { sofrNYFed, type SOFR } from "./fuentes/nyfed";
@@ -35,6 +35,8 @@ export interface SnapshotMercado {
   trm?: TRM;
   /** SOFR en vivo (Fed de Nueva York), para el fondeo en dólares. */
   sofr?: SOFR;
+  /** DTF E.A. (BanRep): referencia de la tasa de un CDT a 90 días. */
+  dtf?: { valor: number; fecha: string };
   /** Lo que está cargado en /datos. */
   cargas: IndiceCargas;
   /** Fecha y hora (Bogotá) en que se armó este conjunto de datos. */
@@ -59,17 +61,18 @@ const motivo = (r: PromiseSettledResult<unknown>) => {
 
 /** Fuentes en vivo. Si alguna falla, o si es temporada de publicación del IPC y el DANE aún no
     trae el mes esperado, se guarda solo una hora para reintentar pronto. */
-async function datosEnVivo(): Promise<{ vivo: DatosEnVivo; trm?: TRM; sofr?: SOFR; pendienteDane: boolean }> {
+async function datosEnVivo(): Promise<{ vivo: DatosEnVivo; trm?: TRM; sofr?: SOFR; dtf?: { valor: number; fecha: string }; pendienteDane: boolean }> {
   "use cache";
   cacheTag(TAG_VIVO);
   const hoy = hoyBogota();
-  const [tpm, ibr, uvr, trm, ipc, sofr] = await Promise.allSettled([
+  const [tpm, ibr, uvr, trm, ipc, sofr, dtf] = await Promise.allSettled([
     tpmBanRep("2023-01-01"),
     ibrBanRep("2023-01-01"),
     uvrBanRep("2025-01-01"),
     trmDatosGov(),
     ipcDane(hoy),
     sofrNYFed(),
+    dtfBanRep(hoy),
   ]);
   let ipcVivo: IpcEnVivo | undefined;
   if (ipc.status === "fulfilled") {
@@ -83,7 +86,7 @@ async function datosEnVivo(): Promise<{ vivo: DatosEnVivo; trm?: TRM; sofr?: SOF
     ibr: ibr.status === "fulfilled" ? ibr.value : undefined,
     uvr: uvr.status === "fulfilled" ? uvr.value : undefined,
     ipc: ipcVivo,
-    errores: { tpm: motivo(tpm), ibr: motivo(ibr), uvr: motivo(uvr), trm: motivo(trm), ipc: motivo(ipc), sofr: motivo(sofr) },
+    errores: { tpm: motivo(tpm), ibr: motivo(ibr), uvr: motivo(uvr), trm: motivo(trm), ipc: motivo(ipc), sofr: motivo(sofr), dtf: motivo(dtf) },
   };
   const ultimoIpc = ipcVivo?.serie[ipcVivo.serie.length - 1]?.[0].slice(0, 7) ?? "";
   const pendienteDane = enVentanaDane(hoy) && ultimoIpc < mesEsperado(hoy);
@@ -95,6 +98,7 @@ async function datosEnVivo(): Promise<{ vivo: DatosEnVivo; trm?: TRM; sofr?: SOF
     vivo,
     trm: trm.status === "fulfilled" ? trm.value : undefined,
     sofr: sofr.status === "fulfilled" ? sofr.value : undefined,
+    dtf: dtf.status === "fulfilled" ? dtf.value : undefined,
     pendienteDane,
   };
 }
@@ -117,7 +121,7 @@ export async function obtenerMercado(): Promise<SnapshotMercado> {
   cacheTag(TAG_MERCADO, TAG_VIVO, TAG_CARGAS);
 
   const base = respaldo as unknown as DatosMercado;
-  const [{ vivo, trm, sofr, pendienteDane }, c] = await Promise.all([datosEnVivo(), cargasGuardadas()]);
+  const [{ vivo, trm, sofr, dtf, pendienteDane }, c] = await Promise.all([datosEnVivo(), cargasGuardadas()]);
   // Con alguna fuente caída, o esperando el IPC del mes en los días de publicación del DANE,
   // se reintenta en una hora; si todo respondió, un día.
   if (Object.values(vivo.errores).some(Boolean) || pendienteDane) cacheLife("hours");
@@ -138,6 +142,9 @@ export async function obtenerMercado(): Promise<SnapshotMercado> {
   fuentes.sofr = sofr
     ? { fuente: "Fed de Nueva York", estado: "en-vivo", hasta: sofr.fecha }
     : { fuente: "Fed de Nueva York", estado: "respaldo", hasta: "", detalle: (vivo.errores.sofr ?? "sin dato") + " · ingrésela a mano en el fondeo" };
+  fuentes.dtf = dtf
+    ? { fuente: "BanRep · SDMX", estado: "en-vivo", hasta: dtf.fecha }
+    : { fuente: "BanRep · SDMX", estado: "respaldo", hasta: "", detalle: (vivo.errores.dtf ?? "sin dato") + " · la tasa del CDT se ingresa a mano" };
 
   const enVivo = Object.values(fuentes).some((f) => f?.estado === "en-vivo");
 
@@ -149,6 +156,7 @@ export async function obtenerMercado(): Promise<SnapshotMercado> {
     fuentes,
     trm,
     sofr,
+    dtf,
     cargas: c.indice,
     actualizado: ahoraBogota(),
   };

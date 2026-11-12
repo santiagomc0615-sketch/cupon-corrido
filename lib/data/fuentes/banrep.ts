@@ -1,5 +1,6 @@
 /* Banco de la República — servicio web SDMX oficial (https://totoro.banrep.gov.co/nsi-jax-ws/rest).
-   Flujos: tasa de política monetaria (DF_CBR_DAILY_HIST), IBR (DF_IBR_DAILY_HIST) y UVR (DF_UVR_DAILY_HIST).
+   Flujos: tasa de política monetaria (DF_CBR_DAILY_HIST), IBR (DF_IBR_DAILY_HIST), UVR (DF_UVR_DAILY_HIST) y
+   DTF (DF_DTF_DAILY_HIST: promedio de las tasas de los CDT a 90 días, E.A., vigente por semana).
    Solo se usa desde el servidor. */
 
 const BASE = "https://totoro.banrep.gov.co/nsi-jax-ws/rest/data/ESTAT,";
@@ -61,6 +62,16 @@ export async function ibrBanRep(desde: string): Promise<[string, number, number,
     m6 = nominal("IRIBRM06");
   const fechas = [...on.keys()].filter((f) => m1.has(f) && m3.has(f) && m6.has(f)).sort();
   return fechas.map((f) => [f, on.get(f)!, m1.get(f)!, m3.get(f)!, m6.get(f)!]);
+}
+
+/** DTF E.A. vigente hoy (fracción) y su fecha: el último dato publicado con fecha ≤ hoy. */
+export async function dtfBanRep(hoyISO: string): Promise<{ valor: number; fecha: string }> {
+  const desde = new Date(Date.parse(hoyISO) - 40 * 864e5).toISOString().slice(0, 10);
+  const s = await flujo("DF_DTF_DAILY_HIST", desde);
+  const obs = (s.find((x) => x.subject === "IRGBRM03")?.obs ?? s[0].obs).filter(([f]) => f <= hoyISO);
+  const u = obs[obs.length - 1];
+  if (!u) throw new Error("BanRep SDMX DTF: sin dato hasta hoy");
+  return { valor: u[1] / 100, fecha: u[0] };
 }
 
 /** UVR diaria ($ por UVR), incluida la ya certificada para los próximos días. */

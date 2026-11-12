@@ -5,6 +5,7 @@ import { BarrasH } from "@/components/charts/BarrasH";
 import { Chart, nearest, type PuntoSerie } from "@/components/charts/Chart";
 import { useApp } from "@/components/providers/AppProvider";
 import { CarryRoll } from "./CarryRoll";
+import { ClientePortafolio, InterruptorCliente, useVistaCliente } from "@/components/cliente/Interruptor";
 import { EscenarioBanRep } from "./EscenarioBanRep";
 import { FondeoPortafolio } from "./FondeoPortafolio";
 import { Aviso, Kpi, Panel } from "@/components/ui";
@@ -16,6 +17,7 @@ import { useHidratado } from "@/lib/storage";
 export function VistaPortafolio() {
   const { pfDate, setPfDate, setPf, snap, toast, pfEjemplo } = useApp();
   const hidratado = useHidratado();
+  const [cliente] = useVistaCliente();
   return (
     <section className="view">
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "end", gap: 16, flexWrap: "wrap" }}>
@@ -26,6 +28,7 @@ export function VistaPortafolio() {
           </h1>
         </div>
         <div style={{ display: "flex", gap: 8, alignItems: "end", flexWrap: "wrap" }}>
+          <InterruptorCliente />
           <div className="f">
             <label htmlFor="pfDate">Fecha de valoración</label>
             <input
@@ -50,6 +53,7 @@ export function VistaPortafolio() {
           </Link>
         </div>
       </div>
+      {hidratado && cliente && <ClientePortafolio />}
       {hidratado ? <Cuerpo /> : <div className="panel empty">Cargando portafolio…</div>}
     </section>
   );
