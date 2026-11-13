@@ -1,6 +1,6 @@
 /* Punto único de entrada de los datos de mercado para la interfaz (solo servidor).
    - En vivo: BanRep SDMX (TPM, IBR ON–6M, UVR), datos.gov.co (TRM), DANE (IPC, anexo de índices) y
-     Fed de Nueva York (SOFR, para el fondeo en dólares).
+     Fed de Nueva York (SOFR, para el fondeo en dólares) y Tesoro de EE. UU. (rendimiento a 10 años).
      Si el DANE no responde se usa su última lectura guardada (lib/data/actualizar.ts la escribe).
    - Cargado: series que sube el administrador en /datos (FRAC, IPC, expectativas, IBR 12M, TES).
    - Respaldo: data/datos-mercado.json (última carga del Excel del curso), serie por serie.
@@ -15,6 +15,7 @@ import { dtfBanRep, ibrBanRep, tpmBanRep, uvrBanRep } from "./fuentes/banrep";
 import { enVentanaDane, ipcDane, mesEsperado } from "./fuentes/dane";
 import { trmDatosGov, type TRM } from "./fuentes/datosgov";
 import { sofrNYFed, type SOFR } from "./fuentes/nyfed";
+import { ust10EnFecha, type UST10 } from "./fuentes/tesoro";
 import { MACRO, type Macro } from "./macro";
 
 /** Todo el conjunto de datos de mercado. */
@@ -37,6 +38,9 @@ export interface SnapshotMercado {
   sofr?: SOFR;
   /** DTF E.A. (BanRep): referencia de la tasa de un CDT a 90 días. */
   dtf?: { valor: number; fecha: string };
+  /** Tesoro de EE. UU. a 10 años: último cierre y el cierre en la fecha de la curva TES (para el spread). */
+  ust10?: UST10;
+  ust10Curva?: UST10;
   /** Lo que está cargado en /datos. */
   cargas: IndiceCargas;
   /** Fecha y hora (Bogotá) en que se armó este conjunto de datos. */
@@ -61,11 +65,18 @@ const motivo = (r: PromiseSettledResult<unknown>) => {
 
 /** Fuentes en vivo. Si alguna falla, o si es temporada de publicación del IPC y el DANE aún no
     trae el mes esperado, se guarda solo una hora para reintentar pronto. */
-async function datosEnVivo(): Promise<{ vivo: DatosEnVivo; trm?: TRM; sofr?: SOFR; dtf?: { valor: number; fecha: string }; pendienteDane: boolean }> {
+async function datosEnVivo(): Promise<{
+  vivo: DatosEnVivo;
+  trm?: TRM;
+  sofr?: SOFR;
+  dtf?: { valor: number; fecha: string };
+  ust10?: UST10;
+  pendienteDane: boolean;
+}> {
   "use cache";
   cacheTag(TAG_VIVO);
   const hoy = hoyBogota();
-  const [tpm, ibr, uvr, trm, ipc, sofr, dtf] = await Promise.allSettled([
+  const [tpm, ibr, uvr, trm, ipc, sofr, dtf, ust10] = await Promise.allSettled([
     tpmBanRep("2023-01-01"),
     ibrBanRep("2023-01-01"),
     uvrBanRep("2025-01-01"),
@@ -73,6 +84,7 @@ async function datosEnVivo(): Promise<{ vivo: DatosEnVivo; trm?: TRM; sofr?: SOF
     ipcDane(hoy),
     sofrNYFed(),
     dtfBanRep(hoy),
+    ust10EnFecha(hoy),
   ]);
   let ipcVivo: IpcEnVivo | undefined;
   if (ipc.status === "fulfilled") {
@@ -86,7 +98,7 @@ async function datosEnVivo(): Promise<{ vivo: DatosEnVivo; trm?: TRM; sofr?: SOF
     ibr: ibr.status === "fulfilled" ? ibr.value : undefined,
     uvr: uvr.status === "fulfilled" ? uvr.value : undefined,
     ipc: ipcVivo,
-    errores: { tpm: motivo(tpm), ibr: motivo(ibr), uvr: motivo(uvr), trm: motivo(trm), ipc: motivo(ipc), sofr: motivo(sofr), dtf: motivo(dtf) },
+    errores: { tpm: motivo(tpm), ibr: motivo(ibr), uvr: motivo(uvr), trm: motivo(trm), ipc: motivo(ipc), sofr: motivo(sofr), dtf: motivo(dtf), ust10: motivo(ust10) },
   };
   const ultimoIpc = ipcVivo?.serie[ipcVivo.serie.length - 1]?.[0].slice(0, 7) ?? "";
   const pendienteDane = enVentanaDane(hoy) && ultimoIpc < mesEsperado(hoy);
@@ -99,8 +111,17 @@ async function datosEnVivo(): Promise<{ vivo: DatosEnVivo; trm?: TRM; sofr?: SOF
     trm: trm.status === "fulfilled" ? trm.value : undefined,
     sofr: sofr.status === "fulfilled" ? sofr.value : undefined,
     dtf: dtf.status === "fulfilled" ? dtf.value : undefined,
+    ust10: ust10.status === "fulfilled" ? ust10.value : undefined,
     pendienteDane,
   };
+}
+
+/** UST 10 años en una fecha pasada (la de la curva TES): no cambia, se guarda hasta la próxima actualización. */
+async function ust10Guardado(fecha: string): Promise<UST10> {
+  "use cache";
+  cacheTag(TAG_VIVO);
+  cacheLife("days");
+  return ust10EnFecha(fecha);
 }
 
 /** Series cargadas por el administrador. */
@@ -121,7 +142,7 @@ export async function obtenerMercado(): Promise<SnapshotMercado> {
   cacheTag(TAG_MERCADO, TAG_VIVO, TAG_CARGAS);
 
   const base = respaldo as unknown as DatosMercado;
-  const [{ vivo, trm, sofr, dtf, pendienteDane }, c] = await Promise.all([datosEnVivo(), cargasGuardadas()]);
+  const [{ vivo, trm, sofr, dtf, ust10, pendienteDane }, c] = await Promise.all([datosEnVivo(), cargasGuardadas()]);
   // Con alguna fuente caída, o esperando el IPC del mes en los días de publicación del DANE,
   // se reintenta en una hora; si todo respondió, un día.
   if (Object.values(vivo.errores).some(Boolean) || pendienteDane) cacheLife("hours");
@@ -142,6 +163,11 @@ export async function obtenerMercado(): Promise<SnapshotMercado> {
   fuentes.sofr = sofr
     ? { fuente: "Fed de Nueva York", estado: "en-vivo", hasta: sofr.fecha }
     : { fuente: "Fed de Nueva York", estado: "respaldo", hasta: "", detalle: (vivo.errores.sofr ?? "sin dato") + " · ingrésela a mano en el fondeo" };
+  // UST 10A en la fecha de la curva TES, para que el spread compare tasas del mismo día.
+  const ust10Curva = await ust10Guardado(datos.curveDate).catch(() => undefined);
+  fuentes.ust10 = ust10
+    ? { fuente: "Tesoro de EE. UU.", estado: "en-vivo", hasta: ust10.fecha }
+    : { fuente: "Tesoro de EE. UU.", estado: "respaldo", hasta: "", detalle: vivo.errores.ust10 ?? "sin dato" };
   fuentes.dtf = dtf
     ? { fuente: "BanRep · SDMX", estado: "en-vivo", hasta: dtf.fecha }
     : { fuente: "BanRep · SDMX", estado: "respaldo", hasta: "", detalle: (vivo.errores.dtf ?? "sin dato") + " · la tasa del CDT se ingresa a mano" };
@@ -157,6 +183,8 @@ export async function obtenerMercado(): Promise<SnapshotMercado> {
     trm,
     sofr,
     dtf,
+    ust10,
+    ust10Curva,
     cargas: c.indice,
     actualizado: ahoraBogota(),
   };

@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { Chart, nearest, type PuntoSerie } from "@/components/charts/Chart";
 import { CurvaMini } from "@/components/curva/CurvaMini";
+import { MercadosGlobales } from "./MercadosGlobales";
 import { fechaHora, ResumenFuentes } from "@/components/datos/EstadoFuentes";
 import { useApp } from "@/components/providers/AppProvider";
 import { Guilloche, ROSETA } from "@/components/shell/Guilloche";
@@ -86,6 +87,8 @@ export function VistaMercado() {
         <Kpi l="UVR hoy" v={nf(4).format(uvrHoy.v)} s={`$/UVR · ${snap.fuentes.uvr?.fuente ?? "BanRep"} · ${F.date(uvrHoy.f)}`} />
         <Kpi l={"TES " + tes10[1].slice(0, 4)} v={F.pct(tes10[3], 3)} s={"TIR E.A. · curva " + F.date(M.curveDate)} />
       </div>
+
+      <MercadosGlobales />
 
       <div className="grid-c g2">
         <Panel titulo="Inflación anual vs. rango meta" src="DANE · índice base dic-2018">

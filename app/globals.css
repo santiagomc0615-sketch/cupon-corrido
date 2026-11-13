@@ -463,6 +463,29 @@
   .tape .dn {
     color: var(--tape-dn);
   }
+  /* Etiqueta «Dato del día»: no son cotizaciones en tiempo real. */
+  .tape .tape-dia {
+    border: 1px solid color-mix(in srgb, var(--tape-fg) 35%, transparent);
+    border-radius: var(--r-pill);
+    padding: 0 8px;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--tape-fg);
+    opacity: 0.85;
+  }
+  .chip-dia {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font: 500 11px var(--f-mono);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    border: 1px solid var(--rule);
+    border-radius: var(--r-pill);
+    padding: 2px 9px;
+  }
 
   .wrap {
     padding-block: 28px 64px;
