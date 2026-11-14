@@ -83,7 +83,7 @@ export function VistaInicio() {
       {/* 2 · Funciones */}
       <section className="ini-seccion" aria-labelledby="ini-funciones">
         <h2 id="ini-funciones" className="ini-h2">
-          Todo lo que necesita una mesa de renta fija
+          Todo lo que necesita para operar renta fija
         </h2>
         <div
           className="ini-funciones"
