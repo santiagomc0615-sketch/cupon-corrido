@@ -8,6 +8,7 @@ import { Guilloche, SELLO } from "./Guilloche";
 import { SelectorTema } from "./SelectorTema";
 
 const SECCIONES: { href: string; nombre: string; icono: ReactNode }[] = [
+  { href: "/", nombre: "Inicio", icono: <path d="M3 11l9-7 9 7M5 9.5V20h5v-6h4v6h5V9.5" /> },
   { href: "/mercado", nombre: "Mercado", icono: <path d="M3 20h18M5 16l4-5 4 3 6-8" /> },
   {
     href: "/calculadora",
@@ -74,7 +75,7 @@ export function Riel() {
           <Link
             key={s.href}
             href={s.href}
-            aria-current={ruta.startsWith(s.href) ? "page" : undefined}
+            aria-current={(s.href === "/" ? ruta === "/" : ruta.startsWith(s.href)) ? "page" : undefined}
             title={s.nombre}
           >
             <svg viewBox="0 0 24 24" aria-hidden="true">

@@ -2129,4 +2129,13 @@
       padding: 0;
     }
   }
+  /* 8 secciones en teléfonos angostos: objetivos de 40 px (sobre el mínimo AA de 24) sin desbordar. */
+  @media (max-width: 420px) {
+    .nav a {
+      min-width: 40px;
+    }
+    .nav {
+      gap: 0;
+    }
+  }
 }

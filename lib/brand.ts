@@ -19,7 +19,7 @@ export const BRAND = {
     process.env.NEXT_PUBLIC_SITIO_URL ||
     (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : "http://localhost:3000"),
   /** Ruta de inicio (a dónde lleva el logo). */
-  inicio: "/mercado",
+  inicio: "/",
   /** Aviso legal visible en el riel y el pie. */
   avisoLegal: "Herramienta académica, no es asesoría financiera.",
   /** Responsable del tratamiento de datos (Ley 1581 de 2012). Aparece en /privacidad y /terminos. */

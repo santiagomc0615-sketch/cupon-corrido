@@ -29,4 +29,5 @@ export function SelectorTema() {
 }
 
 /** Script en línea que aplica el tema guardado antes del primer pintado. */
-export const SCRIPT_TEMA = `try{var t=JSON.parse(localStorage.getItem('cc_theme'));if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}`;
+// Marca «js» en <html>: el CSS solo esconde lo que va a animar si este script corrió.
+export const SCRIPT_TEMA = `document.documentElement.classList.add('js');try{var t=JSON.parse(localStorage.getItem('cc_theme'));if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}`;

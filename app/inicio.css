@@ -1,0 +1,587 @@
+/* Página de inicio. Usa los tokens de globals.css (colores, tipografías, --ease-out, duraciones).
+   Movimiento: la curva del héroe se dibuja al cargar; lo demás anima con el scroll
+   (animation-timeline: view()) solo si el navegador lo soporta y no se pidió menos movimiento.
+   El estado de partida de todo es el final: si la animación no corre, el contenido se ve completo. */
+
+.inicio {
+  display: flex;
+  flex-direction: column;
+  gap: 72px;
+  padding-bottom: 24px;
+}
+
+/* ---------- Héroe ---------- */
+.ini-heroe {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  gap: 40px;
+  align-items: center;
+  padding-top: 12px;
+}
+.ini-heroe h1 {
+  font: 500 clamp(52px, 8vw, 104px) / 0.92 var(--f-display);
+  letter-spacing: -0.035em;
+  color: var(--ink);
+}
+.ini-frase {
+  margin: 18px 0 0;
+  font-size: clamp(17px, 1.6vw, 21px);
+  line-height: 1.4;
+  color: var(--ink-2);
+  max-width: 34ch;
+}
+.ini-cifras {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  margin: 32px 0 0;
+  border-top: 1px solid var(--rule);
+}
+.ini-cifras > div {
+  padding: 14px 16px 0 0;
+}
+.ini-cifras > div + div {
+  padding-left: 16px;
+  border-left: 1px solid var(--rule);
+}
+.ini-cifras dt {
+  font-size: 12px;
+  color: var(--ink-2);
+}
+.ini-cifras dd {
+  margin: 4px 0 0;
+}
+.ini-cifras dd:first-of-type {
+  font: 500 clamp(28px, 3vw, 38px) / 1 var(--f-display);
+  font-variant-numeric: tabular-nums lining-nums;
+  color: var(--acento-cifra);
+  white-space: nowrap;
+}
+.ini-botones {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 32px;
+}
+.btn.btn-grande {
+  padding: 12px 22px;
+  font-size: 15px;
+}
+.btn.btn-enorme {
+  padding: 16px 34px;
+  font-size: 18px;
+  border-radius: 10px;
+}
+
+/* Cifras que cuentan: con JS se esconden hasta arrancar; si el JS falla, aparecen a los 1,5 s. */
+.js .cifra-viva:not(.lista) {
+  opacity: 0;
+  animation: ini-mostrar 0s 1.5s forwards;
+}
+@keyframes ini-mostrar {
+  to {
+    opacity: 1;
+  }
+}
+
+/* Curva del héroe */
+.curva-heroe {
+  margin: 0;
+  padding: 18px 18px 12px;
+  background: var(--sheet);
+  border: 1px solid color-mix(in srgb, var(--rule) 70%, transparent);
+  border-radius: 16px;
+  box-shadow:
+    0 1px 2px rgba(15, 27, 45, 0.06),
+    0 24px 48px -24px rgba(15, 27, 45, 0.3);
+}
+.curva-heroe svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.curva-heroe text {
+  fill: var(--ink-3);
+  font: 11px var(--f-mono);
+}
+.ch-rejilla {
+  stroke: var(--rule);
+  stroke-width: 1;
+}
+.ch-linea {
+  fill: none;
+  stroke: var(--engrave);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+  animation: ini-dibujar 1100ms var(--ease-out) 150ms backwards;
+}
+@keyframes ini-dibujar {
+  from {
+    stroke-dashoffset: 1;
+  }
+}
+.ch-punto {
+  fill: var(--sheet);
+  stroke: var(--engrave);
+  stroke-width: 1.5;
+  animation: cc-aparecer 260ms ease-out backwards;
+  animation-delay: calc(500ms + var(--i, 0) * 45ms);
+}
+.ch-fin {
+  fill: var(--engrave);
+  stroke: var(--sheet);
+  stroke-width: 2;
+  animation: cc-aparecer 300ms ease-out 1200ms backwards;
+}
+.curva-heroe figcaption {
+  margin-top: 6px;
+}
+
+/* ---------- Secciones ---------- */
+.ini-h2 {
+  font: 500 clamp(28px, 3.4vw, 42px) / 1.08 var(--f-display);
+  letter-spacing: -0.02em;
+  margin-bottom: 24px;
+  max-width: 24ch;
+}
+
+/* Tarjetas de funciones: se elevan al pasar el mouse; toda la tarjeta es el enlace. */
+.ini-funciones {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr));
+  gap: 16px;
+}
+.funcion {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px;
+  border-radius: 14px;
+  background: var(--sheet);
+  border: 1px solid color-mix(in srgb, var(--rule) 70%, transparent);
+  box-shadow: 0 1px 2px rgba(15, 27, 45, 0.05);
+  color: var(--ink);
+  text-decoration: none;
+  transition:
+    translate 220ms var(--ease-out),
+    box-shadow 220ms var(--ease-out),
+    border-color 150ms ease,
+    scale 140ms var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  a.funcion:hover {
+    translate: 0 -4px;
+    border-color: var(--rule);
+    box-shadow:
+      0 2px 4px rgba(15, 27, 45, 0.06),
+      0 18px 36px -18px rgba(15, 27, 45, 0.35);
+  }
+  a.funcion:hover .fn-flecha {
+    translate: 3px 0;
+  }
+}
+a.funcion:active {
+  scale: 0.985;
+}
+.fn-titulo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 16px;
+  margin-top: 6px;
+}
+.fn-flecha {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: var(--engrave);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: translate 200ms var(--ease-out);
+}
+.fn-texto {
+  font-size: 13px;
+  color: var(--ink-2);
+  line-height: 1.45;
+}
+
+/* Mini demostraciones (estado final por defecto) */
+.demo {
+  height: 112px;
+  border-radius: 10px;
+  background: var(--sheet-2);
+  padding: 12px 14px;
+  overflow: hidden;
+  position: relative;
+}
+.demo-calc {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font: 12px var(--f-mono);
+}
+.dc-fila,
+.dc-resultado {
+  display: flex;
+  justify-content: space-between;
+  color: var(--ink-2);
+}
+.dc-fila b,
+.dc-resultado b {
+  font-weight: 500;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.dc-resultado {
+  margin-top: auto;
+  padding-top: 6px;
+  border-top: 1px dashed var(--rule);
+}
+.dc-resultado b {
+  font: 500 22px var(--f-display);
+  color: var(--acento-cifra);
+}
+.demo-barras {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  padding-bottom: 8px;
+}
+.demo-barras > span {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 4px;
+}
+.demo-barras i {
+  width: 100%;
+  height: calc(var(--h, 0.5) * 72px);
+  border-radius: 3px 3px 0 0;
+  background: var(--engrave);
+  transform-origin: bottom;
+}
+.demo-barras > span:nth-child(2) i {
+  background: var(--seal);
+}
+.demo-barras > span:nth-child(3) i {
+  background: color-mix(in srgb, var(--engrave) 55%, var(--sheet));
+}
+.demo-barras > span:nth-child(4) i {
+  background: var(--ink-3);
+}
+.demo-barras b {
+  font: 500 10px var(--f-mono);
+  color: var(--ink-2);
+}
+.demo-carry {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  justify-content: center;
+}
+.dk-barra {
+  height: 22px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  padding-left: 8px;
+  transform-origin: left;
+}
+.dk-barra i {
+  font: 500 11px var(--f-mono);
+  font-style: normal;
+}
+.dk-caus {
+  width: 92%;
+  background: color-mix(in srgb, var(--pos) 22%, var(--sheet));
+  color: var(--ink);
+}
+.dk-costo {
+  width: 74%;
+  background: color-mix(in srgb, var(--neg) 18%, var(--sheet));
+  color: var(--ink);
+}
+.dk-neto {
+  font: 500 12px var(--f-mono);
+  color: var(--pos);
+}
+.demo-curva svg {
+  width: 100%;
+  height: 100%;
+}
+.demo-curva path {
+  fill: none;
+  stroke: var(--engrave);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+}
+.demo-asesor {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12px;
+}
+.da-pregunta {
+  align-self: flex-end;
+  background: var(--acento-fondo);
+  color: var(--acento-sobre);
+  padding: 5px 10px;
+  border-radius: 10px 10px 2px 10px;
+}
+.da-respuesta {
+  align-self: flex-start;
+  background: var(--sheet);
+  border: 1px solid var(--rule);
+  padding: 5px 10px;
+  border-radius: 10px 10px 10px 2px;
+  max-width: 90%;
+}
+.da-respuesta span {
+  display: inline-block;
+  white-space: nowrap;
+  overflow: hidden;
+  font-family: var(--f-mono);
+  vertical-align: bottom;
+}
+.demo-noticias {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  justify-content: center;
+}
+.demo-noticias span {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-left: 2px solid var(--seal);
+  background: var(--sheet);
+  border-radius: 0 4px 4px 0;
+}
+.demo-pdf {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px 22px;
+}
+.demo-pdf span {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--rule);
+}
+.demo-pdf span:nth-child(1) {
+  width: 55%;
+  background: var(--ink-3);
+}
+.demo-pdf span:nth-child(3) {
+  width: 75%;
+}
+.funcion-quieta {
+  opacity: 0.85;
+}
+
+/* ---------- Cómo funciona ---------- */
+.ini-pasos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  counter-reset: paso;
+}
+.ini-pasos li {
+  counter-increment: paso;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 20px 0 0;
+  border-top: 2px solid var(--engrave);
+}
+.ini-pasos li::before {
+  content: counter(paso);
+  font: 500 40px/1 var(--f-display);
+  color: var(--engrave);
+}
+.ini-pasos b {
+  font-size: 17px;
+}
+.ini-pasos span {
+  color: var(--ink-2);
+  font-size: 14px;
+  max-width: 34ch;
+}
+
+/* ---------- Fuentes ---------- */
+.ini-fuentes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 26px;
+  padding: 16px 20px;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  font-size: 13px;
+  color: var(--ink-2);
+}
+.ini-fuentes b {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* ---------- Cierre ---------- */
+.ini-cierre {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 18px;
+  padding: 24px 0 8px;
+}
+.ini-cierre .ini-h2 {
+  margin: 0;
+}
+
+/* ---------- Animaciones con el scroll (solo con soporte y sin menos movimiento) ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .ini-seccion .ini-h2,
+    .funcion,
+    .ini-pasos li,
+    .ini-fuentes,
+    .ini-cierre {
+      animation: ini-subir linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 55%;
+    }
+    .demo-barras i {
+      animation: ini-crecer linear both;
+      animation-timeline: view();
+      animation-range: entry 30% cover 40%;
+    }
+    .dk-barra {
+      animation: ini-estirar linear both;
+      animation-timeline: view();
+      animation-range: entry 30% cover 40%;
+    }
+    .dk-costo {
+      animation-range: entry 45% cover 45%;
+    }
+    .dc-resultado b {
+      animation: ini-revelar linear both;
+      animation-timeline: view();
+      animation-range: entry 40% cover 40%;
+    }
+    .demo-curva path {
+      animation: ini-trazar linear both;
+      animation-timeline: view();
+      animation-range: entry 25% cover 45%;
+    }
+    .da-respuesta span {
+      animation: ini-escribir steps(22, end) both;
+      animation-timeline: view();
+      animation-range: entry 40% cover 50%;
+    }
+    .demo-noticias span {
+      animation: ini-deslizar linear both;
+      animation-timeline: view();
+      animation-range: entry calc(20% + var(--i, 0) * 10%) cover 40%;
+    }
+  }
+}
+@keyframes ini-subir {
+  from {
+    opacity: 0;
+    translate: 0 16px;
+  }
+}
+@keyframes ini-crecer {
+  from {
+    transform: scaleY(0.05);
+  }
+}
+@keyframes ini-estirar {
+  from {
+    transform: scaleX(0.05);
+  }
+}
+@keyframes ini-revelar {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+}
+@keyframes ini-trazar {
+  from {
+    stroke-dashoffset: 1;
+  }
+}
+@keyframes ini-escribir {
+  from {
+    max-width: 0;
+  }
+  to {
+    max-width: 22ch;
+  }
+}
+@keyframes ini-deslizar {
+  from {
+    opacity: 0;
+    translate: -12px 0;
+  }
+}
+
+/* Menos movimiento: la curva aparece entera y las cifras sin contar (lo maneja CifraViva). */
+@media (prefers-reduced-motion: reduce) {
+  .ch-linea,
+  .ch-punto,
+  .ch-fin {
+    animation: none;
+  }
+  a.funcion:hover,
+  a.funcion:active {
+    translate: none;
+    scale: none;
+  }
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 900px) {
+  .ini-heroe {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+  }
+  .ini-pasos {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 22px;
+  }
+  .inicio {
+    gap: 56px;
+  }
+}
+@media (max-width: 520px) {
+  .ini-cifras {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ini-cifras > div + div {
+    padding-left: 0;
+    border-left: 0;
+    border-top: 1px solid var(--rule);
+    margin-top: 12px;
+  }
+  .ini-botones .btn {
+    flex: 1;
+    justify-content: center;
+  }
+  .btn.btn-enorme {
+    width: 100%;
+    justify-content: center;
+  }
+}
