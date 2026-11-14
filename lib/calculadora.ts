@@ -76,4 +76,4 @@ export function crearPfEjemplo(d: Record<TipoBono, EntradasUI>): Posicion[] {
 }
 
 export const TYPE_LBL: Record<TipoBono, string> = { TF: "Tasa fija", IBR: "IBR", IPC: "IPC", UVR: "UVR" };
-export const TYPE_CLR: Record<TipoBono, string> = { TF: "var(--engrave)", IBR: "var(--seal)", IPC: "var(--neg)", UVR: "var(--ink-3)" };
+export const TYPE_CLR: Record<TipoBono, string> = { TF: "var(--engrave)", IBR: "var(--seal-texto)", IPC: "var(--neg)", UVR: "var(--ink-3)" };

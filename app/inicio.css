@@ -52,7 +52,8 @@
   margin: 4px 0 0;
 }
 .ini-cifras dd:first-of-type {
-  font: 500 clamp(28px, 3vw, 38px) / 1 var(--f-display);
+  font: 600 clamp(28px, 3vw, 38px) / 1 var(--f-cifra);
+  letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums lining-nums;
   color: var(--acento-cifra);
   white-space: nowrap;
@@ -244,7 +245,8 @@ a.funcion:active {
   border-top: 1px dashed var(--rule);
 }
 .dc-resultado b {
-  font: 500 22px var(--f-display);
+  font: 600 22px var(--f-cifra);
+  font-variant-numeric: tabular-nums;
   color: var(--acento-cifra);
 }
 .demo-barras {
@@ -408,7 +410,7 @@ a.funcion:active {
 }
 .ini-pasos li::before {
   content: counter(paso);
-  font: 500 40px/1 var(--f-display);
+  font: 600 40px/1 var(--f-cifra);
   color: var(--engrave);
 }
 .ini-pasos b {
@@ -583,5 +585,335 @@ a.funcion:active {
   .btn.btn-enorme {
     width: 100%;
     justify-content: center;
+  }
+}
+
+/* =====================================================================================
+   Profundidad e interacción (sobre lo anterior): bandas con fondo, luz que sigue al puntero,
+   bordes vivos, entrada del héroe y brillo en los botones. Todo se apaga con menos movimiento.
+   ===================================================================================== */
+@property --hx {
+  syntax: "<length-percentage>";
+  inherits: false;
+  initial-value: 78%;
+}
+@property --hy {
+  syntax: "<length-percentage>";
+  inherits: false;
+  initial-value: 18%;
+}
+@property --ang {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+/* Héroe: banda con relieve, luz de acento que sigue al cursor y roseta guilloché al fondo */
+.ini-heroe {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: clamp(24px, 4vw, 52px);
+  border-radius: 24px;
+  border: 1px solid color-mix(in srgb, var(--rule) 80%, transparent);
+  background:
+    radial-gradient(560px circle at var(--hx) var(--hy), color-mix(in srgb, var(--engrave) 16%, transparent), transparent 65%),
+    radial-gradient(420px circle at 0% 100%, color-mix(in srgb, var(--seal) 12%, transparent), transparent 70%),
+    linear-gradient(160deg, var(--sheet), var(--paper));
+  box-shadow:
+    0 1px 2px rgba(15, 27, 45, 0.05),
+    0 30px 60px -36px rgba(15, 27, 45, 0.35);
+  transition:
+    --hx 600ms var(--ease-out),
+    --hy 600ms var(--ease-out);
+}
+.ini-roseta {
+  position: absolute;
+  z-index: -1;
+  right: -240px;
+  bottom: -300px;
+  width: 640px;
+  height: 640px;
+  opacity: 0.1;
+  pointer-events: none;
+}
+@media (max-width: 899px) {
+  .ini-roseta {
+    display: none;
+  }
+}
+.ini-heroe > :not(.ini-roseta) {
+  position: relative;
+}
+
+/* Entrada del héroe al cargar (escalonada, corta) */
+.ini-heroe h1,
+.ini-frase,
+.ini-cifras,
+.ini-botones,
+.curva-heroe {
+  --desde: 14px;
+  animation: cc-entrar 560ms var(--ease-out) backwards;
+}
+.ini-frase {
+  animation-delay: 80ms;
+}
+.ini-cifras {
+  animation-delay: 160ms;
+}
+.ini-botones {
+  animation-delay: 240ms;
+}
+.curva-heroe {
+  animation-delay: 120ms;
+}
+
+/* Curva interactiva */
+.curva-heroe {
+  position: relative;
+  background: color-mix(in srgb, var(--sheet) 88%, transparent);
+  backdrop-filter: blur(6px);
+  transition:
+    translate 260ms var(--ease-out),
+    box-shadow 260ms var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .curva-heroe:hover {
+    translate: 0 -3px;
+    box-shadow:
+      0 2px 4px rgba(15, 27, 45, 0.06),
+      0 30px 56px -24px rgba(15, 27, 45, 0.42);
+  }
+}
+.curva-heroe svg {
+  cursor: crosshair;
+  touch-action: pan-y;
+}
+.ch-area {
+  animation: cc-aparecer 700ms ease-out 700ms backwards;
+}
+.ch-punto {
+  transition:
+    r 180ms var(--ease-out),
+    fill 150ms ease;
+}
+.ch-punto.activo {
+  fill: var(--engrave);
+}
+.ch-guia {
+  stroke: var(--ink-3);
+  stroke-width: 1;
+  stroke-dasharray: 3 4;
+  pointer-events: none;
+}
+.ch-ficha {
+  position: absolute;
+  translate: -50% calc(-100% - 14px);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 7px 11px;
+  border-radius: 10px;
+  background: var(--ink);
+  color: var(--paper);
+  font: 500 12px/1.35 var(--f-mono);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 10px 24px -10px rgba(0, 0, 0, 0.45);
+  animation: cc-aparecer 140ms ease-out;
+}
+.ch-ficha b {
+  font-weight: 600;
+}
+
+/* Tarjetas de funciones: borde que se ilumina y luz que sigue al cursor */
+.funcion {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 1px solid transparent;
+  background:
+    linear-gradient(var(--sheet), var(--sheet)) padding-box,
+    linear-gradient(var(--rule), var(--rule)) border-box;
+}
+.funcion::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(280px circle at var(--mx, 50%) var(--my, 0%), color-mix(in srgb, var(--engrave) 13%, transparent), transparent 70%);
+  opacity: 0;
+  transition: opacity 220ms ease;
+  pointer-events: none;
+}
+@media (hover: hover) and (pointer: fine) {
+  a.funcion:hover {
+    background:
+      linear-gradient(var(--sheet), var(--sheet)) padding-box,
+      conic-gradient(from var(--ang), var(--engrave), var(--seal), color-mix(in srgb, var(--engrave) 30%, transparent), var(--engrave)) border-box;
+    animation: ini-borde 3.2s linear infinite;
+  }
+  a.funcion:hover::before {
+    opacity: 1;
+  }
+  a.funcion:hover .demo {
+    background: color-mix(in srgb, var(--sheet-2) 70%, transparent);
+  }
+}
+a.funcion:focus-visible::before {
+  opacity: 1;
+}
+@keyframes ini-borde {
+  to {
+    --ang: 360deg;
+  }
+}
+.demo {
+  transition: background-color 220ms ease;
+}
+
+/* Cómo funciona: banda propia; los pasos se conectan con una línea que se llena con el scroll */
+.ini-seccion:has(.ini-pasos) {
+  padding: clamp(24px, 4vw, 44px);
+  border-radius: 24px;
+  background:
+    radial-gradient(520px circle at 100% 0%, color-mix(in srgb, var(--seal) 10%, transparent), transparent 60%),
+    var(--sheet);
+  border: 1px solid color-mix(in srgb, var(--rule) 80%, transparent);
+}
+.ini-pasos li {
+  position: relative;
+  border-top: 2px solid var(--rule);
+  padding-top: 22px;
+}
+.ini-pasos li::after {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--engrave);
+  transform-origin: left center;
+}
+.ini-pasos li::before {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--engrave-soft);
+  color: var(--engrave);
+  font: 600 20px/1 var(--f-cifra);
+  margin-bottom: 6px;
+  transition:
+    background-color 200ms ease,
+    color 200ms ease,
+    scale 200ms var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .ini-pasos li:hover::before {
+    background: var(--acento-fondo);
+    color: var(--acento-sobre);
+    scale: 1.06;
+  }
+}
+
+/* Fuentes: franja con fondo */
+.ini-fuentes {
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--rule) 80%, transparent);
+  background: var(--sheet);
+}
+
+/* Cierre: banda en el acento, con filetes de papel de seguridad */
+.ini-cierre {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  padding: clamp(40px, 6vw, 72px) 24px;
+  border-radius: 24px;
+  background:
+    repeating-radial-gradient(circle at 100% 120%, transparent 0 18px, color-mix(in srgb, var(--acento-sobre) 7%, transparent) 18px 19px),
+    radial-gradient(600px circle at 15% 0%, color-mix(in srgb, var(--seal) 28%, transparent), transparent 60%),
+    var(--acento-fondo);
+  color: var(--acento-sobre);
+  box-shadow: 0 30px 60px -34px rgba(15, 27, 45, 0.5);
+}
+.ini-cierre .ini-h2 {
+  color: var(--acento-sobre);
+}
+.ini-cierre .src {
+  color: color-mix(in srgb, var(--acento-sobre) 82%, transparent);
+}
+.ini-cierre .btn.primary {
+  background: var(--acento-sobre);
+  border-color: var(--acento-sobre);
+  color: var(--acento-fondo);
+}
+
+/* Brillo que cruza el botón principal al pasar el cursor */
+.inicio .btn.primary {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.inicio .btn.primary::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(105deg, transparent 30%, color-mix(in srgb, #fff 35%, transparent) 50%, transparent 70%);
+  translate: -120% 0;
+  transition: translate 0ms;
+  pointer-events: none;
+}
+@media (hover: hover) and (pointer: fine) {
+  .inicio .btn.primary:hover::after {
+    translate: 120% 0;
+    transition: translate 750ms var(--ease-out);
+  }
+}
+
+/* Con scroll: guilloché que gira, línea de pasos que se llena */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .ini-roseta {
+      animation: ini-girar linear both;
+      animation-timeline: scroll(root);
+    }
+    .ini-pasos li::after {
+      animation: ini-estirar linear both;
+      animation-timeline: view();
+      animation-range: entry 40% cover 45%;
+    }
+  }
+}
+@keyframes ini-girar {
+  to {
+    rotate: 70deg;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ini-heroe h1,
+  .ini-frase,
+  .ini-cifras,
+  .ini-botones,
+  .curva-heroe,
+  .ch-area,
+  .ch-ficha,
+  a.funcion:hover {
+    animation: none;
+  }
+  .ini-heroe {
+    transition: none;
+  }
+  .inicio .btn.primary::after {
+    display: none;
+  }
+  .curva-heroe:hover {
+    translate: none;
   }
 }

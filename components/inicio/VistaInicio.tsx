@@ -5,6 +5,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { useApp } from "@/components/providers/AppProvider";
+import { Guilloche, ROSETA } from "@/components/shell/Guilloche";
 import { BRAND } from "@/lib/brand";
 import { toEngine } from "@/lib/calculadora";
 import { esError, type TipoBono } from "@/lib/engine";
@@ -13,6 +14,14 @@ import { CifraViva } from "./CifraViva";
 import { CurvaHeroe } from "./CurvaHeroe";
 
 const pct = (d: number) => (v: number) => nf(d).format(v * 100) + " %";
+
+/** Luz que sigue al puntero: guarda su posición en variables CSS del elemento (solo con mouse). */
+function seguirPuntero(el: HTMLElement, e: React.PointerEvent, x = "--mx", y = "--my") {
+  if (e.pointerType !== "mouse") return;
+  const r = el.getBoundingClientRect();
+  el.style.setProperty(x, `${e.clientX - r.left}px`);
+  el.style.setProperty(y, `${e.clientY - r.top}px`);
+}
 
 export function VistaInicio() {
   const { snap, mk, motor, defaults, pfValorado } = useApp();
@@ -27,7 +36,8 @@ export function VistaInicio() {
   return (
     <div className="inicio">
       {/* 1 · Héroe */}
-      <section className="ini-heroe" aria-labelledby="ini-titulo">
+      <section className="ini-heroe" aria-labelledby="ini-titulo" onPointerMove={(e) => seguirPuntero(e.currentTarget, e, "--hx", "--hy")}>
+        <Guilloche opt={ROSETA} size={900} className="ini-roseta" />
         <div className="ini-heroe-texto">
           <h1 id="ini-titulo">{BRAND.nombre}</h1>
           <p className="ini-frase">Valora, analiza y gestiona renta fija colombiana con datos en vivo.</p>
@@ -75,7 +85,13 @@ export function VistaInicio() {
         <h2 id="ini-funciones" className="ini-h2">
           Todo lo que necesita una mesa de renta fija
         </h2>
-        <div className="ini-funciones">
+        <div
+          className="ini-funciones"
+          onPointerMove={(e) => {
+            const c = (e.target as HTMLElement).closest<HTMLElement>(".funcion");
+            if (c) seguirPuntero(c, e);
+          }}
+        >
           <Funcion href="/calculadora" titulo="Calculadora" texto="Precio sucio y limpio, TIR, duración, DV01 y flujos de TES, IBR, IPC y UVR.">
             <div className="demo demo-calc" aria-hidden="true">
               <span className="dc-fila">
