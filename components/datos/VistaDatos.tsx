@@ -207,6 +207,14 @@ export function VistaDatos() {
               "Recargando la página…"
           : `El DANE no respondió: ${i.error ?? "sin detalle"}.`,
       );
+      const fallas = Object.entries((j.banrep ?? {}) as Record<string, string>).filter(([, v]) => v !== "guardada");
+      if (j.banrep)
+        setResultado((r) =>
+          (r ?? "") +
+          (fallas.length
+            ? ` BanRep: no respondió (${fallas.map(([k]) => k.toUpperCase()).join(", ")}: ${fallas[0][1]}); se mantiene su última lectura guardada.`
+            : " BanRep: TPM, IBR, UVR y DTF guardados."),
+        );
       if (i.ultimoMes) setTimeout(() => router.refresh(), 1200);
     } catch (e) {
       setResultado(e instanceof Error ? e.message : "No se pudo actualizar.");

@@ -118,6 +118,25 @@ export async function guardarIpcDane(d: IpcDaneGuardado): Promise<void> {
   await almacen().escribir("vivo-ipc-dane.json", JSON.stringify(d));
 }
 
+/** Última lectura buena de cada serie del BanRep (la escribe la actualización; se usa si el BanRep falla). */
+export interface BanRepGuardado {
+  tpm?: { serie: [string, number][]; consultado: string };
+  ibr?: { serie: [string, number, number, number, number][]; consultado: string };
+  uvr?: { serie: [string, number][]; consultado: string };
+  dtf?: { valor: number; fecha: string; consultado: string };
+}
+
+export async function leerBanRep(): Promise<BanRepGuardado> {
+  return (await leerJSON<BanRepGuardado>("vivo-banrep.json")) ?? {};
+}
+
+/** Guarda las series que llegaron bien y conserva las anteriores de las que fallaron. */
+export async function guardarBanRep(nuevo: BanRepGuardado): Promise<void> {
+  if (!puedeGuardar() || !Object.keys(nuevo).length) return;
+  const previo = await leerBanRep().catch(() => ({}));
+  await almacen().escribir("vivo-banrep.json", JSON.stringify({ ...previo, ...nuevo }));
+}
+
 const meta = (origen: string, cargada: string, datos: [string, unknown][]) => ({
   origen,
   cargada,

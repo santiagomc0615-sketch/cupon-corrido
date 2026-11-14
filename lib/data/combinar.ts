@@ -36,6 +36,8 @@ export interface DatosEnVivo {
   ibr?: [string, number, number, number, number][];
   uvr?: [string, number][];
   ipc?: IpcEnVivo;
+  /** Series del BanRep que no respondieron y se tomaron de la última lectura guardada (fecha de esa lectura). */
+  guardados?: Partial<Record<"tpm" | "ibr" | "uvr", string>>;
   errores: Partial<Record<"tpm" | "ibr" | "uvr" | "trm" | "ipc" | "sofr" | "dtf" | "ust10", string>>;
 }
 
@@ -75,7 +77,9 @@ export function combinar(respaldo: DatosMercado, vivo: DatosEnVivo, cargas: Carg
       return [f, on, m1, m3, m6, ult12];
     });
     ibr = empalmar(respaldo.ibr, vivas);
-    fuentes.ibr = { fuente: "BanRep · SDMX", estado: "en-vivo", hasta: ultimo(ibr) };
+    fuentes.ibr = vivo.guardados?.ibr
+      ? { fuente: "BanRep · última lectura guardada", estado: "respaldo", hasta: ultimo(ibr), consultado: vivo.guardados.ibr, detalle: vivo.errores.ibr }
+      : { fuente: "BanRep · SDMX", estado: "en-vivo", hasta: ultimo(ibr) };
   } else {
     fuentes.ibr = { fuente: "Excel del curso", estado: "respaldo", hasta: ultimo(ibr), detalle: vivo.errores.ibr };
   }
@@ -87,7 +91,9 @@ export function combinar(respaldo: DatosMercado, vivo: DatosEnVivo, cargas: Carg
   let uvr: TuplaFecha[] = respaldo.uvr;
   if (vivo.uvr?.length) {
     uvr = empalmar(respaldo.uvr, vivo.uvr);
-    fuentes.uvr = { fuente: "BanRep · SDMX", estado: "en-vivo", hasta: ultimo(uvr) };
+    fuentes.uvr = vivo.guardados?.uvr
+      ? { fuente: "BanRep · última lectura guardada", estado: "respaldo", hasta: ultimo(uvr), consultado: vivo.guardados.uvr, detalle: vivo.errores.uvr }
+      : { fuente: "BanRep · SDMX", estado: "en-vivo", hasta: ultimo(uvr) };
   } else fuentes.uvr = { fuente: "Excel del curso", estado: "respaldo", hasta: ultimo(uvr), detalle: vivo.errores.uvr };
 
   /* ---- IPC (índice mensual, fin de mes): DANE en vivo > cargado > Excel, mes por mes ---- */

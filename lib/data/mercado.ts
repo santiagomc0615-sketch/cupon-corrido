@@ -9,7 +9,7 @@ import { cacheLife, cacheTag } from "next/cache";
 import respaldo from "@/data/datos-mercado.json";
 import type { DatosMercado } from "@/lib/engine";
 import { INDICE_VACIO, type CargasServidor, type IndiceCargas } from "@/lib/cargas/tipos";
-import { leerCargas, leerIpcDane } from "./almacen";
+import { leerBanRep, leerCargas, leerIpcDane } from "./almacen";
 import { combinar, type ClaveFuente, type DatosEnVivo, type InfoFuente, type IpcEnVivo } from "./combinar";
 import { dtfBanRep, ibrBanRep, tpmBanRep, uvrBanRep } from "./fuentes/banrep";
 import { enVentanaDane, ipcDane, mesEsperado } from "./fuentes/dane";
@@ -69,7 +69,7 @@ async function datosEnVivo(): Promise<{
   vivo: DatosEnVivo;
   trm?: TRM;
   sofr?: SOFR;
-  dtf?: { valor: number; fecha: string };
+  dtf?: { valor: number; fecha: string; guardado?: string };
   ust10?: UST10;
   pendienteDane: boolean;
 }> {
@@ -93,10 +93,25 @@ async function datosEnVivo(): Promise<{
     const g = await leerIpcDane().catch(() => null);
     if (g?.serie.length) ipcVivo = { serie: g.serie, publicado: g.publicado, consultado: g.consultado, guardado: true };
   }
+  // Si el BanRep no responde, se usa la última lectura buena guardada por la actualización.
+  const falloBanRep = [tpm, ibr, uvr, dtf].some((r) => r.status === "rejected");
+  const g = falloBanRep ? await leerBanRep().catch(() => ({}) as Awaited<ReturnType<typeof leerBanRep>>) : {};
+  const guardados: NonNullable<DatosEnVivo["guardados"]> = {};
+  const tomar = <T,>(r: PromiseSettledResult<T>, clave: "tpm" | "ibr" | "uvr", gs?: { serie: T; consultado: string }): T | undefined => {
+    if (r.status === "fulfilled") return r.value;
+    if (gs?.serie) {
+      guardados[clave] = gs.consultado;
+      return gs.serie;
+    }
+    return undefined;
+  };
+  const dtfFinal =
+    dtf.status === "fulfilled" ? dtf.value : g.dtf ? { valor: g.dtf.valor, fecha: g.dtf.fecha, guardado: g.dtf.consultado } : undefined;
   const vivo: DatosEnVivo = {
-    tpm: tpm.status === "fulfilled" ? tpm.value : undefined,
-    ibr: ibr.status === "fulfilled" ? ibr.value : undefined,
-    uvr: uvr.status === "fulfilled" ? uvr.value : undefined,
+    tpm: tomar(tpm, "tpm", g.tpm),
+    ibr: tomar(ibr, "ibr", g.ibr),
+    uvr: tomar(uvr, "uvr", g.uvr),
+    guardados,
     ipc: ipcVivo,
     errores: { tpm: motivo(tpm), ibr: motivo(ibr), uvr: motivo(uvr), trm: motivo(trm), ipc: motivo(ipc), sofr: motivo(sofr), dtf: motivo(dtf), ust10: motivo(ust10) },
   };
@@ -110,7 +125,7 @@ async function datosEnVivo(): Promise<{
     vivo,
     trm: trm.status === "fulfilled" ? trm.value : undefined,
     sofr: sofr.status === "fulfilled" ? sofr.value : undefined,
-    dtf: dtf.status === "fulfilled" ? dtf.value : undefined,
+    dtf: dtfFinal,
     ust10: ust10.status === "fulfilled" ? ust10.value : undefined,
     pendienteDane,
   };
@@ -154,8 +169,13 @@ export async function obtenerMercado(): Promise<SnapshotMercado> {
   if (ultTpm) {
     macro.tpm = ultTpm[1] / 100;
     macro.tpmFecha = ultTpm[0];
-    macro.tpmFuente = "BanRep · SDMX";
-    fuentes.tpm = { fuente: "BanRep · SDMX", estado: "en-vivo", hasta: ultTpm[0] };
+    if (vivo.guardados?.tpm) {
+      macro.tpmFuente = "BanRep · última lectura guardada";
+      fuentes.tpm = { fuente: macro.tpmFuente, estado: "respaldo", hasta: ultTpm[0], consultado: vivo.guardados.tpm, detalle: vivo.errores.tpm };
+    } else {
+      macro.tpmFuente = "BanRep · SDMX";
+      fuentes.tpm = { fuente: "BanRep · SDMX", estado: "en-vivo", hasta: ultTpm[0] };
+    }
   } else {
     fuentes.tpm = { fuente: MACRO.tpmFuente, estado: "respaldo", hasta: MACRO.tpmFecha, detalle: vivo.errores.tpm };
   }
@@ -168,7 +188,9 @@ export async function obtenerMercado(): Promise<SnapshotMercado> {
   fuentes.ust10 = ust10
     ? { fuente: "Tesoro de EE. UU.", estado: "en-vivo", hasta: ust10.fecha }
     : { fuente: "Tesoro de EE. UU.", estado: "respaldo", hasta: "", detalle: vivo.errores.ust10 ?? "sin dato" };
-  fuentes.dtf = dtf
+  fuentes.dtf = dtf?.guardado
+    ? { fuente: "BanRep · última lectura guardada", estado: "respaldo", hasta: dtf.fecha, consultado: dtf.guardado, detalle: vivo.errores.dtf }
+    : dtf
     ? { fuente: "BanRep · SDMX", estado: "en-vivo", hasta: dtf.fecha }
     : { fuente: "BanRep · SDMX", estado: "respaldo", hasta: "", detalle: (vivo.errores.dtf ?? "sin dato") + " · la tasa del CDT se ingresa a mano" };
 

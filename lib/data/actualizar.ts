@@ -1,15 +1,19 @@
 /* Actualización de los datos de mercado: la usan el Vercel Cron (dos veces al día) y la ruta
-   protegida /api/actualizar. Lee el IPC del DANE, guarda la última lectura buena y vence la caché
+   protegida /api/actualizar. Lee el IPC del DANE y las series del BanRep (TPM, IBR, UVR, DTF), guarda la
+   última lectura buena de cada una (si el BanRep o el DANE fallan después, se usa esa) y vence la caché
    de las fuentes en vivo para que la próxima visita traiga todo nuevo. Solo servidor. */
 import "server-only";
 import { revalidateTag } from "next/cache";
-import { guardarIpcDane, leerIpcDane } from "./almacen";
+import { guardarBanRep, guardarIpcDane, leerIpcDane, type BanRepGuardado } from "./almacen";
+import { dtfBanRep, ibrBanRep, tpmBanRep, uvrBanRep } from "./fuentes/banrep";
 import { enVentanaDane, ipcDane, mesEsperado, type IpcDane } from "./fuentes/dane";
 import { ahoraBogota, hoyBogota, TAG_VIVO } from "./mercado";
 
 export interface ResultadoActualizacion {
   ok: boolean;
   hora: string;
+  /** Por serie del BanRep: "guardada" o el error. */
+  banrep: Record<"tpm" | "ibr" | "uvr" | "dtf", string>;
   ipc: {
     /** Último mes que trae el DANE (AAAA-MM). */
     ultimoMes: string | null;
@@ -68,12 +72,28 @@ export async function actualizarDatos({ reintentos = 0, pausaMs = 15_000 } = {})
       console.warn("[actualizar] No se pudo guardar la lectura del DANE:", e);
     }
   }
+  // BanRep: se guarda cada serie que llegue bien; las que fallen conservan su lectura anterior.
+  const consultado = ahoraBogota();
+  const [tpm, ibr, uvr, dtf] = await Promise.allSettled([tpmBanRep("2023-01-01"), ibrBanRep("2023-01-01"), uvrBanRep("2025-01-01"), dtfBanRep(hoy)]);
+  const nuevo: BanRepGuardado = {};
+  if (tpm.status === "fulfilled" && tpm.value.length) nuevo.tpm = { serie: tpm.value, consultado };
+  if (ibr.status === "fulfilled" && ibr.value.length) nuevo.ibr = { serie: ibr.value, consultado };
+  if (uvr.status === "fulfilled" && uvr.value.length) nuevo.uvr = { serie: uvr.value, consultado };
+  if (dtf.status === "fulfilled") nuevo.dtf = { ...dtf.value, consultado };
+  try {
+    await guardarBanRep(nuevo);
+  } catch (e) {
+    console.warn("[actualizar] No se pudo guardar la lectura del BanRep:", e);
+  }
+  const estado = (r: PromiseSettledResult<unknown>) => (r.status === "fulfilled" ? "guardada" : r.reason instanceof Error ? r.reason.message : String(r.reason));
+
   // Vence ya (no "stale-while-revalidate"): la siguiente visita arma los datos de nuevo.
   revalidateTag(TAG_VIVO, { expire: 0 });
 
   const res: ResultadoActualizacion = {
     ok: Boolean(d),
     hora: ahoraBogota(),
+    banrep: { tpm: estado(tpm), ibr: estado(ibr), uvr: estado(uvr), dtf: estado(dtf) },
     ipc: {
       ultimoMes: ultimoMes(d),
       esperado,
