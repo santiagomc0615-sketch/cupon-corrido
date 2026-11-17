@@ -10,6 +10,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { armarContexto, correrAgente, SISTEMA_AGENTE, sistemaVariable, type EventoAgente } from "@/lib/asesor/agente";
 import { claveCache, guardarCache, leerCache } from "@/lib/asesor/cache";
+import { conocimientoTributario } from "@/lib/asesor/conocimiento";
 import { configAsesor, HORAS_CACHE_RESUMEN, MENSAJE_DEMO } from "@/lib/asesor/config";
 import { ipDe, revisarLimite } from "@/lib/asesor/limite";
 import { validarPeticion } from "@/lib/asesor/peticion";
@@ -95,9 +96,11 @@ export async function POST(req: Request) {
     modelo: cfg.modelo,
     maxTokens: cfg.maxTokens,
     esfuerzo: cfg.esfuerzo,
-    // El bloque fijo (y las herramientas, que van antes) se guarda en la caché de prompts.
+    // Los bloques fijos (herramientas, instrucciones y conocimiento tributario) se guardan en la caché de prompts.
     system: [
-      { type: "text", text: SISTEMA_AGENTE, cache_control: { type: "ephemeral" } },
+      { type: "text", text: SISTEMA_AGENTE },
+      { type: "text", text: `CONOCIMIENTO TRIBUTARIO (verificado; cita la norma y el enlace de aquí):
+${conocimientoTributario()}`, cache_control: { type: "ephemeral" } },
       { type: "text", text: sistemaVariable(p.perfil, p.modo, ctx, invalidas) },
     ],
     messages: [...p.historial, { role: "user", content: p.pregunta }],

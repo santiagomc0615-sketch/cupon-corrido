@@ -10,6 +10,8 @@ import { toEngine, type EntradasUI } from "@/lib/calculadora";
 import type { SnapshotMercado } from "@/lib/data/mercado";
 import { crearMotor, esError, type Motor } from "@/lib/engine";
 import { ejecutarHerramienta, HERRAMIENTAS, type ContextoHerramientas, type NombreHerramienta, type PosicionAgente } from "./herramientas";
+import { conOficiales } from "@/lib/impuestos/parametros";
+import { NOMBRE_CONTRIBUYENTE, PERFIL_INICIAL } from "@/lib/impuestos/perfil";
 import type { Modo, PeticionAsesor, Perfil } from "./peticion";
 
 export const MAX_VUELTAS = 8;
@@ -20,9 +22,16 @@ export const SISTEMA_AGENTE = `Eres el asesor de una calculadora académica de r
 Cifras: regla sin excepciones
 - Toda cifra que escribas (tasas, precios, duraciones, DV01, montos, pb, porcentajes, fechas de datos) debe venir textualmente del resultado de una herramienta de esta conversación. Cópiala con el formato en que llega (coma decimal).
 - No calcules nada tú mismo: ni sumas, restas, promedios, diferencias en pb, conversiones de tasa, proyecciones ni reglas de tres. Si necesitas una cifra que no está en un resultado, llama a la herramienta que la produce; si ninguna la produce, dilo sin inventarla.
-- Antes de responder, llama a las herramientas que necesites; puedes pedir varias a la vez. Para hablar del mercado usa datos_mercado; del portafolio, resumen_portafolio; de un título, valorar_titulo; de escenarios, simular_escenario_tasas; de alternativas, comparar_opciones; de fondeo o carry, analizar_fondeo.
+- Antes de responder, llama a las herramientas que necesites; puedes pedir varias a la vez. Para hablar del mercado usa datos_mercado; del portafolio, resumen_portafolio; de un título, valorar_titulo; de escenarios, simular_escenario_tasas; de alternativas, comparar_opciones; de fondeo o carry, analizar_fondeo; de impuestos, calcular_impuestos; del resultado de vender o mantener con impuestos e inflación, calcular_pyg.
 - Cita la fuente y la fecha que trae cada resultado (BanRep, DANE, Fed de Nueva York, datos.gov.co, curva TES del día).
 - Si una herramienta devuelve un error, explícalo en palabras simples y sigue con lo que sí tengas.
+
+Impuestos y planeación tributaria
+- Las cifras de impuestos salen solo de calcular_impuestos o calcular_pyg (usan los parámetros verificados y el perfil tributario del usuario). Si el usuario da otro perfil o sus ingresos, pásalos a la herramienta.
+- Las normas, requisitos y alternativas salen solo del bloque CONOCIMIENTO TRIBUTARIO. Cita la norma y su enlace oficial tal como aparecen allí. Si algo no está en ese bloque, dilo y remite a un contador; no lo completes de memoria.
+- Al explicar alternativas legales (fondos de inversión colectiva, pensiones voluntarias, cuentas AFC, momento de la venta según el año gravable y la tenencia), da para cada una sus requisitos, límites y riesgos (permanencia, pérdida del beneficio, riesgo de mercado), no solo el beneficio. No prometas ahorros ni recomiendes evadir o simular operaciones.
+- Aclara cuando el resultado depende del caso particular: otros ingresos del año, cupo del art. 336, si el título es activo fijo o inventario, calidad de obligado a contabilidad, entre otros.
+- Cuando hables de impuestos, cierra con: «Estimación con fines académicos. No constituye asesoría tributaria; confirme con un contador.»
 
 Criterio
 - Explica el porqué con conceptos del curso: duración, convexidad, carry, roll-down, spread contra TES, tasa real, Fisher, riesgo de reinversión, fondeo y cobertura cambiaria.
@@ -59,7 +68,8 @@ Termina con: «Herramienta académica, no es asesoría financiera. Respuestas ge
 };
 
 /** Bloque variable del sistema: perfil, modo y qué hay cargado (solo nombres, ninguna cifra). */
-export function sistemaVariable(perfil: Perfil, modo: Modo, ctx: Pick<ContextoHerramientas, "fecha" | "portafolio" | "titulo">, invalidas = 0): string {
+export function sistemaVariable(perfil: Perfil, modo: Modo, ctx: Pick<ContextoHerramientas, "fecha" | "portafolio" | "titulo" | "tributario">, invalidas = 0): string {
+  const trib = ctx.tributario?.perfil ?? PERFIL_INICIAL;
   const pf = ctx.portafolio.length ? ctx.portafolio.map((x) => x.titulo).join("; ") : "vacío";
   return [
     PERFIL[perfil],
@@ -68,6 +78,7 @@ export function sistemaVariable(perfil: Perfil, modo: Modo, ctx: Pick<ContextoHe
     `Título abierto en la calculadora: ${ctx.titulo ? ctx.titulo.titulo : "ninguno válido"}.`,
     `Portafolio del usuario (${ctx.portafolio.length} posiciones): ${pf}.`,
     invalidas ? `${invalidas} posición(es) no se pudieron valorar y no están en las herramientas.` : "",
+    `Perfil tributario del usuario: ${NOMBRE_CONTRIBUYENTE[trib.tipo]}, ${trib.tipo === "juridica" ? "tarifa de personas jurídicas" : trib.ingresosAnuales != null ? "con sus ingresos anuales cargados (tabla del art. 241)" : "con una tarifa marginal ingresada"}${trib.gmf ? ", incluye GMF" : ""}.`,
   ]
     .filter(Boolean)
     .join("\n");
@@ -81,7 +92,7 @@ function valorarEntradas(motor: Motor, e: EntradasUI, fecha: string): PosicionAg
 }
 
 /** Arma el contexto de las herramientas con el motor del día y lo que mandó el navegador. */
-export function armarContexto(snap: SnapshotMercado, p: Pick<PeticionAsesor, "titulo" | "portafolio" | "fondeo">) {
+export function armarContexto(snap: SnapshotMercado, p: Pick<PeticionAsesor, "titulo" | "portafolio" | "fondeo"> & Partial<Pick<PeticionAsesor, "tributario">>) {
   const motor = crearMotor(snap.datos);
   const fecha = snap.fechaAnalisis;
   const fechaPf = p.portafolio.fecha ?? fecha;
@@ -90,7 +101,8 @@ export function armarContexto(snap: SnapshotMercado, p: Pick<PeticionAsesor, "ti
   const titulo = p.titulo ? valorarEntradas(motor, p.titulo, String(p.titulo.valoracion || fecha)) : null;
   const f = p.fondeo;
   const fondeo: ConfigFondeo | null = f ? { ...CONFIG_INICIAL, ...f, exterior: { ...CONFIG_INICIAL.exterior, ...(f.exterior ?? {}) } } : null;
-  const ctx: ContextoHerramientas = { motor, snap, fecha, portafolio, titulo, fondeo };
+  const tributario = { perfil: { ...PERFIL_INICIAL, ...(p.tributario?.perfil ?? {}) }, params: conOficiales(p.tributario?.params) };
+  const ctx: ContextoHerramientas = { motor, snap, fecha, portafolio, titulo, fondeo, tributario };
   return { ctx, invalidas: valoradas.length - portafolio.length };
 }
 

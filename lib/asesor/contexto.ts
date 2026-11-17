@@ -18,6 +18,7 @@ export const QUICK: [string, string, string][] = [
   ["Resumen de la economía", "Inflación, tasa del BanRep, IBR y lo que implica para la renta fija", "Hazme un resumen de la situación económica de Colombia con estos datos: inflación, política monetaria, IBR, UVR y la curva TES. ¿Qué implica para un inversionista de renta fija?"],
   ["Analiza mi portafolio", "Riesgo, composición, valor relativo vs. curva", "Analiza mi portafolio: composición por indexación, duración y DV01, resultados de estrés y spread de cada posición frente a la curva TES. ¿Tengo buenas posiciones para el contexto actual?"],
   ["Estrategia de duración", "¿Alargar o acortar? ¿Tasa fija o indexados?", "Con la curva y las expectativas de inflación cargadas, ¿conviene alargar o acortar duración? Compara tasa fija vs. IBR vs. IPC vs. UVR y propón dos estrategias con sus riesgos."],
+  ["Impuestos y planeación", "P&G con impuestos e inflación y alternativas legales", "Calcula el P&G de mi título con impuestos e inflación y explícame qué alternativas legales de planeación tributaria podría considerar según mi perfil (fondos de inversión colectiva, pensiones voluntarias, cuentas AFC y el momento de la venta), con sus requisitos, límites y riesgos."],
   ["Explica la curva", "Forma, forwards y qué descuenta el mercado", "Explícame la forma actual de la curva TES, qué descuentan los forwards implícitos y cómo se compara con la tasa de política."],
 ];
 

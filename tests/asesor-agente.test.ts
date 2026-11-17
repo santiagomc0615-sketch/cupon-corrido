@@ -16,7 +16,7 @@ const correr = (nombre: string, entrada: unknown = {}) => {
 };
 
 describe("Herramientas del asesor", () => {
-  it("se declaran las seis, con streaming de entrada", () => {
+  it("se declaran las ocho, con streaming de entrada", () => {
     expect(HERRAMIENTAS.map((h) => h.name)).toEqual([
       "valorar_titulo",
       "simular_escenario_tasas",
@@ -24,6 +24,8 @@ describe("Herramientas del asesor", () => {
       "analizar_fondeo",
       "resumen_portafolio",
       "datos_mercado",
+      "calcular_impuestos",
+      "calcular_pyg",
     ]);
     expect(HERRAMIENTAS.every((h) => "eager_input_streaming" in h && h.eager_input_streaming)).toBe(true);
     expect(ctx.portafolio).toHaveLength(4);
@@ -163,7 +165,7 @@ describe("Bucle del agente", () => {
     expect(ev[ev.length - 1]).toEqual({ t: "fin", stop: "end_turn" });
     expect(peticiones).toHaveLength(2);
     const p0 = peticiones[0];
-    expect((p0.tools as unknown[]).length).toBe(6);
+    expect((p0.tools as unknown[]).length).toBe(8);
     expect(p0.tool_choice).toEqual({ type: "auto" });
     expect(p0.fallbacks).toBe("default");
     const msgs = peticiones[1].messages as { role: string; content: { type: string; tool_use_id: string; content: string }[] }[];
