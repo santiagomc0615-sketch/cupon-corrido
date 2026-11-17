@@ -176,7 +176,7 @@ function Formulario() {
         )}
       </fieldset>
       <div className="sheet-foot">
-        <button type="button" className="btn primary" onClick={agregar}>
+        <button type="button" id="agregar-pf" className="btn primary" onClick={agregar}>
           {editingId ? "Guardar cambios" : "+ Agregar al portafolio"}
         </button>
         <button type="button" className="btn ghost" onClick={restaurar}>

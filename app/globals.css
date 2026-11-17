@@ -1538,6 +1538,319 @@
   .fondeo-ext .tbl {
     margin-top: 14px;
   }
+  .fondeo-ext > details {
+    margin-top: 12px;
+  }
+  .fondeo-ext > details > summary {
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--ink-2);
+  }
+
+  /* ---------- Estructura v3: resumen fijo arriba + pestañas sticky ---------- */
+  .resultados {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    min-width: 0;
+  }
+  /* Resumen: precio sucio como tarjeta héroe y cuatro cifras de apoyo. */
+  .resumen {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.6fr);
+    gap: 12px;
+  }
+  .resumen-apoyo {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .r-cifra {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+    padding: 14px 16px;
+    border: 0;
+    border-radius: var(--r-panel);
+    background: var(--sheet);
+    box-shadow: var(--sombra-2), var(--brillo-borde);
+    text-align: left;
+    color: var(--ink);
+    font: inherit;
+    transition:
+      box-shadow 200ms var(--ease-out),
+      translate 200ms var(--ease-out);
+  }
+  button.r-cifra {
+    cursor: pointer;
+  }
+  .r-etq {
+    font-size: 12px;
+    color: var(--ink-2);
+  }
+  .r-formula {
+    color: var(--engrave);
+  }
+  .r-valor {
+    font: 600 26px/1.05 var(--f-cifra);
+    font-variant-numeric: tabular-nums lining-nums;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+  }
+  .r-nota {
+    font: 400 11px/1.35 var(--f-mono);
+    color: var(--ink-3);
+  }
+  /* Tarjeta héroe: la más profunda, con el acento y un guilloché tenue de fondo. */
+  .r-heroe {
+    justify-content: space-between;
+    padding: 20px 22px;
+    background:
+      radial-gradient(120% 90% at 100% 0%, color-mix(in srgb, #fff 14%, transparent), transparent 60%),
+      var(--acento-fondo);
+    color: var(--acento-sobre);
+    box-shadow: var(--sombra-heroe);
+    overflow: hidden;
+  }
+  .r-heroe .r-etq,
+  .r-heroe .r-nota,
+  .r-heroe .r-formula {
+    color: color-mix(in srgb, var(--acento-sobre) 80%, transparent);
+  }
+  .r-heroe .r-valor {
+    font-size: clamp(40px, 4.6vw, 56px);
+    letter-spacing: -0.03em;
+  }
+  .r-cifra[aria-pressed="true"] {
+    outline: 2px solid var(--engrave);
+    outline-offset: 2px;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .r-cifra:not(.r-heroe):hover,
+    .tarjeta:hover,
+    .siguiente-paso:hover {
+      box-shadow: var(--sombra-3), var(--brillo-borde);
+      translate: 0 -2px;
+    }
+  }
+  @media (max-width: 1100px) {
+    .resumen {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 420px) {
+    .r-valor {
+      font-size: 21px;
+    }
+    .r-cifra {
+      padding: 12px 13px;
+    }
+  }
+
+  /* Pestañas: barra fija bajo la cinta; en celular se desliza horizontalmente. */
+  .pestanas-marco {
+    --top-fijo: calc(env(safe-area-inset-top, 0px) + 33px);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+  }
+  .pestanas {
+    position: sticky;
+    top: var(--top-fijo);
+    z-index: 15;
+    margin: 0 -4px;
+    padding: 8px 4px;
+    background: color-mix(in srgb, var(--paper) 82%, transparent);
+    backdrop-filter: blur(14px) saturate(160%);
+    -webkit-backdrop-filter: blur(14px) saturate(160%);
+    /* Borde de desplazamiento: se desvanece en lugar de un filete duro. */
+    mask-image: linear-gradient(to bottom, #000 calc(100% - 6px), transparent);
+  }
+  .pestanas-lista {
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    border-radius: var(--r);
+    background: var(--sheet);
+    box-shadow: var(--sombra-1), var(--brillo-borde);
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+  }
+  .pestanas-lista::-webkit-scrollbar {
+    display: none;
+  }
+  .pestanas-lista button {
+    flex: none;
+    scroll-snap-align: start;
+    border: 0;
+    background: none;
+    padding: 9px 14px;
+    border-radius: calc(var(--r) - 3px);
+    font: 500 13.5px var(--f-body);
+    color: var(--ink-2);
+    cursor: pointer;
+    white-space: nowrap;
+    transition:
+      background-color var(--dur-ui) ease,
+      color var(--dur-ui) ease;
+  }
+  .pestanas-lista button[aria-selected="true"] {
+    background: var(--acento-fondo);
+    color: var(--acento-sobre);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .pestanas-lista button[aria-selected="false"]:hover {
+      background: var(--sheet-2);
+      color: var(--ink);
+    }
+  }
+  @media (max-width: 820px) {
+    .pestanas-marco {
+      --top-fijo: calc(env(safe-area-inset-top, 0px) + 86px);
+    }
+    .pestanas-lista button {
+      padding: 10px 12px;
+      min-height: 40px;
+    }
+  }
+  .pestana-panel:focus-visible {
+    outline: none;
+  }
+  .pestana {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    min-width: 0;
+  }
+  .riesgo-kpis {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  /* «Siguiente paso»: tarjetas al final de cada pestaña. */
+  .siguientes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+    gap: 12px;
+    margin-top: 4px;
+  }
+  .siguiente-paso {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 16px 18px;
+    border: 0;
+    border-radius: var(--r-panel);
+    background:
+      linear-gradient(135deg, color-mix(in srgb, var(--engrave) 9%, transparent), transparent 70%),
+      var(--sheet);
+    box-shadow: var(--sombra-2), var(--brillo-borde);
+    color: var(--ink);
+    text-align: left;
+    text-decoration: none;
+    font: inherit;
+    cursor: pointer;
+    transition:
+      box-shadow 200ms var(--ease-out),
+      translate 200ms var(--ease-out);
+  }
+  .siguiente-paso:active {
+    scale: 0.98;
+  }
+  .sp-etq {
+    font: 500 10.5px var(--f-mono);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--engrave);
+  }
+  .sp-titulo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    font-size: 15px;
+  }
+  .sp-flecha {
+    width: 16px;
+    height: 16px;
+    flex: none;
+    color: var(--engrave);
+    transition: translate 200ms var(--ease-out);
+  }
+  .siguiente-paso:hover .sp-flecha {
+    translate: 3px 0;
+  }
+  .sp-texto {
+    font-size: 13px;
+    color: var(--ink-2);
+  }
+
+  /* Aviso después de valorar: entra y sale por abajo. */
+  .aviso-ganancia {
+    position: fixed;
+    left: 50%;
+    bottom: max(16px, env(safe-area-inset-bottom, 0px));
+    z-index: 40;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px 14px;
+    width: min(100% - 32px, 620px);
+    padding: 12px 14px 12px 18px;
+    border-radius: var(--r-panel);
+    background: var(--sheet-elev);
+    box-shadow: var(--sombra-3), var(--brillo-borde);
+    font-size: 13.5px;
+    translate: -50% 0;
+    transition:
+      opacity 220ms var(--ease-out),
+      translate 280ms var(--ease-out);
+  }
+  .aviso-ganancia > span {
+    flex: 1 1 260px;
+  }
+  .aviso-ganancia[data-visible="false"] {
+    opacity: 0;
+    translate: -50% 24px;
+    pointer-events: none;
+  }
+  /* P&G a la vista en «Venta y P&G» */
+  .pyg-inline {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--rule);
+  }
+  .pyg-inline-cab {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .pyg-venc {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .aviso-ganancia[data-visible="false"] {
+      translate: -50% 0;
+    }
+    .r-cifra,
+    .siguiente-paso,
+    .sp-flecha {
+      translate: none !important;
+      scale: none !important;
+    }
+  }
   tr.mejor td {
     background: color-mix(in srgb, var(--pos) 7%, transparent);
   }
