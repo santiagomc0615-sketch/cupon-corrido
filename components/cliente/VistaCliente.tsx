@@ -1,11 +1,10 @@
 "use client";
 /* Vista cliente: ganancia, próximo cupón, pagos, colchón y comparación con un CDT, en grande.
    Recibe el resumen ya calculado (lib/cliente.ts). */
-import { useApp } from "@/components/providers/AppProvider";
 import type { ComparacionCDT, ResumenCliente } from "@/lib/cliente";
 import { F, nf } from "@/lib/format";
-import { useGuardado } from "@/lib/storage";
 import { Contador } from "./Contador";
+import { FrenteCDT } from "./FrenteCDT";
 
 const pesos = (v: number) => "$ " + nf(0).format(Math.round(v));
 const millones = (v: number) => F.mill(v, 1);
@@ -22,11 +21,6 @@ export function VistaCliente({
   /** Acción en la cabecera (p. ej. el botón del reporte PDF). */
   accion?: React.ReactNode;
 }) {
-  const { snap } = useApp();
-  const [tasaPropia, setTasaPropia] = useGuardado<number | null>("tasaCDT", null);
-  const dtf = snap.dtf ?? null;
-  const tasaCDT = tasaPropia ?? dtf?.valor ?? null;
-  const cdt = tasaCDT != null ? comparar(tasaCDT) : null;
   const r = resumen;
   const pc = r.proximo;
   const max = Math.max(...r.pagos.map((p) => p.cop), 1);
@@ -75,56 +69,13 @@ export function VistaCliente({
           </p>
         </article>
 
-        <article className="tarjeta tarjeta-cdt">
-          <h3>Frente a un CDT al mismo plazo</h3>
-          {cdt ? (
-            <>
-              <Contador className="cifra" valor={cdt.diferencia} formato={(v) => (v >= 0 ? "+" : "−") + millones(Math.abs(v))} />
-              <p>
-                {cdt.ganaBono ? "Más que" : "Menos que"} un CDT en {nf(0).format(cdt.plazoDias)} días: {millones(cdt.bono)} vs. {millones(cdt.cdt)}
-              </p>
-            </>
-          ) : (
-            <p>Ingrese la tasa del CDT para comparar.</p>
-          )}
-          <div className="f cdt-tasa">
-            <label htmlFor="tasa-cdt">Tasa del CDT (E.A.)</label>
-            <div className="u">
-              <input
-                id="tasa-cdt"
-                type="number"
-                step="0.01"
-                inputMode="decimal"
-                value={tasaCDT == null ? "" : +(tasaCDT * 100).toFixed(4)}
-                onChange={(e) => setTasaPropia(e.target.value === "" ? null : +e.target.value / 100)}
-                style={{ paddingRight: 26 }}
-              />
-              <span>%</span>
-            </div>
-            <span className="src">
-              {tasaPropia == null ? (
-                dtf ? (
-                  <>DTF (CDT 90 días) · BanRep · {F.date(dtf.fecha)}</>
-                ) : (
-                  "Sin DTF del día: ingrésela"
-                )
-              ) : (
-                <>
-                  Tasa propia ·{" "}
-                  <button type="button" className="enlace" onClick={() => setTasaPropia(null)}>
-                    usar la DTF del día
-                  </button>
-                </>
-              )}
-            </span>
-          </div>
-        </article>
+        <FrenteCDT comparar={comparar} />
       </div>
 
       {r.pagos.length > 0 && (
         <article className="tarjeta tarjeta-pagos">
           <div className="pagos-cab">
-            <h3>Lo que va a recibir</h3>
+            <h3>Flujos: lo que va a recibir</h3>
             <p>
               <Contador className="cifra-sec" valor={r.totalPagos} formato={millones} /> en {r.pagos.length} pagos
             </p>

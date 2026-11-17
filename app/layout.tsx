@@ -1,3 +1,4 @@
+import { IndicadorScroll } from "@/components/shell/IndicadorScroll";
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import { AppProvider } from "@/components/providers/AppProvider";
@@ -47,6 +48,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
               <CintaMercado />
               <div className="wrap" id="contenido" tabIndex={-1}>
                 {children}
+                <IndicadorScroll />
                 <footer className="site-foot">
                   <span>{BRAND.avisoLegal}</span>
                   <span>

@@ -27,12 +27,12 @@ Proyecto académico para la clase de Portafolio de Renta Fija. Página web que v
 
 ## Diseño (no hacerlo genérico)
 - Concepto: título valor grabado (guilloché de papel de seguridad) + terminal de mesa de dinero.
-- Paleta de banca institucional (tokens en `app/globals.css`; `--engrave` = acento verde petróleo, `--seal` = dorado).
-- Colores claro: fondo #F6F7F9, superficie #FFFFFF, superficie 2 #EEF1F5, texto #0F1B2D, texto 2 #4A5568, texto 3 #5F6B7E (el #8A94A6 pedido no llega a AA), línea #DDE2EA, acento #0F5C5C, dorado #A07C3B (texto: #8A6A2E), positivo #1F7A4D, negativo #B42318, advertencia #B7791F (texto: #855D23).
-- Colores oscuro: fondo #0B1220, superficie #111A2B, superficie 2 #16213A, texto #E6EAF0, texto 2 #A3AEC2, texto 3 #8592A8, línea #22304A, acento #6CCAC4, dorado #D2B06A, positivo #4CC38A, negativo #F07A6A.
+- Paleta grafito y esmeralda (v3; tokens en `app/globals.css`; `--engrave` = acento esmeralda para texto, `--acento-fondo` = relleno, `--seal` = dorado).
+- Colores claro: fondo #F5F6F7, superficie #FFFFFF, superficie 2 #EEF0F2, línea #DCE0E5, texto #14171C, texto 2 #525A66, texto 3 #666C74 (el #868E99 pedido no llega a AA; queda en `--ink-4` para trazos), acento #12805C (texto: #117A57), dorado #9A7A3F (texto: #816635), positivo #1B7B50, negativo #BE402C, advertencia #A86B0C (texto: #97600B). Tarjetas con sombras suaves en capas, sin bordes grises fuertes.
+- Colores oscuro: fondo #0E1013, superficie #15181D, superficie elevada #1C2027, línea #2A2F38, texto #ECEEF1, texto 2 #A2A9B4, texto 3 #808997 (el #6E7682 pedido no llega a AA; queda en `--ink-4`), acento esmeralda #34B489, dorado champán #C9A86A, positivo #3DCB8F, negativo #F0705F, advertencia #E2B04A.
 - Acento solo en elementos clave (pestaña activa, botón principal, cifra principal, línea principal de gráficos); lo demás en neutros. Todo texto ≥ AA en ambos temas.
 - Guilloché del héroe: esquina superior derecha, opacidad ≤ 0,12, detrás del contenido, oculto bajo 900 px.
-- Tipografías: Bodoni Moda (títulos), IBM Plex Sans (texto; seminegrita para las cifras grandes, token `--f-cifra`), IBM Plex Mono (cifras de tablas, tabular-nums).
+- Tipografías: Bodoni Moda (títulos), IBM Plex Sans (texto), Geist 600 con números tabulares para las cifras grandes (token `--f-cifra`), Geist Mono 500 para las tablas (`--f-mono`). Todas con next/font (`app/fuentes.ts`).
 - Riel de navegación a la izquierda, cinta de mercado arriba, cifras en tablas alineadas a la derecha.
 - Nada de gradientes morados, emojis como íconos ni tarjetas redondeadas iguales para todo.
 

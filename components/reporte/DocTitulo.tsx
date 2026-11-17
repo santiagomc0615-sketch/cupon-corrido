@@ -14,11 +14,11 @@ const mill = (x: number, d = 1) => F.mill(x, d);
 function Cifra({ etiqueta, valor, nota, grande }: { etiqueta: string; valor: string; nota?: string; grande?: boolean }) {
   return (
     <View style={{ flexGrow: 1, flexBasis: 0 }}>
-      <Text style={{ fontSize: 7.5, color: "#D7EDEC", letterSpacing: 0.6, textTransform: "uppercase", fontWeight: 600 }}>{etiqueta}</Text>
+      <Text style={{ fontSize: 7.5, color: "#DDF2EA", letterSpacing: 0.6, textTransform: "uppercase", fontWeight: 600 }}>{etiqueta}</Text>
       <View style={{ height: grande ? 38 : 22, marginTop: 2, justifyContent: "flex-end" }}>
         <Text style={{ fontFamily: FAMILIA.texto, fontWeight: 600, fontSize: grande ? 26 : 15, color: C.acentoSobre }}>{valor}</Text>
       </View>
-      {nota ? <Text style={{ fontSize: 7.5, color: "#D7EDEC", marginTop: 3 }}>{nota}</Text> : null}
+      {nota ? <Text style={{ fontSize: 7.5, color: "#DDF2EA", marginTop: 3 }}>{nota}</Text> : null}
     </View>
   );
 }
@@ -94,7 +94,7 @@ export function DocTitulo({ r, generado, pyg }: { r: ReporteTitulo; generado: st
         </View>
 
         <View style={{ ...s.fila, gap: 14, marginTop: 14 }}>
-          <Seccion titulo="Datos del título" style={{ flexGrow: 1, flexBasis: 0 }}>
+          <Seccion titulo="Resumen · datos del título" style={{ flexGrow: 1, flexBasis: 0 }}>
             <KV
               filas={[
                 ["Tipo", r.tipo],
@@ -109,34 +109,7 @@ export function DocTitulo({ r, generado, pyg }: { r: ReporteTitulo; generado: st
               ]}
             />
           </Seccion>
-          <Seccion titulo="Riesgo en palabras simples" style={{ flexGrow: 1, flexBasis: 0 }}>
-            <View style={{ ...s.caja, gap: 7 }}>
-              <Text>
-                <Text style={{ fontWeight: 600 }}>Duración {F.n(r.duracionMod, 2)}. </Text>
-                <Text style={{ color: C.tinta2 }}>Si las tasas suben 1 %, el precio cae cerca de {F.n(r.duracionMod, 2)} %. Duración de Macaulay: {F.n(r.macaulay, 2)} años.</Text>
-              </Text>
-              <Text>
-                <Text style={{ fontWeight: 600 }}>DV01 {F.cop(r.dv01)}. </Text>
-                <Text style={{ color: C.tinta2 }}>Es lo que cambia el valor por cada punto básico (0,01 %) que se mueva la tasa.</Text>
-              </Text>
-              <Text>
-                <Text style={{ fontWeight: 600, color: C.positivo }}>Colchón {nf(0).format(c.colchonPb)} pb. </Text>
-                <Text style={{ color: C.tinta2 }}>Las tasas pueden subir hasta {nf(0).format(c.colchonPb)} pb en un año antes de perder plata.</Text>
-              </Text>
-            </View>
-          </Seccion>
-        </View>
-
-        <View style={{ ...s.fila, gap: 14, marginTop: 14 }}>
-          <Seccion titulo="Flujos que recibe (pesos)" style={{ flexGrow: 1, flexBasis: 0 }}>
-            <GraficoFlujos flujos={r.flujos} />
-            <View style={{ ...s.fila, gap: 10, marginTop: 3 }}>
-              <Leyenda color={C.acento} texto="Cupones" />
-              <Leyenda color={C.dorado} texto="Capital" />
-              <Text style={s.src}>Total {mill(c.totalPagos)}</Text>
-            </View>
-          </Seccion>
-          <Seccion titulo="Frente a un CDT al mismo plazo" style={{ flexGrow: 1, flexBasis: 0 }}>
+          <Seccion titulo="Resumen · frente a un CDT" style={{ flexGrow: 1, flexBasis: 0 }}>
             {r.cdt ? (
               <View style={s.caja}>
                 <KV
@@ -153,6 +126,33 @@ export function DocTitulo({ r, generado, pyg }: { r: ReporteTitulo; generado: st
             ) : (
               <Text style={{ color: C.tinta2 }}>Sin tasa de CDT para comparar.</Text>
             )}
+          </Seccion>
+        </View>
+
+        <View style={{ ...s.fila, gap: 14, marginTop: 14 }}>
+          <Seccion titulo="Riesgo y sensibilidad" style={{ flexGrow: 1, flexBasis: 0 }}>
+            <View style={{ ...s.caja, gap: 7 }}>
+              <Text>
+                <Text style={{ fontWeight: 600 }}>Duración {F.n(r.duracionMod, 2)}. </Text>
+                <Text style={{ color: C.tinta2 }}>Si las tasas suben 1 %, el precio cae cerca de {F.n(r.duracionMod, 2)} %. Duración de Macaulay: {F.n(r.macaulay, 2)} años.</Text>
+              </Text>
+              <Text>
+                <Text style={{ fontWeight: 600 }}>DV01 {F.cop(r.dv01)}. </Text>
+                <Text style={{ color: C.tinta2 }}>Es lo que cambia el valor por cada punto básico (0,01 %) que se mueva la tasa.</Text>
+              </Text>
+              <Text>
+                <Text style={{ fontWeight: 600, color: C.positivo }}>Colchón {nf(0).format(c.colchonPb)} pb. </Text>
+                <Text style={{ color: C.tinta2 }}>Las tasas pueden subir hasta {nf(0).format(c.colchonPb)} pb en un año antes de perder plata.</Text>
+              </Text>
+            </View>
+          </Seccion>
+          <Seccion titulo="Flujos (pesos)" style={{ flexGrow: 1, flexBasis: 0 }}>
+            <GraficoFlujos flujos={r.flujos} />
+            <View style={{ ...s.fila, gap: 10, marginTop: 3 }}>
+              <Leyenda color={C.acento} texto="Cupones" />
+              <Leyenda color={C.dorado} texto="Capital" />
+              <Text style={s.src}>Total {mill(c.totalPagos)}</Text>
+            </View>
           </Seccion>
         </View>
 

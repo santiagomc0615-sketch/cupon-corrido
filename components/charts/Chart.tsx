@@ -212,7 +212,8 @@ function Lienzo({
                   d={`${d}L${X(ult[0])} ${Y(Math.max(y0, 0))}L${X(se.data[0][0])} ${Y(Math.max(y0, 0))}Z`}
                 />
               )}
-              {!se.pointsOnly && <path className={se.cls} d={d} />}
+              {/* La línea principal (s-a) se dibuja al aparecer: pathLength normaliza el trazo para la animación. */}
+              {!se.pointsOnly && <path className={se.cls} d={d} pathLength={se.cls === "s-a" ? 1 : undefined} />}
               {se.points &&
                 se.data.map((p, i) => (
                   <g key={i}>

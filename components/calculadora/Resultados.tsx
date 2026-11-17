@@ -1,9 +1,16 @@
 "use client";
-import { useState, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import type { ClaveClase } from "@/lib/clase";
 import { AnalisisTitulo } from "./AnalisisTitulo";
 import { useFondeo, useMercadoFondeo } from "@/components/fondeo/ControlesFondeo";
-import { BotonPyG } from "@/components/pyg/VentanaPyG";
+import { FrenteCDT } from "@/components/cliente/FrenteCDT";
+import { BotonPyGTitulo } from "@/components/pyg/Botones";
+import { AvisoTributario } from "@/components/pyg/Impuestos";
+import { BotonPyG, TablaPyG } from "@/components/pyg/VentanaPyG";
+import { Pestanas, SiguientePaso, SiguientesPasos } from "@/components/ui/Pestanas";
+import { resumenTitulo } from "@/lib/cliente";
+import { AvisoGanancia } from "./AvisoGanancia";
+import { ResumenTitulo } from "./ResumenTitulo";
 import { fondeoConfigurado } from "@/components/reporte/BotonReporte";
 import { costoFondeo, entradasDesdeMotor } from "@/lib/pyg/desde-motor";
 import { CarryFondeo } from "./CarryFondeo";
@@ -11,7 +18,7 @@ import { ETIQUETAS_CLASE, PasoAPaso } from "./PasoAPaso";
 import { Chart, nearest } from "@/components/charts/Chart";
 import { useApp, useCurvaNecesaria } from "@/components/providers/AppProvider";
 import type { EstadoCalculadora, ModoVenta } from "@/lib/calculadora";
-import { KV, Panel } from "@/components/ui";
+import { Kpi, KV, Panel } from "@/components/ui";
 import {
   edate,
   esError,
@@ -52,25 +59,14 @@ export function Resultados({
   return <ResultadosOk b={b} o={o} avisosExtra={avisosExtra} clase={clase} />;
 }
 
-const CLAVES_HEAD: ClaveClase[] = ["dirty", "clean", "irr", "mod", "dv01"];
-
 function ResultadosOk({ b, o, avisosExtra, clase }: { b: Bono; o: ResultadoValoracion; avisosExtra: string[]; clase: boolean }) {
   const [explicando, setExplicando] = useState<ClaveClase | null>(null);
   const activa = clase ? explicando : null;
   const t = o.tipo,
     fx = o.fx;
 
-  const head: [string, string, string][] = [
-    ["Precio sucio", F.n(o.dirty, 3) + " %", "Compra · truncado a 3 dec."],
-    ["Precio limpio", F.n(o.clean, 3) + " %", o.cond],
-    [
-      "TIR " + (t === "UVR" ? "real" : "E.A."),
-      F.pct(o.irr, 3),
-      o.tipo === "UVR" ? "En pesos ≈ " + F.pct(o.tirPesos, 2) : "Nominal " + F.pct(o.nom, 3),
-    ],
-    ["Duración mod.", F.n(o.mod, 3), "Macaulay " + F.n(o.mac, 3) + " años"],
-    ["DV01", F.copM(o.dv01), "por 1 pb de tasa"],
-  ];
+  const resumen = useMemo(() => resumenTitulo(b, o), [b, o]);
+
 
   const avisos: string[] = [...avisosExtra];
   if (o.aviso) avisos.push(o.aviso);
@@ -127,36 +123,8 @@ function ResultadosOk({ b, o, avisosExtra, clase }: { b: Bono; o: ResultadoValor
   const barras = fut.map((r): [string, number, string] => [toS(r.pay).slice(2, 7).replace("-", "/"), r.L, r.last ? "bar-b" : "bar-pos"]);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 18, minWidth: 0 }}>
-      <div className="headline">
-        {head.map((h, i) =>
-          clase ? (
-            <button
-              type="button"
-              className="kpi"
-              key={h[0]}
-              aria-pressed={activa === CLAVES_HEAD[i]}
-              title="Ver la fórmula paso a paso"
-              onClick={() => setExplicando(activa === CLAVES_HEAD[i] ? null : CLAVES_HEAD[i])}
-            >
-              <span className="l">{h[0]} ⓘ</span>
-              <span className="v" key={h[1]}>
-                {h[1]}
-              </span>
-              <span className="s">{h[2]}</span>
-            </button>
-          ) : (
-            <div className="kpi" key={h[0]}>
-              <span className="l">{h[0]}</span>
-              {/* key = valor: al recalcular, la cifra se vuelve a montar y entra con un fundido corto. */}
-              <span className="v" key={h[1]}>
-                {h[1]}
-              </span>
-              <span className="s">{h[2]}</span>
-            </div>
-          ),
-        )}
-      </div>
+    <div className="resultados">
+      <ResumenTitulo o={o} r={resumen} clase={clase} activa={activa} onClave={setExplicando} />
       {clase &&
         (activa ? (
           <PasoAPaso b={b} o={o} clave={activa} onClave={setExplicando} />
@@ -175,8 +143,16 @@ function ResultadosOk({ b, o, avisosExtra, clase }: { b: Bono; o: ResultadoValor
           {w}
         </div>
       ))}
-      <div className="grid-c g2">
-        <Panel titulo="Valoración" src={`${o.cupones} cupones · ${o.pendientes} pendientes · ${F.n(o.plazo, 3)} años`}>
+      <AvisoGanancia r={resumen} />
+      <Pestanas
+        pantalla="calculadora"
+        pestanas={[
+          {
+            id: "resumen",
+            contenido: (
+              <div className="pestana">
+                <div className="grid-c g2">
+                  <Panel titulo="Valoración" src={`${o.cupones} cupones · ${o.pendientes} pendientes · ${F.n(o.plazo, 3)} años`}>
           <KV
             heads={["", "Compra", "Venta"]}
             rows={[
@@ -191,7 +167,26 @@ function ResultadosOk({ b, o, avisosExtra, clase }: { b: Bono; o: ResultadoValor
             ]}
           />
         </Panel>
-        <Panel titulo="Riesgo y rentabilidad" src={`Último cupón ${F.date(o.ultimo)} · próximo ${F.date(o.proximo)}`}>
+                  <FrenteCDT comparar={resumen.comparar} />
+                </div>
+                <SiguientesPasos>
+                  <SiguientePaso titulo="Mira el riesgo si cambian las tasas" texto="Duración, DV01, convexidad y sensibilidad del precio" pestana="riesgo" />
+                  <SiguientePaso titulo="Agrega este bono a tu portafolio" texto="Para ver su efecto en el total" onClick={() => document.getElementById("agregar-pf")?.click()} />
+                </SiguientesPasos>
+              </div>
+            ),
+          },
+          {
+            id: "riesgo",
+            contenido: (
+              <div className="pestana">
+                <div className="kpis k4 riesgo-kpis">
+                  <Kpi l="Precio limpio" v={F.n(o.clean, 3) + " %"} s={o.cond} />
+                  <Kpi l="Duración modificada" v={F.n(o.mod, 3)} s={"Macaulay " + F.n(o.mac, 3) + " años"} />
+                  <Kpi l="DV01" v={F.copM(o.dv01)} s="por 1 pb de tasa" />
+                  <Kpi l="Convexidad" v={F.n(o.conv, 2)} s="curvatura del precio" />
+                </div>
+                <Panel titulo="Riesgo y rentabilidad" src={`Último cupón ${F.date(o.ultimo)} · próximo ${F.date(o.proximo)}`}>
           <KV
             rows={[
               ["Duración Macaulay", F.n(o.mac, 4) + " a", F.n(o.macDays, 0) + " días"],
@@ -204,9 +199,7 @@ function ResultadosOk({ b, o, avisosExtra, clase }: { b: Bono; o: ResultadoValor
             ]}
           />
         </Panel>
-      </div>
-
-      <Panel titulo="Sensibilidad precio–rendimiento" src="Real vs. aproximación por duración y por duración + convexidad">
+                <Panel titulo="Sensibilidad precio–rendimiento" src="Real vs. aproximación por duración y por duración + convexidad">
         <Chart
           series={[
             { data: sens.map((s) => [s[0], s[1]]), cls: "s-a" },
@@ -285,9 +278,17 @@ function ResultadosOk({ b, o, avisosExtra, clase }: { b: Bono; o: ResultadoValor
           </div>
         </details>
       </Panel>
-
-      <div className="grid-c g2">
-        <Panel titulo="Flujos pendientes" src="% del nominal · cupón y capital">
+                <SiguientesPasos>
+                  <SiguientePaso titulo="Mira lo que vas a recibir" texto="Cupones y capital, fecha por fecha" pestana="flujos" />
+                </SiguientesPasos>
+              </div>
+            ),
+          },
+          {
+            id: "flujos",
+            contenido: (
+              <div className="pestana">
+                <Panel titulo="Flujos pendientes" src="% del nominal · cupón y capital">
           <Chart
             series={[]}
             bars={{ data: barras }}
@@ -314,14 +315,7 @@ function ResultadosOk({ b, o, avisosExtra, clase }: { b: Bono; o: ResultadoValor
             }}
           />
         </Panel>
-        <VentaAnticipada b={b} o={o} />
-      </div>
-
-      <CarryFondeo b={b} o={o} />
-
-      <AnalisisTitulo b={b} o={o} />
-
-      <div className="panel">
+                <div className="panel">
         <details>
           <summary>Cronograma de flujos ({o.rows.length} periodos)</summary>
           <div className="tbl" style={{ marginTop: 12 }}>
@@ -329,6 +323,56 @@ function ResultadosOk({ b, o, avisosExtra, clase }: { b: Bono; o: ResultadoValor
           </div>
         </details>
       </div>
+                <SiguientesPasos>
+                  <SiguientePaso titulo="¿Y si lo fondeas?" texto="Carry diario, costo del fondeo y ROE" pestana="carry" />
+                </SiguientesPasos>
+              </div>
+            ),
+          },
+          {
+            id: "carry",
+            contenido: (
+              <div className="pestana">
+                <CarryFondeo b={b} o={o} />
+                <SiguientesPasos>
+                  <SiguientePaso titulo="Mira tu P&G si vendes" texto="Con impuestos e inflación" pestana="venta" />
+                </SiguientesPasos>
+              </div>
+            ),
+          },
+          {
+            id: "venta",
+            contenido: (
+              <div className="pestana">
+                <VentaAnticipada b={b} o={o} />
+                <div className="panel pyg-venc">
+                  <div>
+                    <h3 className="h-sub">Si lo mantiene hasta el vencimiento</h3>
+                    <p className="src">Estado de resultados con impuestos e inflación al {F.date(b.vencimiento)}</p>
+                  </div>
+                  <BotonPyGTitulo b={b} o={o} titulo={String(b.vencimiento ? `Vence el ${F.date(b.vencimiento)}` : "Título")} />
+                </div>
+                <SiguientesPasos>
+                  <SiguientePaso titulo="Analiza liquidez, potencial y spreads" pestana="analisis" />
+                  <SiguientePaso titulo="Agrega este bono a tu portafolio" onClick={() => document.getElementById("agregar-pf")?.click()} />
+                </SiguientesPasos>
+              </div>
+            ),
+          },
+          {
+            id: "analisis",
+            contenido: (
+              <div className="pestana">
+                <AnalisisTitulo b={b} o={o} />
+                <SiguientesPasos>
+                  <SiguientePaso titulo="Pregúntale al asesor" texto="Un análisis con las cifras del motor" href="/asesor" />
+                  <SiguientePaso titulo="Compáralo con un CDT y otros bonos" texto="Comparador en el portafolio" href="/portafolio" />
+                </SiguientesPasos>
+              </div>
+            ),
+          },
+        ]}
+      />
     </div>
   );
 }
@@ -423,6 +467,21 @@ function VentaAnticipada({ b, o }: { b: Bono; o: ResultadoValoracion }) {
     );
   }
 
+  const entradasPyG =
+    sucioVenta != null
+      ? entradasDesdeMotor(
+          motor,
+          b,
+          o,
+          {
+            fechaVenta: d,
+            sucioVenta,
+            costoFondeo: fondeoConfigurado() ? costoFondeo(o.giro, fondeo, mercadoFondeo, toN(d) - toN(b.valoracion)) : 0,
+          },
+          { ipc: datosMotor.ipc, exp: datosMotor.exp },
+        )
+      : null;
+
   return (
     <Panel titulo="Simular venta antes del vencimiento">
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
@@ -487,24 +546,28 @@ function VentaAnticipada({ b, o }: { b: Bono; o: ResultadoValoracion }) {
         )}
       </div>
       {cuerpo}
-      {sucioVenta != null && (
-        <div className="pyg-accion">
-          <BotonPyG
-            titulo={`Venta el ${F.date(d)}`}
-            subtitulo={`Compra el ${F.date(b.valoracion)} · precio sucio de venta ${F.n(sucioVenta, 3)} %`}
-            construir={() => {
-              const dias = toN(d) - toN(b.valoracion);
-              const fondeado = fondeoConfigurado();
-              return entradasDesdeMotor(
-                motor,
-                b,
-                o,
-                { fechaVenta: d, sucioVenta: sucioVenta as number, costoFondeo: fondeado ? costoFondeo(o.giro, fondeo, mercadoFondeo, dias) : 0 },
-                { ipc: datosMotor.ipc, exp: datosMotor.exp },
-              );
-            }}
-          />
-          <span className="src">Estado de resultados con impuestos e inflación</span>
+      {entradasPyG && (
+        <div className="pyg-inline">
+          <div className="pyg-inline-cab">
+            <div>
+              <h3 className="h-sub">Estado de resultados si vende el {F.date(d)}</h3>
+              <p className="src">Precio sucio de venta {F.n(sucioVenta as number, 3)} % · sin comisiones</p>
+            </div>
+            <BotonPyG
+              etiqueta="Comisiones e impuestos"
+              titulo={`Venta el ${F.date(d)}`}
+              subtitulo={`Compra el ${F.date(b.valoracion)} · precio sucio de venta ${F.n(sucioVenta as number, 3)} %`}
+              construir={() => entradasPyG}
+            />
+          </div>
+          <AvisoTributario />
+          {"error" in entradasPyG ? (
+            <p className="alert" role="alert">
+              {entradasPyG.error}
+            </p>
+          ) : (
+            <TablaPyG entradas={entradasPyG} comisiones={0} id="venta-pyg" />
+          )}
         </div>
       )}
     </Panel>

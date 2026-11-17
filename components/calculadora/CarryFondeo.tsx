@@ -86,11 +86,14 @@ export function CarryFondeo({ b, o }: { b: Bono; o: ResultadoValoracion }) {
         </div>
       )}
 
-      <details className="fondeo-ext">
-        <summary>Fondeo en el exterior (USD): sin cubrir vs. cubierto</summary>
-        <ControlesExterior id="cf-ext" />
+      <div className="fondeo-ext">
+        <h3 className="h-sub">Fondeo en el exterior (USD): sin cubrir vs. cubierto</h3>
         <ComparacionExterior montoFondeado={r?.fondeado ?? p.giro * (1 - c.haircut)} />
-      </details>
+        <details>
+          <summary>Ajustar los supuestos del fondeo en dólares</summary>
+          <ControlesExterior id="cf-ext" />
+        </details>
+      </div>
     </Panel>
   );
 }

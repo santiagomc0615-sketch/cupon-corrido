@@ -48,11 +48,14 @@ export function FondeoPortafolio() {
           {faltante(c, m)}
         </p>
       )}
-      <details className="fondeo-ext">
-        <summary>Fondeo en el exterior (USD): sin cubrir vs. cubierto</summary>
-        <ControlesExterior id="pf-ext" />
+      <div className="fondeo-ext">
+        <h3 className="h-sub">Fondeo en el exterior (USD): sin cubrir vs. cubierto</h3>
         <ComparacionExterior montoFondeado={t?.fondeado ?? posiciones.reduce((s, p) => s + p.giro, 0) * (1 - c.haircut)} />
-      </details>
+        <details>
+          <summary>Ajustar los supuestos del fondeo en dólares</summary>
+          <ControlesExterior id="pf-ext" />
+        </details>
+      </div>
     </Panel>
   );
 }
