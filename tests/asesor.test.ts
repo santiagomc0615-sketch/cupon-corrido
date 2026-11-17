@@ -30,8 +30,29 @@ describe("Validación de la petición", () => {
     ]);
   });
 
-  it("rechaza un contexto demasiado grande", () => {
-    expect(validarPeticion({ pregunta: "hola", contexto: { x: "y".repeat(LIMITES.contexto) } }).ok).toBe(false);
+  it("perfil y modo: valores válidos o los por defecto (moderado, chat)", () => {
+    const a = validarPeticion({ pregunta: "x", perfil: "agresivo", modo: "comite" });
+    if (!a.ok) throw new Error(a.error);
+    expect(a.p).toMatchObject({ perfil: "agresivo", modo: "comite" });
+    const b = validarPeticion({ pregunta: "x", perfil: "temerario", modo: "otro" });
+    if (!b.ok) throw new Error(b.error);
+    expect(b.p).toMatchObject({ perfil: "moderado", modo: "chat", titulo: null, fondeo: null, portafolio: { fecha: null, posiciones: [] } });
+  });
+
+  it("título y posiciones: solo objetos con tipo válido; limita cantidad y tamaño", () => {
+    const r = validarPeticion({
+      pregunta: "x",
+      titulo: { tipo: "TF", nombre: "TES", cupon: 13.5, raro: { a: 1 } },
+      portafolio: { fecha: "2026-11-04", posiciones: [{ tipo: "IBR", nominal: 1e9 }, { tipo: "XX" }, "basura"] },
+    });
+    if (!r.ok) throw new Error(r.error);
+    expect(r.p.titulo).toEqual({ tipo: "TF", nombre: "TES", cupon: 13.5 });
+    expect(r.p.portafolio.posiciones).toHaveLength(1);
+    expect(r.p.portafolio.fecha).toBe("2026-11-04");
+    const muchas = Array.from({ length: LIMITES.posiciones + 1 }, () => ({ tipo: "TF" }));
+    expect(validarPeticion({ pregunta: "x", portafolio: { posiciones: muchas } }).ok).toBe(false);
+    expect(validarPeticion({ pregunta: "x", titulo: { tipo: "TF", nombre: "y".repeat(LIMITES.entradas) } }).ok).toBe(true);
+    expect(validarPeticion({ pregunta: "x", fondeo: { tipo: "repo", x: "y".repeat(LIMITES.fondeo) } }).ok).toBe(false);
   });
 });
 

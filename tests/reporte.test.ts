@@ -5,10 +5,12 @@ import path from "node:path";
 import { createElement, type ReactElement } from "react";
 import { describe, expect, it } from "vitest";
 import { renderToBuffer, type DocumentProps } from "@react-pdf/renderer";
+import { DocInforme } from "@/components/reporte/DocInforme";
 import { DocPortafolio } from "@/components/reporte/DocPortafolio";
 import { DocTitulo } from "@/components/reporte/DocTitulo";
 import { registrarFuentes } from "@/components/reporte/piezas";
 import datos from "@/data/datos-mercado.json";
+import { seccionesInforme } from "@/lib/asesor/informe";
 import { CONFIG_INICIAL, carryConConfig } from "@/lib/carry/config";
 import { posicionDesdeMotor } from "@/lib/carry/posicion";
 import { crearDefaults, crearPfEjemplo, toEngine } from "@/lib/calculadora";
@@ -16,7 +18,7 @@ import { resumenTitulo } from "@/lib/cliente";
 import { combinar } from "@/lib/data/combinar";
 import { MACRO } from "@/lib/data/macro";
 import { crearMotor, esError, pfMetrics, type DatosMercado } from "@/lib/engine";
-import { armarReportePortafolio, armarReporteTitulo, flujosReporte } from "@/lib/reporte/datos";
+import { armarReportePortafolio, armarReporteTitulo, flujosReporte, fuentesReporte } from "@/lib/reporte/datos";
 
 const D = datos as unknown as DatosMercado;
 const motor = crearMotor(D);
@@ -101,4 +103,36 @@ describe("Reporte del portafolio", () => {
     expect(paginas(buf)).toBe(1);
     if (process.env.REPORTE_SALIDA) writeFileSync(path.join(process.env.REPORTE_SALIDA, "reporte-portafolio.pdf"), buf);
   }, 60_000);
+});
+
+describe("Informe para el cliente (asesor de IA)", () => {
+  const texto = `### Resumen
+Su portafolio vale **$ 11.167,3 M** y rinde _11,9 %_.
+### Qué pasaría si cambian las tasas
+- Si suben **100 pb**: −$ 313,5 M (−2,81 %).
+- Si el BanRep recorta 50 pb: $ 90,9 M.
+### Riesgos a tener en cuenta
+- Riesgo de tasa en el TES 2031.
+
+Herramienta académica, no es asesoría financiera. Respuestas generadas por IA.`;
+
+  it("convierte el markdown en secciones con negritas, sin marcas", () => {
+    const sec = seccionesInforme(texto);
+    expect(sec.map((x) => x.titulo)).toEqual(["Resumen", "Qué pasaría si cambian las tasas", "Riesgos a tener en cuenta"]);
+    expect(sec[0].bloques[0].partes).toEqual([
+      { t: "Su portafolio vale ", negrita: false },
+      { t: "$ 11.167,3 M", negrita: true },
+      { t: " y rinde 11,9 %.", negrita: false },
+    ]);
+    expect(sec[1].bloques.map((b) => b.tipo)).toEqual(["li", "li"]);
+    expect(sec[2].bloques).toHaveLength(2);
+  });
+
+  it("genera un PDF carta con las secciones", async () => {
+    const r = { secciones: seccionesInforme(texto), perfil: "Moderado", valoracion: FECHA, cliente: "Cliente de prueba", fuentes: fuentesReporte(fuentes, ["tpm", "ibr", "tes"]) };
+    const buf = await renderToBuffer(createElement(DocInforme, { r, generado: "17 nov 2026" }) as unknown as ReactElement<DocumentProps>);
+    expect(buf.subarray(0, 5).toString()).toBe("%PDF-");
+    expect(paginas(buf)).toBe(1);
+    if (process.env.REPORTE_SALIDA) writeFileSync(path.join(process.env.REPORTE_SALIDA, "informe-cliente.pdf"), buf);
+  });
 });
