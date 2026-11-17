@@ -4,9 +4,9 @@ import { useRouter } from "next/navigation";
 import { BarrasH } from "@/components/charts/BarrasH";
 import { Chart, nearest, type PuntoSerie } from "@/components/charts/Chart";
 import { useApp } from "@/components/providers/AppProvider";
-import { CarryRoll } from "./CarryRoll";
 import { ClientePortafolio, InterruptorCliente, useVistaCliente } from "@/components/cliente/Interruptor";
 import { BotonPyGPortafolio } from "@/components/pyg/Botones";
+import { RetornoPortafolio, RetornoPosiciones } from "@/components/analisis/RetornoHorizonte";
 import { Contador } from "@/components/cliente/Contador";
 import { Comparador } from "@/components/pyg/Comparador";
 import { PyGPortafolio } from "@/components/pyg/PyGPortafolio";
@@ -369,6 +369,7 @@ function Cuerpo() {
             contenido: (
               <div className="pestana">
                 <FondeoPortafolio />
+                <RetornoPortafolio />
                 <SiguientesPasos>
                   <SiguientePaso titulo="Mira tu P&G si vendes" texto="Con impuestos e inflación" pestana="venta" />
                 </SiguientesPasos>
@@ -382,7 +383,7 @@ function Cuerpo() {
                 <PyGPortafolio />
                 <Comparador />
                 <SiguientesPasos>
-                  <SiguientePaso titulo="Analiza el carry y el roll-down" pestana="analisis" />
+                  <SiguientePaso titulo="Mira el retorno esperado por posición" texto="Causación, roll-down y fondeo a 365 días" pestana="analisis" />
                   <SiguientePaso titulo="Pregúntale al asesor" texto="Con tu perfil de cliente y tributario" href="/asesor" />
                 </SiguientesPasos>
               </div>
@@ -392,7 +393,7 @@ function Cuerpo() {
             id: "analisis",
             contenido: (
               <div className="pestana">
-                <CarryRoll />
+                <RetornoPosiciones />
                 <SiguientesPasos>
                   <SiguientePaso titulo="Pregúntale al asesor" texto="Un análisis con las cifras del motor" href="/asesor" />
                   <SiguientePaso titulo="Descarga el reporte PDF" texto="Botón arriba de la página" onClick={() => window.scrollTo({ top: 0 })} />
