@@ -19,6 +19,7 @@ export const QUICK: [string, string, string][] = [
   ["Analiza mi portafolio", "Riesgo, composición, valor relativo vs. curva", "Analiza mi portafolio: composición por indexación, duración y DV01, resultados de estrés y spread de cada posición frente a la curva TES. ¿Tengo buenas posiciones para el contexto actual?"],
   ["Estrategia de duración", "¿Alargar o acortar? ¿Tasa fija o indexados?", "Con la curva y las expectativas de inflación cargadas, ¿conviene alargar o acortar duración? Compara tasa fija vs. IBR vs. IPC vs. UVR y propón dos estrategias con sus riesgos."],
   ["Impuestos y planeación", "P&G con impuestos e inflación y alternativas legales", "Calcula el P&G de mi título con impuestos e inflación y explícame qué alternativas legales de planeación tributaria podría considerar según mi perfil (fondos de inversión colectiva, pensiones voluntarias, cuentas AFC y el momento de la venta), con sus requisitos, límites y riesgos."],
+  ["Explícame la calculadora", "Qué hace cada sección, con tu título y tu portafolio", "Explícame qué puedo hacer en esta calculadora sección por sección (valoración, riesgo y sensibilidad, flujos, carry y fondeo, retorno esperado con roll-down, venta y P&G con impuestos, análisis del título, comparador CDT vs. TES, curva TES, inflación implícita y datos globales), usando como ejemplo mi título y mi portafolio."],
   ["Explica la curva", "Forma, forwards y qué descuenta el mercado", "Explícame la forma actual de la curva TES, qué descuentan los forwards implícitos y cómo se compara con la tasa de política."],
 ];
 
