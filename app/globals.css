@@ -15,47 +15,57 @@
    - Nombre, eslogan, logo y dominio: lib/brand.ts.
    =================================================================================== */
 :root {
-  /* Colores — tema claro (banca institucional: neutros fríos, verde petróleo de acento, dorado sobrio).
-     --engrave es el acento principal y --seal el dorado; conservan su nombre para no tocar componentes. */
-  --paper: #f6f7f9; /* fondo */
-  --sheet: #ffffff; /* superficies */
-  --sheet-2: #eef1f5; /* superficie secundaria */
-  --ink: #0f1b2d; /* texto */
-  --ink-2: #4a5568; /* texto secundario */
-  /* Texto terciario: #8a94a6 no llega a AA (3,1:1 sobre blanco); este tono da ≥4,7:1 en las tres superficies. */
-  --ink-3: #5f6b7e;
-  --rule: #dde2ea; /* líneas */
-  --engrave: #0f5c5c; /* acento principal: verde petróleo */
-  --engrave-soft: rgba(15, 92, 92, 0.08);
-  --seal: #a07c3b; /* acento secundario: dorado sobrio (filetes, bordes, trazos) */
-  --seal-texto: #8a6a2e; /* dorado para texto pequeño: ≥4,6:1 (el #a07c3b da 3,9:1) */
-  --pos: #1f7a4d;
-  --neg: #b42318;
-  --warn: #b7791f;
-  --warn-texto: #855d23; /* advertencia para texto: 5,8:1 (el #b7791f da 3,6:1) */
-  /* Cinta de mercado: oscura en ambos temas */
-  --tape-bg: #0f1b2d;
-  --tape-fg: #e6eaf0;
-  --tape-label: #d2b06a;
-  --tape-up: #4cc38a;
-  --tape-dn: #f07a6a;
+  /* Colores — tema claro (v3: neutros grafito, acento esmeralda, dorado sobrio). Coherente con el oscuro.
+     --engrave es el acento y --seal el dorado; conservan su nombre para no tocar componentes.
+     Las variantes "-texto" y --ink-3 están ajustadas para cumplir WCAG AA (≥4,5:1) en las tres superficies. */
+  --paper: #f5f6f7; /* fondo */
+  --sheet: #ffffff; /* superficie */
+  --sheet-2: #eef0f2; /* superficie secundaria */
+  --sheet-elev: #ffffff; /* superficie elevada (ventanas, menús) */
+  --ink: #14171c; /* texto */
+  --ink-2: #525a66; /* texto secundario */
+  --ink-3: #666c74; /* texto terciario (el #868e99 pedido da 3,3:1; queda para trazos en --ink-4) */
+  --ink-4: #868e99; /* trazos y elementos no textuales */
+  --rule: #dce0e5; /* líneas */
+  --engrave: #117a57; /* acento esmeralda para texto (5,3:1); el de relleno es --acento-fondo */
+  --engrave-soft: rgba(18, 128, 92, 0.09);
+  --seal: #9a7a3f; /* dorado (filetes, trazos) */
+  --seal-texto: #816635; /* dorado para texto (5,4:1) */
+  --pos: #1b7b50;
+  --neg: #be402c;
+  --warn: #a86b0c;
+  --warn-texto: #97600b;
+  /* Cinta de mercado: grafito en ambos temas */
+  --tape-bg: #14171c;
+  --tape-fg: #eceef1;
+  --tape-label: #c9a86a;
+  --tape-up: #3dcb8f;
+  --tape-dn: #f0705f;
 
   /* Tipografías (las variables --font-* las crea app/fuentes.ts) */
   --f-display: var(--font-display-web), "Didot", "Bodoni 72", Georgia, serif;
   --f-body: var(--font-body-web), system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* Tablas y datos: Geist Mono (peso 500 en las cifras de tabla). */
   --f-mono: var(--font-mono-web), ui-monospace, "SF Mono", Menlo, monospace;
-  /* Cifras grandes (precio, tasas del héroe, ganancia): sans seminegrita con números tabulares.
-     Bodoni queda para los títulos: sus trazos finos se perdían en las cifras. */
-  --f-cifra: var(--font-body-web), system-ui, sans-serif;
+  /* Cifras grandes (precio, TIR, valor, ganancia, indicadores): Geist 600 con números tabulares. */
+  --f-cifra: var(--font-cifra-web), var(--font-body-web), system-ui, sans-serif;
 
   /* Radios */
-  --r: 6px; /* paneles, botones, tablas */
-  --r-sm: 4px; /* campos, gráficos de barras, tooltips */
-  --r-xs: 3px; /* etiquetas pequeñas */
+  --r: 10px; /* botones, campos grandes, tablas */
+  --r-panel: 14px; /* paneles y tarjetas */
+  --r-sm: 6px; /* campos, gráficos de barras, tooltips */
+  --r-xs: 4px; /* etiquetas pequeñas */
   --r-pill: 999px; /* chips y sellos */
   --r-circle: 50%;
 
-  /* Sombras y efectos */
+  /* Profundidad: sombras en capas (contacto + ambiente). Las tarjetas se separan del fondo con
+     sombra, no con bordes. --sombra-3 es la elevación al pasar el mouse. */
+  --sombra-1: 0 1px 2px rgba(20, 23, 28, 0.06), 0 1px 1px rgba(20, 23, 28, 0.03);
+  --sombra-2: 0 1px 2px rgba(20, 23, 28, 0.05), 0 6px 16px -6px rgba(20, 23, 28, 0.1), 0 2px 4px -2px rgba(20, 23, 28, 0.05);
+  --sombra-3: 0 2px 4px rgba(20, 23, 28, 0.05), 0 16px 32px -12px rgba(20, 23, 28, 0.18), 0 6px 12px -6px rgba(20, 23, 28, 0.08);
+  --sombra-tarjeta: var(--sombra-2);
+  --sombra-heroe: 0 2px 4px rgba(10, 60, 43, 0.12), 0 24px 48px -20px rgba(10, 60, 43, 0.45);
+  --brillo-borde: inset 0 0 0 1px rgba(20, 23, 28, 0.04);
   --sombra-foco: 0 0 0 3px var(--engrave-soft);
   --brillo-hover: brightness(1.08);
 
@@ -72,54 +82,70 @@
   --stagger: 40ms; /* separación entre indicadores */
 
   /* Acento en los elementos clave: botón principal, pestaña activa, cifra principal. */
-  --acento-fondo: #0f5c5c;
+  --acento-fondo: #12805c; /* relleno esmeralda: texto blanco a 4,9:1 */
   --acento-sobre: #ffffff;
-  --acento-cifra: #0f5c5c;
+  --acento-cifra: #117a57;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --paper: #0b1220;
-    --sheet: #111a2b;
-    --sheet-2: #16213a;
-    --ink: #e6eaf0;
-    --ink-2: #a3aec2;
-    --ink-3: #8592a8;
-    --rule: #22304a;
-    --engrave: #6ccac4;
-    --engrave-soft: rgba(108, 202, 196, 0.1);
-    --seal: #d2b06a;
-    --seal-texto: #d2b06a;
-    --pos: #4cc38a;
-    --neg: #f07a6a;
-    --warn: #e0b054;
-    --warn-texto: #e0b054;
-    --acento-fondo: #6ccac4;
-    --acento-sobre: #0b1220;
-    --acento-cifra: #6ccac4;
-    --tape-bg: #0f1b2d;
+    --paper: #0e1013;
+    --sheet: #15181d;
+    --sheet-2: #1c2027;
+    --sheet-elev: #1c2027;
+    --ink: #eceef1;
+    --ink-2: #a2a9b4;
+    --ink-3: #808997; /* el #6e7682 pedido da 3,6:1 sobre la superficie elevada; queda en --ink-4 */
+    --ink-4: #6e7682;
+    --rule: #2a2f38;
+    --engrave: #34b489;
+    --engrave-soft: rgba(52, 180, 137, 0.12);
+    --seal: #c9a86a;
+    --seal-texto: #c9a86a;
+    --pos: #3dcb8f;
+    --neg: #f0705f;
+    --warn: #e2b04a;
+    --warn-texto: #e2b04a;
+    --acento-fondo: #34b489;
+    --acento-sobre: #0e1013;
+    --acento-cifra: #34b489;
+    --tape-bg: #0a0c0f;
+    --sombra-1: 0 1px 2px rgba(0, 0, 0, 0.5);
+    --sombra-2: 0 1px 2px rgba(0, 0, 0, 0.45), 0 10px 24px -10px rgba(0, 0, 0, 0.6);
+    --sombra-3: 0 2px 4px rgba(0, 0, 0, 0.5), 0 22px 40px -14px rgba(0, 0, 0, 0.75);
+    --sombra-heroe: 0 2px 6px rgba(0, 0, 0, 0.5), 0 28px 56px -20px rgba(0, 0, 0, 0.85);
+    /* En oscuro la luz viene de arriba: un filo claro muy tenue en el borde superior de cada capa. */
+    --brillo-borde: inset 0 1px 0 rgba(255, 255, 255, 0.045), inset 0 0 0 1px rgba(255, 255, 255, 0.03);
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --paper: #0b1220;
-  --sheet: #111a2b;
-  --sheet-2: #16213a;
-  --ink: #e6eaf0;
-  --ink-2: #a3aec2;
-  --ink-3: #8592a8;
-  --rule: #22304a;
-  --engrave: #6ccac4;
-  --engrave-soft: rgba(108, 202, 196, 0.1);
-  --seal: #d2b06a;
-  --seal-texto: #d2b06a;
-  --pos: #4cc38a;
-  --neg: #f07a6a;
-  --warn: #e0b054;
-  --warn-texto: #e0b054;
-  --acento-fondo: #6ccac4;
-  --acento-sobre: #0b1220;
-  --acento-cifra: #6ccac4;
-  --tape-bg: #0f1b2d;
+  --paper: #0e1013;
+  --sheet: #15181d;
+  --sheet-2: #1c2027;
+  --sheet-elev: #1c2027;
+  --ink: #eceef1;
+  --ink-2: #a2a9b4;
+  --ink-3: #808997; /* el #6e7682 pedido da 3,6:1 sobre la superficie elevada; queda en --ink-4 */
+  --ink-4: #6e7682;
+  --rule: #2a2f38;
+  --engrave: #34b489;
+  --engrave-soft: rgba(52, 180, 137, 0.12);
+  --seal: #c9a86a;
+  --seal-texto: #c9a86a;
+  --pos: #3dcb8f;
+  --neg: #f0705f;
+  --warn: #e2b04a;
+  --warn-texto: #e2b04a;
+  --acento-fondo: #34b489;
+  --acento-sobre: #0e1013;
+  --acento-cifra: #34b489;
+  --tape-bg: #0a0c0f;
+  --sombra-1: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --sombra-2: 0 1px 2px rgba(0, 0, 0, 0.45), 0 10px 24px -10px rgba(0, 0, 0, 0.6);
+  --sombra-3: 0 2px 4px rgba(0, 0, 0, 0.5), 0 22px 40px -14px rgba(0, 0, 0, 0.75);
+  --sombra-heroe: 0 2px 6px rgba(0, 0, 0, 0.5), 0 28px 56px -20px rgba(0, 0, 0, 0.85);
+  /* En oscuro la luz viene de arriba: un filo claro muy tenue en el borde superior de cada capa. */
+  --brillo-borde: inset 0 1px 0 rgba(255, 255, 255, 0.045), inset 0 0 0 1px rgba(255, 255, 255, 0.03);
   color-scheme: dark;
 }
 
@@ -295,6 +321,7 @@
   }
   td {
     font-family: var(--f-mono);
+    font-weight: 500;
     font-variant-numeric: tabular-nums;
   }
 }
@@ -543,9 +570,9 @@
   }
   .panel {
     background: var(--sheet);
-    border: 1px solid var(--rule);
-    border-radius: var(--r);
-    padding: 18px;
+    border-radius: var(--r-panel);
+    box-shadow: var(--sombra-2), var(--brillo-borde);
+    padding: 20px;
     min-width: 0;
   }
   .panel-h {
@@ -655,8 +682,8 @@
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr));
     gap: 1px;
     background: var(--rule);
-    border: 1px solid var(--rule);
-    border-radius: var(--r);
+    border-radius: var(--r-panel);
+    box-shadow: var(--sombra-2), var(--brillo-borde);
     overflow: hidden;
   }
   .kpis.k3 {
@@ -733,7 +760,7 @@
     }
   }
   .kpi .v {
-    font: 500 24px/1.1 var(--f-mono);
+    font: 600 24px/1.1 var(--f-cifra);
     letter-spacing: -0.02em;
     font-variant-numeric: tabular-nums;
   }
@@ -869,21 +896,9 @@
   }
   /* Vista cliente (components/cliente): tarjetas con profundidad y números protagonistas */
   .cliente {
-    --sombra-tarjeta: 0 1px 2px rgba(15, 27, 45, 0.06), 0 10px 28px -14px rgba(15, 27, 45, 0.22);
-    --sombra-heroe: 0 2px 4px rgba(15, 27, 45, 0.1), 0 22px 44px -18px rgba(15, 27, 45, 0.45);
     display: flex;
     flex-direction: column;
     gap: 16px;
-  }
-  :root[data-theme="dark"] .cliente {
-    --sombra-tarjeta: 0 1px 2px rgba(0, 0, 0, 0.4), 0 12px 30px -14px rgba(0, 0, 0, 0.7);
-    --sombra-heroe: 0 2px 6px rgba(0, 0, 0, 0.5), 0 24px 48px -18px rgba(0, 0, 0, 0.8);
-  }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) .cliente {
-      --sombra-tarjeta: 0 1px 2px rgba(0, 0, 0, 0.4), 0 12px 30px -14px rgba(0, 0, 0, 0.7);
-      --sombra-heroe: 0 2px 6px rgba(0, 0, 0, 0.5), 0 24px 48px -18px rgba(0, 0, 0, 0.8);
-    }
   }
   /* Análisis del título (components/calculadora/AnalisisTitulo.tsx) */
   .analisis {
@@ -1025,7 +1040,7 @@
     overflow: auto;
   }
   .ventana-pyg::backdrop {
-    background: rgb(11 18 32 / 0.55);
+    background: rgb(14 16 19 / 0.55);
   }
   .ventana-pyg[open] {
     animation: ventana-entra 220ms var(--ease-out);
@@ -1302,10 +1317,9 @@
   .tarjeta {
     position: relative;
     background: var(--sheet);
-    border: 1px solid color-mix(in srgb, var(--rule) 70%, transparent);
-    border-radius: 14px;
+    border-radius: var(--r-panel);
     padding: 20px 22px;
-    box-shadow: var(--sombra-tarjeta);
+    box-shadow: var(--sombra-tarjeta), var(--brillo-borde);
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -1359,7 +1373,7 @@
     color: var(--ink);
   }
   .cifra-sec {
-    font: 500 18px var(--f-mono);
+    font: 600 18px var(--f-cifra);
     font-variant-numeric: tabular-nums;
     color: var(--ink);
   }

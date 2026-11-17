@@ -14,11 +14,11 @@ const mill = (x: number, d = 1) => F.mill(x, d);
 function Cifra({ etiqueta, valor, nota, grande }: { etiqueta: string; valor: string; nota?: string; grande?: boolean }) {
   return (
     <View style={{ flexGrow: 1, flexBasis: 0 }}>
-      <Text style={{ fontSize: 7.5, color: "#D7EDEC", letterSpacing: 0.6, textTransform: "uppercase", fontWeight: 600 }}>{etiqueta}</Text>
+      <Text style={{ fontSize: 7.5, color: "#DDF2EA", letterSpacing: 0.6, textTransform: "uppercase", fontWeight: 600 }}>{etiqueta}</Text>
       <View style={{ height: grande ? 38 : 22, marginTop: 2, justifyContent: "flex-end" }}>
         <Text style={{ fontFamily: FAMILIA.texto, fontWeight: 600, fontSize: grande ? 26 : 15, color: C.acentoSobre }}>{valor}</Text>
       </View>
-      {nota ? <Text style={{ fontSize: 7.5, color: "#D7EDEC", marginTop: 3 }}>{nota}</Text> : null}
+      {nota ? <Text style={{ fontSize: 7.5, color: "#DDF2EA", marginTop: 3 }}>{nota}</Text> : null}
     </View>
   );
 }

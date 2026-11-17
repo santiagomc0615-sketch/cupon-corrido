@@ -11,19 +11,19 @@ export interface OpcionesGuilloche {
 
 /** Colores del tema claro (los mismos tokens de app/globals.css; el PDF no lee CSS). */
 export const C = {
-  papel: "#F6F7F9",
+  papel: "#F5F6F7",
   hoja: "#FFFFFF",
-  hoja2: "#EEF1F5",
-  tinta: "#0F1B2D",
-  tinta2: "#4A5568",
-  tinta3: "#5F6B7E",
-  linea: "#DDE2EA",
-  acento: "#0F5C5C",
+  hoja2: "#EEF0F2",
+  tinta: "#14171C",
+  tinta2: "#525A66",
+  tinta3: "#666C74",
+  linea: "#DCE0E5",
+  acento: "#12805C",
   acentoSobre: "#FFFFFF",
-  dorado: "#A07C3B",
-  doradoTexto: "#8A6A2E",
-  positivo: "#1F7A4D",
-  negativo: "#B42318",
+  dorado: "#9A7A3F",
+  doradoTexto: "#816635",
+  positivo: "#1B7B50",
+  negativo: "#BE402C",
 } as const;
 
 /** Archivos TTF (licencia OFL, ver public/fonts/pdf/OFL-*.txt) que registra @react-pdf/renderer. */

@@ -14,11 +14,11 @@ const COLOR_TIPO: Record<string, string> = { "Tasa fija": C.acento, IBR: C.dorad
 function Cifra({ etiqueta, valor, nota, grande }: { etiqueta: string; valor: string; nota?: string; grande?: boolean }) {
   return (
     <View style={{ flexGrow: grande ? 1.4 : 1, flexBasis: 0 }}>
-      <Text style={{ fontSize: 7.5, color: "#D7EDEC", letterSpacing: 0.6, textTransform: "uppercase", fontWeight: 600 }}>{etiqueta}</Text>
+      <Text style={{ fontSize: 7.5, color: "#DDF2EA", letterSpacing: 0.6, textTransform: "uppercase", fontWeight: 600 }}>{etiqueta}</Text>
       <View style={{ height: grande ? 36 : 22, marginTop: 2, justifyContent: "flex-end" }}>
         <Text style={{ fontWeight: 600, fontSize: grande ? 24 : 15, color: C.acentoSobre }}>{valor}</Text>
       </View>
-      {nota ? <Text style={{ fontSize: 7.5, color: "#D7EDEC", marginTop: 3 }}>{nota}</Text> : null}
+      {nota ? <Text style={{ fontSize: 7.5, color: "#DDF2EA", marginTop: 3 }}>{nota}</Text> : null}
     </View>
   );
 }
