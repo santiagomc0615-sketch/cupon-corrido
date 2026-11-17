@@ -386,6 +386,109 @@ a.funcion:active {
 .demo-pdf span:nth-child(3) {
   width: 75%;
 }
+/* P&G: tres rentabilidades en cascada; la real, con el acento */
+.demo-pyg {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  font: 12px var(--f-mono);
+}
+.demo-pyg span {
+  display: flex;
+  justify-content: space-between;
+  color: var(--ink-2);
+}
+.demo-pyg i {
+  font-style: normal;
+}
+.demo-pyg b {
+  font-weight: 500;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.demo-pyg .dp-real {
+  margin-top: 2px;
+  padding-top: 6px;
+  border-top: 1px dashed var(--rule);
+}
+.demo-pyg .dp-real b {
+  font: 600 20px var(--f-cifra);
+  color: var(--acento-cifra);
+}
+/* Comparador: barras de ganancia real; la mayor, en esmeralda */
+.demo-cmp {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+}
+.demo-cmp span {
+  display: grid;
+  grid-template-columns: 74px 1fr;
+  align-items: center;
+  gap: 8px;
+  font: 500 10px var(--f-mono);
+  color: var(--ink-2);
+}
+.demo-cmp i {
+  font-style: normal;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.demo-cmp em {
+  display: block;
+  height: 9px;
+  width: calc(var(--w, 0.5) * 100%);
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--ink-4, var(--ink-3)) 45%, var(--sheet));
+  transform-origin: left;
+}
+.demo-cmp .dcm-mejor {
+  color: var(--ink);
+}
+.demo-cmp .dcm-mejor em {
+  background: var(--engrave);
+}
+/* Análisis: semáforo y tres capas de análisis */
+.demo-analisis {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.dan-semaforo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  border-radius: 10px;
+  background: var(--sheet);
+  box-shadow: var(--sombra-1);
+}
+.dan-semaforo i {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  opacity: 0.25;
+}
+.dan-semaforo .v {
+  background: var(--pos);
+  opacity: 1;
+}
+.dan-semaforo .a {
+  background: var(--warn);
+}
+.dan-semaforo .r {
+  background: var(--neg);
+}
+.dan-filas {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font: 500 12px var(--f-mono);
+  color: var(--ink-2);
+}
 .funcion-quieta {
   opacity: 0.85;
 }
@@ -491,6 +594,27 @@ a.funcion:active {
       animation: ini-escribir steps(22, end) both;
       animation-timeline: view();
       animation-range: entry 40% cover 50%;
+    }
+    .demo-pyg span,
+    .dan-filas span {
+      animation: ini-deslizar linear both;
+      animation-timeline: view();
+      animation-range: entry calc(25% + var(--i, 0) * 10%) cover 40%;
+    }
+    .demo-pyg .dp-real b {
+      animation: ini-revelar linear both;
+      animation-timeline: view();
+      animation-range: entry 55% cover 50%;
+    }
+    .demo-cmp em {
+      animation: ini-estirar linear both;
+      animation-timeline: view();
+      animation-range: entry calc(25% + var(--i, 0) * 6%) cover 45%;
+    }
+    .dan-semaforo .v {
+      animation: ini-revelar linear both;
+      animation-timeline: view();
+      animation-range: entry 40% cover 40%;
     }
     .demo-noticias span {
       animation: ini-deslizar linear both;
