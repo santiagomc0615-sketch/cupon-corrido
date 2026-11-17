@@ -1728,6 +1728,84 @@
   td.t {
     font-family: var(--f-body);
   }
+  /* inflación implícita (Curva TES) */
+  .lectura-ii {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 12px 14px;
+    border-left: 3px solid var(--rule);
+    background: var(--sheet-2);
+    border-radius: 0 var(--r) var(--r) 0;
+  }
+  .lectura-ii.uvr {
+    border-left-color: var(--warn);
+  }
+  .lectura-ii.tf {
+    border-left-color: var(--pos);
+  }
+  .lectura-ii .chip {
+    align-self: flex-start;
+    background: var(--sheet);
+  }
+  .lectura-ii p {
+    margin: 0;
+    line-height: 1.55;
+  }
+  .ii-datos {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 12px;
+    border-top: 1px solid var(--rule);
+  }
+  .ii-barra {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 10px 16px;
+  }
+  .ii-barra .f {
+    flex: 1 1 280px;
+  }
+  .ii-acciones,
+  .ii-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+  }
+  .ii-meta .f {
+    flex: 1 1 200px;
+  }
+  .ii-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .ii-editor .tbl {
+    width: 100%;
+  }
+  .ii-in {
+    width: 100%;
+    min-width: 110px;
+    padding: 5px 8px;
+    border: 1px solid var(--rule);
+    border-radius: var(--r-sm);
+    background: var(--paper);
+    color: var(--ink);
+    font: 13px var(--f-body);
+  }
+  .ii-in.num {
+    font-family: var(--f-mono);
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .ii-quitar {
+    padding: 4px 10px;
+    font-size: 12px;
+  }
   tr.paid td {
     color: var(--ink-3);
   }
