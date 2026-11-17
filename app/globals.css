@@ -885,6 +885,24 @@
       --sombra-heroe: 0 2px 6px rgba(0, 0, 0, 0.5), 0 24px 48px -18px rgba(0, 0, 0, 0.8);
     }
   }
+  /* Reporte PDF: nombre del cliente + botón */
+  .reporte-pdf {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+  }
+  .reporte-pdf .f {
+    width: min(100%, 240px);
+  }
+  .reporte-barra {
+    display: flex;
+    justify-content: flex-end;
+  }
+  .reporte-barra .reporte-pdf {
+    margin-top: 0;
+  }
   .cliente-cab h2 {
     font: 500 clamp(24px, 3vw, 32px) / 1.1 var(--f-display);
     letter-spacing: -0.015em;

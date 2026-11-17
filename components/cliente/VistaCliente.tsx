@@ -14,10 +14,13 @@ export function VistaCliente({
   resumen,
   titulo,
   comparar,
+  accion,
 }: {
   resumen: ResumenCliente;
   titulo: string;
   comparar: (tCDT: number) => ComparacionCDT;
+  /** Acción en la cabecera (p. ej. el botón del reporte PDF). */
+  accion?: React.ReactNode;
 }) {
   const { snap } = useApp();
   const [tasaPropia, setTasaPropia] = useGuardado<number | null>("tasaCDT", null);
@@ -36,6 +39,7 @@ export function VistaCliente({
         <p className="src">
           Invertido {millones(r.giro)} a una TIR de {F.pct(r.tir, 2)} E.A. · cifras en pesos, con capital propio
         </p>
+        {accion}
       </header>
 
       <div className="cliente-grid">

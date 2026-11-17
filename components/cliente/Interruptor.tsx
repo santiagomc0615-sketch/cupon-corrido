@@ -6,6 +6,7 @@ import { useApp } from "@/components/providers/AppProvider";
 import { resumenPortafolio, resumenTitulo } from "@/lib/cliente";
 import type { Bono, ResultadoValoracion } from "@/lib/engine";
 import { useGuardado, useHidratado } from "@/lib/storage";
+import { BotonReportePortafolio, BotonReporteTitulo } from "@/components/reporte/BotonReporte";
 import { VistaCliente } from "./VistaCliente";
 
 export function useVistaCliente() {
@@ -27,7 +28,7 @@ export function InterruptorCliente() {
 
 export function ClienteTitulo({ b, o, nombre }: { b: Bono; o: ResultadoValoracion; nombre: string }) {
   const r = useMemo(() => resumenTitulo(b, o), [b, o]);
-  return <VistaCliente resumen={r} titulo={nombre} comparar={r.comparar} />;
+  return <VistaCliente resumen={r} titulo={nombre} comparar={r.comparar} accion={<BotonReporteTitulo b={b} o={o} titulo={nombre} />} />;
 }
 
 export function ClientePortafolio() {
@@ -37,5 +38,5 @@ export function ClientePortafolio() {
     [pfValorado],
   );
   if (!r) return null;
-  return <VistaCliente resumen={r} titulo={`Portafolio · ${pfValorado.length} títulos`} comparar={r.comparar} />;
+  return <VistaCliente resumen={r} titulo={`Portafolio · ${pfValorado.length} títulos`} comparar={r.comparar} accion={<BotonReportePortafolio />} />;
 }

@@ -6,6 +6,7 @@ import { Chart, nearest, type PuntoSerie } from "@/components/charts/Chart";
 import { useApp } from "@/components/providers/AppProvider";
 import { CarryRoll } from "./CarryRoll";
 import { ClientePortafolio, InterruptorCliente, useVistaCliente } from "@/components/cliente/Interruptor";
+import { BotonReportePortafolio } from "@/components/reporte/BotonReporte";
 import { EscenarioBanRep } from "./EscenarioBanRep";
 import { FondeoPortafolio } from "./FondeoPortafolio";
 import { Aviso, Kpi, Panel } from "@/components/ui";
@@ -53,6 +54,11 @@ export function VistaPortafolio() {
           </Link>
         </div>
       </div>
+      {hidratado && !cliente && (
+        <div className="reporte-barra">
+          <BotonReportePortafolio />
+        </div>
+      )}
       {hidratado && cliente && <ClientePortafolio />}
       {hidratado ? <Cuerpo /> : <div className="panel empty">Cargando portafolio…</div>}
     </section>
