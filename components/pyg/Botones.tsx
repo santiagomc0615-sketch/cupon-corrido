@@ -1,21 +1,20 @@
 "use client";
 /* Botones «Ver P&G» ya armados: un título al vencimiento y el portafolio vendido en una fecha. */
 import { useState } from "react";
-import { useFondeo, useMercadoFondeo } from "@/components/fondeo/ControlesFondeo";
 import { useApp } from "@/components/providers/AppProvider";
-import { fondeoConfigurado } from "@/components/reporte/BotonReporte";
 import { edate, toN, toS, type Bono, type ResultadoValoracion } from "@/lib/engine";
 import { F } from "@/lib/format";
-import { costoFondeo, entradasDesdeMotor } from "@/lib/pyg/desde-motor";
+import { entradasDesdeMotor } from "@/lib/pyg/desde-motor";
 import { entradasPortafolio } from "@/lib/pyg/portafolio";
+import { useFondeoPyG } from "./useFondeoPyG";
 import { BotonPyG } from "./VentanaPyG";
 
 export function BotonPyGTitulo({ b, o, titulo }: { b: Bono; o: ResultadoValoracion; titulo: string }) {
   const { motor, datosMotor } = useApp();
-  const { c } = useFondeo();
-  const m = useMercadoFondeo();
+  const fondeo = useFondeoPyG(o.giro);
   return (
     <BotonPyG
+      fondeo={fondeo}
       etiqueta="Ver P&G al vencimiento"
       titulo={titulo}
       subtitulo={`Compra el ${F.date(b.valoracion)} y se mantiene hasta el vencimiento (${F.date(b.vencimiento)})`}
@@ -24,7 +23,7 @@ export function BotonPyGTitulo({ b, o, titulo }: { b: Bono; o: ResultadoValoraci
           motor,
           b,
           o,
-          { alVencimiento: true, costoFondeo: fondeoConfigurado() ? costoFondeo(o.giro, c, m, toN(b.vencimiento) - toN(b.valoracion)) : 0 },
+          { alVencimiento: true },
           { ipc: datosMotor.ipc, exp: datosMotor.exp },
         )
       }
@@ -35,9 +34,11 @@ export function BotonPyGTitulo({ b, o, titulo }: { b: Bono; o: ResultadoValoraci
 export function BotonPyGPortafolio({ className }: { className?: string }) {
   const { motor, datosMotor, pfValorado, pfDate } = useApp();
   const [fecha, setFecha] = useState(() => toS(edate(toN(pfDate), 12)));
+  const fondeo = useFondeoPyG(pfValorado.reduce((s, x) => s + x.o.giro, 0));
   if (!pfValorado.length) return null;
   return (
     <BotonPyG
+      fondeo={fondeo}
       className={className}
       etiqueta="Ver P&G"
       titulo={`Portafolio · ${pfValorado.length} títulos`}

@@ -7,17 +7,41 @@ import { useId, useMemo, useRef, useState, type ReactNode } from "react";
 import { Contador } from "@/components/cliente/Contador";
 import { F, nf } from "@/lib/format";
 import { NOMBRE_CONTRIBUYENTE } from "@/lib/impuestos/perfil";
-import { estadoPyG, type EntradasPyG } from "@/lib/pyg/estado";
+import { estadoPyG, textoRent, type EntradasPyG } from "@/lib/pyg/estado";
+import { conFondeo, type FondeoPyG } from "@/lib/pyg/fondeo";
 import { AvisoTributario, PanelImpuestos, useImpuestos } from "./Impuestos";
 
 const pesos = (v: number) => (v < 0 ? "−" : "") + "$ " + nf(0).format(Math.abs(Math.round(v)));
 
-export function TablaPyG({ entradas, comisiones, id }: { entradas: EntradasPyG; comisiones: number; id: string }) {
+/** Clase de color por signo (negativos en rojo, positivos en verde; cero neutro). */
+const signo = (v: number) => (v > 0.5 ? "v-pos" : v < -0.5 ? "v-neg" : "");
+
+export function TablaPyG({ entradas, comisiones, id, fondeo = null }: { entradas: EntradasPyG; comisiones: number; id: string; fondeo?: FondeoPyG | null }) {
   const { params, perfil } = useImpuestos();
-  const r = useMemo(() => estadoPyG({ ...entradas, comisiones }, perfil, params), [entradas, comisiones, perfil, params]);
-  const pct = (v: number) => F.pct(entradas.capital && v ? v / entradas.capital : 0, 2).replace(/^-/, "−");
+  // Por defecto, capital propio; el fondeo del panel de carry se incluye solo si el usuario lo activa.
+  const [incluir, setIncluir] = useState(false);
+  const usarFondeo = !!fondeo && incluir;
+  const r = useMemo(() => {
+    const base = { ...entradas, comisiones, costoFondeo: 0, fondeo: undefined };
+    return estadoPyG(usarFondeo && fondeo ? conFondeo(base, fondeo) : base, perfil, params);
+  }, [entradas, comisiones, perfil, params, usarFondeo, fondeo]);
+  const pct = (v: number) => (r.capital && v ? F.pct(v / r.capital, 2) : F.pct(0, 2)).replace(/^-/, "−");
+  const rent = (x: number | null) => <b className={x == null ? "v-neg" : signo(x * 1e6)}>{textoRent(x)}</b>;
   return (
     <div className="pyg">
+      {fondeo && (
+        <div className="pyg-fondeo" role="group" aria-label="Fondeo en el P&G">
+          <span>
+            <b>Fondeo activo:</b> {fondeo.descripcion}. {usarFondeo ? "Incluido: los % se miden sobre el capital propio." : "No incluido: el P&G se calcula con capital propio."}
+          </span>
+          <label className="interruptor">
+            <input type="checkbox" role="switch" checked={incluir} onChange={(e) => setIncluir(e.target.checked)} />
+            <span>
+              <b>Incluir fondeo</b>
+            </span>
+          </label>
+        </div>
+      )}
       <table className="pyg-tabla" aria-describedby={`${id}-frase`}>
         <caption className="sr-only">Estado de resultados de la inversión</caption>
         <thead>
@@ -27,7 +51,7 @@ export function TablaPyG({ entradas, comisiones, id }: { entradas: EntradasPyG; 
             </th>
             <th scope="col">Concepto</th>
             <th scope="col">Pesos</th>
-            <th scope="col">% del capital</th>
+            <th scope="col">{usarFondeo ? "% del capital propio" : "% del capital"}</th>
           </tr>
         </thead>
         <tbody>
@@ -40,8 +64,8 @@ export function TablaPyG({ entradas, comisiones, id }: { entradas: EntradasPyG; 
                 {l.etiqueta}
                 {l.nota ? <span className="src">{l.nota}</span> : null}
               </th>
-              <td>{l.clave === "real" ? <Contador valor={l.valor} formato={pesos} /> : pesos(l.valor)}</td>
-              <td>{pct(l.valor)}</td>
+              <td className={l.tipo === "info" ? "" : signo(l.valor)}>{l.clave === "real" ? <Contador valor={l.valor} formato={pesos} /> : pesos(l.valor)}</td>
+              <td className={l.tipo === "info" ? "" : signo(l.valor)}>{pct(l.valor)}</td>
             </tr>
           ))}
         </tbody>
@@ -49,17 +73,17 @@ export function TablaPyG({ entradas, comisiones, id }: { entradas: EntradasPyG; 
       <div className="pyg-rent">
         <div>
           <span className="src">Rentabilidad nominal</span>
-          <b>{F.pct(r.rentNominal, 2)}</b>
+          {rent(r.rentNominal)}
           <span className="src">E.A. antes de impuestos</span>
         </div>
         <div>
           <span className="src">Después de impuestos</span>
-          <b>{F.pct(r.rentDespues, 2)}</b>
+          {rent(r.rentDespues)}
           <span className="src">E.A.</span>
         </div>
         <div className="pyg-real">
           <span className="src">Real</span>
-          <b>{F.pct(r.rentReal, 2)}</b>
+          {rent(r.rentReal)}
           <span className="src">E.A. después de impuestos e inflación</span>
         </div>
       </div>
@@ -72,7 +96,8 @@ export function TablaPyG({ entradas, comisiones, id }: { entradas: EntradasPyG; 
         </p>
       ))}
       <p className="src">
-        {nf(0).format(r.dias)} días de tenencia · capital invertido {pesos(entradas.capital)} · inflación del periodo {F.pct(entradas.inflacion, 2)}
+        {nf(0).format(r.dias)} días de tenencia · {usarFondeo ? `capital propio ${pesos(r.capital)} de un giro de ${pesos(entradas.capital)}` : `capital invertido ${pesos(entradas.capital)}`} ·
+        inflación del periodo {F.pct(entradas.inflacion, 2)}
         {entradas.inflacionProyectada ? " (proyectada con las expectativas de la encuesta del BanRep)" : " (IPC del DANE)"} · {NOMBRE_CONTRIBUYENTE[perfil.tipo]}
       </p>
     </div>
@@ -87,6 +112,7 @@ export function BotonPyG({
   etiqueta = "Ver P&G",
   controles,
   className = "btn",
+  fondeo = null,
 }: {
   construir: () => EntradasPyG | { error: string };
   titulo: string;
@@ -95,6 +121,8 @@ export function BotonPyG({
   /** Controles extra dentro de la ventana (p. ej. la fecha de venta del portafolio). */
   controles?: ReactNode;
   className?: string;
+  /** Fondeo del panel de carry, para ofrecerlo con un interruptor (apagado por defecto). */
+  fondeo?: FondeoPyG | null;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   const id = useId();
@@ -158,7 +186,7 @@ export function BotonPyG({
                 {entradas.error}
               </p>
             ) : entradas ? (
-              <TablaPyG entradas={entradas} comisiones={comisiones} id={id} />
+              <TablaPyG entradas={entradas} comisiones={comisiones} id={id} fondeo={fondeo} />
             ) : null}
           </div>
         )}

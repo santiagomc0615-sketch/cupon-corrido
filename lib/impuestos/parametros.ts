@@ -97,11 +97,12 @@ export const FUENTES: Record<keyof ParametrosTributarios, FuenteNorma | null> = 
     nota: "15 % para personas naturales y jurídicas.",
   },
   aniosGananciaOcasional: {
-    norma: "Art. 300 E.T.",
-    fecha: "1989-03-30",
-    enlace: "https://normograma.dian.gov.co/dian/compilacion/docs/oficio_dian_49408_2014.htm",
-    nota: "Es ganancia ocasional la utilidad en la venta de bienes que fueron activo fijo del contribuyente por dos años o más. Si el título se tenía para negociar (inventario) o por menos de dos años, la utilidad es renta ordinaria. Los intereses causados siempre son rendimientos financieros (renta ordinaria).",
+    norma: "Art. 300 E.T.; art. 33 E.T. (Oficio DIAN 1807 de 2018)",
+    fecha: "2018-01-01",
+    enlace: "https://normograma.dian.gov.co/dian/compilacion/docs/oficio_dian_1807_2018.htm",
+    nota: "Es ganancia ocasional la utilidad en la venta de bienes que fueron activo fijo por dos años o más (art. 300). Para títulos de renta fija la DIAN no lo ha confirmado: la utilidad se realiza al vender (precio − costo fiscal, art. 33) y en la venta de TIDIS la trata como rendimiento financiero. Por eso, por defecto, la utilidad en venta es renta ordinaria; puede marcar el título como activo fijo si su contador lo respalda.",
   },
+
   rentaJuridica: {
     norma: "Art. 240 E.T. (modificado por la Ley 2277 de 2022)",
     fecha: "2022-12-13",

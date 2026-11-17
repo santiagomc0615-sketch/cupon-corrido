@@ -2,7 +2,6 @@
 import { useMemo, useState, type ReactNode } from "react";
 import type { ClaveClase } from "@/lib/clase";
 import { AnalisisTitulo } from "./AnalisisTitulo";
-import { useFondeo, useMercadoFondeo } from "@/components/fondeo/ControlesFondeo";
 import { FrenteCDT } from "@/components/cliente/FrenteCDT";
 import { BotonPyGTitulo } from "@/components/pyg/Botones";
 import { AvisoTributario } from "@/components/pyg/Impuestos";
@@ -12,8 +11,8 @@ import { resumenTitulo } from "@/lib/cliente";
 import { RetornoTitulo } from "@/components/analisis/RetornoHorizonte";
 import { AvisoGanancia } from "./AvisoGanancia";
 import { ResumenTitulo } from "./ResumenTitulo";
-import { fondeoConfigurado } from "@/components/reporte/BotonReporte";
-import { costoFondeo, entradasDesdeMotor } from "@/lib/pyg/desde-motor";
+import { useFondeoPyG } from "@/components/pyg/useFondeoPyG";
+import { entradasDesdeMotor } from "@/lib/pyg/desde-motor";
 import { CarryFondeo } from "./CarryFondeo";
 import { ETIQUETAS_CLASE, PasoAPaso } from "./PasoAPaso";
 import { Chart, nearest } from "@/components/charts/Chart";
@@ -397,8 +396,8 @@ function VentaAnticipada({ b, o }: { b: Bono; o: ResultadoValoracion }) {
   useCurvaNecesaria(falta);
 
   // Fondeo configurado por el usuario (para el costo en el P&G)
-  const { c: fondeo } = useFondeo();
-  const mercadoFondeo = useMercadoFondeo();
+  // Fondeo del panel «Carry y fondeo» (el P&G lo ofrece con un interruptor, apagado por defecto)
+  const fondeoPyG = useFondeoPyG(o.giro);
   /** Precio sucio de venta de la simulación (para la ventana P&G). */
   let sucioVenta: number | null = null;
   let cuerpo: ReactNode;
@@ -478,7 +477,6 @@ function VentaAnticipada({ b, o }: { b: Bono; o: ResultadoValoracion }) {
           {
             fechaVenta: d,
             sucioVenta,
-            costoFondeo: fondeoConfigurado() ? costoFondeo(o.giro, fondeo, mercadoFondeo, toN(d) - toN(b.valoracion)) : 0,
           },
           { ipc: datosMotor.ipc, exp: datosMotor.exp },
         )
@@ -560,6 +558,7 @@ function VentaAnticipada({ b, o }: { b: Bono; o: ResultadoValoracion }) {
               titulo={`Venta el ${F.date(d)}`}
               subtitulo={`Compra el ${F.date(b.valoracion)} · precio sucio de venta ${F.n(sucioVenta as number, 3)} %`}
               construir={() => entradasPyG}
+              fondeo={fondeoPyG}
             />
           </div>
           <AvisoTributario />
@@ -568,7 +567,7 @@ function VentaAnticipada({ b, o }: { b: Bono; o: ResultadoValoracion }) {
               {entradasPyG.error}
             </p>
           ) : (
-            <TablaPyG entradas={entradasPyG} comisiones={0} id="venta-pyg" />
+            <TablaPyG entradas={entradasPyG} comisiones={0} id="venta-pyg" fondeo={fondeoPyG} />
           )}
         </div>
       )}

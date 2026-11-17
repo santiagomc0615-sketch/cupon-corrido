@@ -80,6 +80,7 @@ function tributarioDe(x: unknown): PeticionAsesor["tributario"] {
   else if (enRango(pr.ingresosAnuales, [0, 1e13])) perfil.ingresosAnuales = pr.ingresosAnuales as number;
   if (enRango(pr.tarifaManual, [0, 0.6])) perfil.tarifaManual = pr.tarifaManual as number;
   if (typeof pr.gmf === "boolean") perfil.gmf = pr.gmf;
+  if (typeof pr.gananciaOcasionalTitulos === "boolean") perfil.gananciaOcasionalTitulos = pr.gananciaOcasionalTitulos;
   let params: Partial<ParametrosTributarios> | null = null;
   if (t.params && typeof t.params === "object") {
     const pa = t.params as Record<string, unknown>;

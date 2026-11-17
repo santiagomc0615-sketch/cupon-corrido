@@ -8,7 +8,7 @@ import { useApp } from "@/components/providers/AppProvider";
 import { useImpuestos } from "@/components/pyg/Impuestos";
 import { edate, toN, toS } from "@/lib/engine";
 import { NOMBRE_CONTRIBUYENTE } from "@/lib/impuestos/perfil";
-import { costoFondeo, entradasDesdeMotor } from "@/lib/pyg/desde-motor";
+import { entradasDesdeMotor } from "@/lib/pyg/desde-motor";
 import { estadoPyG } from "@/lib/pyg/estado";
 import { entradasPortafolio } from "@/lib/pyg/portafolio";
 import type { Bono, ResultadoValoracion } from "@/lib/engine";
@@ -101,7 +101,7 @@ export function BotonReporteTitulo({ b, o, titulo }: { b: Bono; o: ResultadoValo
           motor,
           b,
           o,
-          { alVencimiento: true, costoFondeo: fondeoConfigurado() ? costoFondeo(o.giro, c, mercado, toN(b.vencimiento) - toN(b.valoracion)) : 0 },
+          { alVencimiento: true },
           { ipc: datosMotor.ipc, exp: datosMotor.exp },
         );
         const pyg = "error" in e ? null : { resultado: estadoPyG(e, perfil, params), supuesto: `Se mantiene hasta el vencimiento (${b.vencimiento})`, perfil: NOMBRE_CONTRIBUYENTE[perfil.tipo] };

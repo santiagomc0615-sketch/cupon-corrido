@@ -112,8 +112,16 @@ describe("P&G · persona jurídica (a mano)", () => {
     expect(r.real).toBeCloseTo(1_435_000, 6);
   });
 
-  it("dos años o más: la utilidad en precio es ganancia ocasional al 15 %", () => {
+  it("dos años o más: por defecto la utilidad en venta es renta ordinaria (la DIAN no confirma ganancia ocasional en renta fija)", () => {
     const largo = estadoPyG({ ...BASE, fechaCompra: "2024-02-01", fechaVenta: "2026-02-01" }, { ...PERFIL_INICIAL, tipo: "juridica" }, P);
+    expect(largo.largoPlazo).toBe(true);
+    expect(largo.gananciaOcasional).toBe(0);
+    // ordinaria: 10.000.000 + 1.000.000 − 1.000.000 (corrido) − 100.000 = 9.900.000 × 35 %
+    expect(largo.impuesto).toBeCloseTo(9_900_000 * 0.35, 6);
+  });
+
+  it("dos años o más y marcado como activo fijo: la utilidad en precio es ganancia ocasional al 15 %", () => {
+    const largo = estadoPyG({ ...BASE, fechaCompra: "2024-02-01", fechaVenta: "2026-02-01" }, { ...PERFIL_INICIAL, tipo: "juridica", gananciaOcasionalTitulos: true }, P);
     expect(largo.largoPlazo).toBe(true);
     expect(largo.gananciaOcasional).toBe(1_000_000);
     // ordinaria: 10.000.000 − 1.000.000 (corrido) − 100.000 = 8.900.000 × 35 % + GO 1.000.000 × 15 %
@@ -126,6 +134,8 @@ describe("Funciones auxiliares", () => {
     expect(impuestoRentaOrdinaria(0, PERFIL_INICIAL, P).impuesto).toBe(0);
     expect(anualizar(10, 100, 365)).toBeCloseTo(0.1, 12);
     expect(anualizar(21, 100, 730)).toBeCloseTo(0.1, 12);
+    expect(anualizar(-100, 100, 365)).toBeNull(); // pierde todo el capital: «No aplica»
+    expect(anualizar(-150, 100, 365)).toBeNull();
   });
 
   it("inflación entre fechas con el IPC del DANE y proyectada después del último dato", () => {
@@ -213,7 +223,9 @@ describe("Escenario de inflación en títulos indexados", () => {
         const u = base.cupones[base.cupones.length - 1];
         const ua = alta.cupones[alta.cupones.length - 1];
         const anios = (Date.parse(u.fecha) - Date.parse(b.valoracion)) / 864e5 / 365;
-        expect(ua.amort / u.amort).toBeCloseTo(Math.pow(1.02, anios), 10);
+        // el capital al vencimiento va en el precio de venta (100), indexado a la UVR del escenario
+        expect(alta.limpioVenta / base.limpioVenta).toBeCloseTo(Math.pow(1.02, anios), 10);
+        expect(ua.interes / u.interes).toBeCloseTo(Math.pow(1.02, anios), 10);
       }
     }
   });

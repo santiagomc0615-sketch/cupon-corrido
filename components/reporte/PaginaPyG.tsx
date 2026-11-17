@@ -1,7 +1,7 @@
 /* Página del reporte PDF con el estado de resultados (P&G) con impuestos e inflación (lib/pyg). */
 import { Page, Text, View } from "@react-pdf/renderer";
 import { F, nf } from "@/lib/format";
-import type { ResultadoPyG } from "@/lib/pyg/estado";
+import { textoRent, type ResultadoPyG } from "@/lib/pyg/estado";
 import type { FuenteReporte } from "@/lib/reporte/datos";
 import { C, FAMILIA } from "@/lib/reporte/estilo";
 import { Encabezado, Pie, Seccion, s } from "./piezas";
@@ -77,7 +77,7 @@ export function PaginaPyG({
                   textAlign: "right",
                   ...s.mono,
                   fontWeight: total ? 600 : 400,
-                  color: l.clave === "real" ? C.acento : info ? C.tinta2 : C.tinta,
+                  color: info ? C.tinta2 : l.valor < -0.5 ? C.negativo : l.valor > 0.5 && (total || l.tipo === "suma") ? C.positivo : C.tinta,
                 }}
               >
                 {pesos(l.valor)}
@@ -97,7 +97,7 @@ export function PaginaPyG({
           <View key={l as string} style={{ ...s.caja, flexGrow: 1, flexBasis: 0, padding: 8, ...(real ? { borderColor: C.acento } : {}) }}>
             <Text style={{ fontSize: 7, color: C.tinta2 }}>{l as string}</Text>
             <View style={{ height: 18, justifyContent: "flex-end" }}>
-              <Text style={{ fontWeight: 600, fontSize: 14, color: real ? C.acento : C.tinta, fontFamily: FAMILIA.texto }}>{F.pct(v as number, 2)}</Text>
+              <Text style={{ fontWeight: 600, fontSize: 14, color: v == null || (v as number) < 0 ? C.negativo : real ? C.acento : C.positivo, fontFamily: FAMILIA.texto }}>{textoRent(v as number | null)}</Text>
             </View>
             <Text style={{ ...s.src, marginTop: 2 }}>{n as string}</Text>
           </View>
