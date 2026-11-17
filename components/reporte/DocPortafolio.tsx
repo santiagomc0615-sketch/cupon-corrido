@@ -5,6 +5,7 @@ import { BRAND } from "@/lib/brand";
 import { F, nf } from "@/lib/format";
 import type { ReportePortafolio } from "@/lib/reporte/datos";
 import { C, FAMILIA } from "@/lib/reporte/estilo";
+import { PaginaPyG, type DatosPyGReporte } from "./PaginaPyG";
 import { Encabezado, Pie, Seccion, s } from "./piezas";
 
 const MAX_FILAS = 14;
@@ -24,7 +25,7 @@ function Cifra({ etiqueta, valor, nota, grande }: { etiqueta: string; valor: str
 
 const celda = (ancho: number, derecha = true) => ({ width: ancho, textAlign: derecha ? ("right" as const) : ("left" as const) });
 
-export function DocPortafolio({ r, generado }: { r: ReportePortafolio; generado: string }) {
+export function DocPortafolio({ r, generado, pyg }: { r: ReportePortafolio; generado: string; pyg?: DatosPyGReporte | null }) {
   const filas = r.posiciones.slice(0, MAX_FILAS);
   const maxEstres = Math.max(...r.estres.map((e) => Math.abs(e.cambio)), 1);
   return (
@@ -126,6 +127,7 @@ export function DocPortafolio({ r, generado }: { r: ReportePortafolio; generado:
 
         <Pie fuentes={r.fuentes} generado={generado} />
       </Page>
+      {pyg ? <PaginaPyG d={pyg} titulo={`Portafolio · ${r.posiciones.length} títulos`} valoracion={r.valoracion} cliente={r.cliente} fuentes={r.fuentes} generado={generado} /> : null}
     </Document>
   );
 }

@@ -5,6 +5,12 @@
 import { useState, type ReactElement } from "react";
 import { useFondeo, useMercadoFondeo } from "@/components/fondeo/ControlesFondeo";
 import { useApp } from "@/components/providers/AppProvider";
+import { useImpuestos } from "@/components/pyg/Impuestos";
+import { edate, toN, toS } from "@/lib/engine";
+import { NOMBRE_CONTRIBUYENTE } from "@/lib/impuestos/perfil";
+import { costoFondeo, entradasDesdeMotor } from "@/lib/pyg/desde-motor";
+import { estadoPyG } from "@/lib/pyg/estado";
+import { entradasPortafolio } from "@/lib/pyg/portafolio";
 import type { Bono, ResultadoValoracion } from "@/lib/engine";
 import { seccionesInforme } from "@/lib/asesor/informe";
 import { armarReportePortafolio, armarReporteTitulo, fuentesReporte } from "@/lib/reporte/datos";
@@ -71,7 +77,8 @@ function Formulario({ alGenerar, id, etiqueta = "Descargar reporte PDF" }: { alG
 }
 
 export function BotonReporteTitulo({ b, o, titulo }: { b: Bono; o: ResultadoValoracion; titulo: string }) {
-  const { snap } = useApp();
+  const { snap, motor, datosMotor } = useApp();
+  const { params, perfil } = useImpuestos();
   const { c } = useFondeo();
   const mercado = useMercadoFondeo();
   const [tasaPropia] = useGuardado<number | null>("tasaCDT", null);
@@ -89,9 +96,18 @@ export function BotonReporteTitulo({ b, o, titulo }: { b: Bono; o: ResultadoValo
           tasaCDT: tasaPropia ?? snap.dtf?.valor ?? null,
           fuentes: snap.fuentes,
         });
+        // P&G al vencimiento con el perfil tributario del usuario
+        const e = entradasDesdeMotor(
+          motor,
+          b,
+          o,
+          { alVencimiento: true, costoFondeo: fondeoConfigurado() ? costoFondeo(o.giro, c, mercado, toN(b.vencimiento) - toN(b.valoracion)) : 0 },
+          { ipc: datosMotor.ipc, exp: datosMotor.exp },
+        );
+        const pyg = "error" in e ? null : { resultado: estadoPyG(e, perfil, params), supuesto: `Se mantiene hasta el vencimiento (${b.vencimiento})`, perfil: NOMBRE_CONTRIBUYENTE[perfil.tipo] };
         await generarYDescargar(async () => {
           const { DocTitulo } = await import("./DocTitulo");
-          return <DocTitulo r={r} generado={ahora()} />;
+          return <DocTitulo r={r} generado={ahora()} pyg={pyg} />;
         }, nombreArchivo(titulo, b.valoracion));
       }}
     />
@@ -99,7 +115,8 @@ export function BotonReporteTitulo({ b, o, titulo }: { b: Bono; o: ResultadoValo
 }
 
 export function BotonReportePortafolio() {
-  const { snap, pfValorado, pfDate } = useApp();
+  const { snap, pfValorado, pfDate, motor, datosMotor } = useApp();
+  const { params, perfil } = useImpuestos();
   if (!pfValorado.length) return null;
   return (
     <Formulario
@@ -112,9 +129,13 @@ export function BotonReportePortafolio() {
           fuentes: snap.fuentes,
         });
         if (!r) return;
+        // P&G vendiendo todo en un año a las mismas tasas (los que vencen antes, al vencimiento)
+        const venta = toS(edate(toN(pfDate), 12));
+        const e = entradasPortafolio(motor, pfValorado.map((x) => ({ b: x.b, o: x.o })), venta, { ipc: datosMotor.ipc, exp: datosMotor.exp });
+        const pyg = "error" in e ? null : { resultado: estadoPyG(e, perfil, params), supuesto: `Venta de todo el portafolio el ${venta} a las mismas tasas de compra`, perfil: NOMBRE_CONTRIBUYENTE[perfil.tipo] };
         await generarYDescargar(async () => {
           const { DocPortafolio } = await import("./DocPortafolio");
-          return <DocPortafolio r={r} generado={ahora()} />;
+          return <DocPortafolio r={r} generado={ahora()} pyg={pyg} />;
         }, nombreArchivo("portafolio", pfDate));
       }}
     />

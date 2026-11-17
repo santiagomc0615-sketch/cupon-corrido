@@ -996,6 +996,286 @@
   .reporte-barra {
     display: flex;
     justify-content: flex-end;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .cliente-acciones {
+    display: flex;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .cliente-acciones .reporte-pdf {
+    margin-top: 0;
+  }
+
+  /* P&G: ventana, cascada de líneas y perfil tributario */
+  .ventana-pyg {
+    margin: auto;
+    inset: 0;
+    width: min(100% - 32px, 800px);
+    max-height: min(100dvh - 32px, 920px);
+    padding: 0;
+    border: 1px solid var(--rule);
+    border-radius: var(--r);
+    background: var(--sheet);
+    color: var(--ink);
+    overflow: auto;
+  }
+  .ventana-pyg::backdrop {
+    background: rgb(11 18 32 / 0.55);
+  }
+  .ventana-pyg[open] {
+    animation: ventana-entra 220ms var(--ease-out);
+  }
+  @keyframes ventana-entra {
+    from {
+      opacity: 0;
+      transform: translateY(8px) scale(0.98);
+    }
+  }
+  .ventana-cuerpo {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 20px;
+  }
+  .ventana-cab {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .ventana-cab h2 {
+    font: 500 clamp(22px, 3vw, 28px) / 1.15 var(--f-display);
+    margin: 4px 0 2px;
+  }
+  .ventana-controles {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 10px 14px;
+  }
+  .ventana-controles .f {
+    width: min(100%, 200px);
+  }
+  .aviso-trib {
+    margin: 0;
+    padding: 8px 12px;
+    border-left: 3px solid var(--seal);
+    background: var(--sheet-2);
+    font-size: 12.5px;
+    color: var(--ink-2);
+  }
+  .pyg-tabla {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+  }
+  .pyg-tabla thead th {
+    font: 500 10px var(--f-mono);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    text-align: right;
+    padding: 0 8px 6px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .pyg-tabla thead th:nth-child(2) {
+    text-align: left;
+  }
+  .pyg-tabla tbody tr {
+    animation: pyg-linea 280ms var(--ease-out) both;
+    animation-delay: calc(var(--i, 0) * 40ms);
+  }
+  @keyframes pyg-linea {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+  }
+  .pyg-tabla td,
+  .pyg-tabla tbody th {
+    padding: 7px 8px;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+  }
+  .pyg-tabla tbody th,
+  .cmp-tabla tbody th {
+    text-align: left;
+    white-space: normal;
+    font: 400 13.5px/1.4 var(--f-body);
+    letter-spacing: normal;
+    text-transform: none;
+    color: var(--ink);
+    position: static;
+    background: none;
+  }
+  .pyg-tabla tbody th .src {
+    display: block;
+    font-size: 11.5px;
+  }
+  .pyg-tabla td {
+    text-align: right;
+    font-family: var(--f-mono);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .pyg-tabla .pyg-signo {
+    width: 22px;
+    text-align: center;
+    color: var(--ink-3);
+  }
+  .pyg-tabla .pyg-total th,
+  .pyg-tabla .pyg-total td {
+    font-weight: 600 !important;
+    border-top: 1.5px solid var(--ink-3);
+    background: var(--sheet-2);
+  }
+  .pyg-tabla .pyg-total:last-child td:nth-child(3) {
+    color: var(--engrave);
+    font-size: 15px;
+  }
+  .pyg-tabla .pyg-info th,
+  .pyg-tabla .pyg-info td {
+    color: var(--ink-2);
+  }
+  .pyg-rent {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .pyg-rent > div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 10px 12px;
+    border: 1px solid var(--rule);
+    border-radius: var(--r);
+  }
+  .pyg-rent b {
+    font-family: var(--f-cifra);
+    font-size: 20px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .pyg-rent .pyg-real {
+    border-color: color-mix(in srgb, var(--engrave) 50%, transparent);
+  }
+  .pyg-rent .pyg-real b {
+    color: var(--engrave);
+  }
+  .pyg-frase {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+  }
+  .pyg-accion {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--rule);
+  }
+  @media (max-width: 560px) {
+    .pyg-rent {
+      grid-template-columns: 1fr;
+    }
+    .pyg-tabla td:last-child,
+    .pyg-tabla thead th:last-child {
+      display: none;
+    }
+    .ventana-cuerpo {
+      padding: 16px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ventana-pyg[open],
+    .pyg-tabla tbody tr {
+      animation: none;
+    }
+  }
+  .impuestos {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px;
+    border: 1px solid var(--rule);
+    border-radius: var(--r);
+    background: var(--sheet-2);
+  }
+  .impuestos-fila,
+  .params-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+    gap: 10px 14px;
+  }
+  .params-trib summary {
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+  }
+  .params-trib[open] summary {
+    margin-bottom: 10px;
+  }
+  .fuente-trib {
+    margin: 4px 0 0;
+    font-size: 11px;
+    line-height: 1.45;
+  }
+  .params-acciones {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+  }
+  .check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .comparador {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .cmp-controles {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr));
+    gap: 10px 14px;
+    align-items: end;
+  }
+  .etq-f {
+    font-size: 12px;
+    color: var(--ink-2);
+  }
+  .cmp-tabla tbody th {
+    font-weight: 600;
+    min-width: 130px;
+  }
+  .cmp-tabla td .src {
+    display: block;
+    font-size: 11px;
+  }
+  .cmp-tabla tbody th .chip {
+    margin-left: 6px;
+  }
+  .cmp-tabla .cmp-texto {
+    min-width: 200px;
+    white-space: normal;
+    font: 12px/1.4 var(--f-body);
+    color: var(--ink-2);
+  }
+  .cmp-tabla .cmp-gana {
+    color: var(--engrave);
+    font-weight: 600;
   }
   .reporte-barra .reporte-pdf {
     margin-top: 0;
