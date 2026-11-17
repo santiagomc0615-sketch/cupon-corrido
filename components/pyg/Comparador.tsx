@@ -7,6 +7,7 @@ import { useApp } from "@/components/providers/AppProvider";
 import { Panel } from "@/components/ui";
 import { F, nf } from "@/lib/format";
 import { NOMBRE_CONTRIBUYENTE } from "@/lib/impuestos/perfil";
+import { textoRent } from "@/lib/pyg/estado";
 import { compararOpciones, escenariosComparador, NOMBRE_OPCION, RIESGO, type Opcion } from "@/lib/pyg/comparador";
 import { useGuardado } from "@/lib/storage";
 import { AvisoTributario, PanelImpuestos, useImpuestos } from "./Impuestos";
@@ -99,15 +100,15 @@ export function Comparador() {
                     <>
                       <td>
                         {mill(f.pyg.utilidadAntes)}
-                        <span className="src">{F.pct(f.pyg.rentNominal, 2)} E.A.</span>
+                        <span className="src">{textoRent(f.pyg.rentNominal)} E.A.</span>
                       </td>
                       <td>
                         {mill(f.pyg.neta)}
-                        <span className="src">{F.pct(f.pyg.rentDespues, 2)} E.A.</span>
+                        <span className="src">{textoRent(f.pyg.rentDespues)} E.A.</span>
                       </td>
                       <td>
                         {mill(f.pyg.real)}
-                        <span className="src">{F.pct(f.pyg.rentReal, 2)} E.A.</span>
+                        <span className="src">{textoRent(f.pyg.rentReal)} E.A.</span>
                       </td>
                     </>
                   ) : (

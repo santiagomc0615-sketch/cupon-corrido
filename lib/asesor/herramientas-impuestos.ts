@@ -7,8 +7,11 @@ import { edate, toN, toS } from "@/lib/engine";
 import { F, nf } from "@/lib/format";
 import { conOficiales, FECHA_VERIFICACION, FUENTES, type ParametrosTributarios } from "@/lib/impuestos/parametros";
 import { NOMBRE_CONTRIBUYENTE, PERFIL_INICIAL, tarifaMarginal, type PerfilContribuyente } from "@/lib/impuestos/perfil";
-import { costoFondeo, entradasDesdeMotor } from "@/lib/pyg/desde-motor";
-import { estadoPyG, type EntradasPyG, type ResultadoPyG } from "@/lib/pyg/estado";
+import { tasaEfectiva } from "@/lib/carry/config";
+import { montos, NOMBRE_FONDEO } from "@/lib/carry/fondeo";
+import { entradasDesdeMotor } from "@/lib/pyg/desde-motor";
+import { conFondeo } from "@/lib/pyg/fondeo";
+import { estadoPyG, textoRent, type EntradasPyG, type ResultadoPyG } from "@/lib/pyg/estado";
 import { entradasPortafolio } from "@/lib/pyg/portafolio";
 import type { ContextoHerramientas } from "./herramientas";
 
@@ -20,6 +23,7 @@ const perfilEntrada = {
   ingresos_anuales: z.number().min(0).max(1e13).optional(),
   tarifa_marginal_pct: z.number().min(0).max(60).optional(),
   incluir_gmf: z.boolean().optional(),
+  ganancia_ocasional_activo_fijo: z.boolean().optional(),
 };
 
 export const ENTRADAS_IMPUESTOS = {
@@ -37,6 +41,7 @@ export const ENTRADAS_IMPUESTOS = {
     fecha_venta: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
     tasa_venta_pct: z.number().min(-5).max(60).optional(),
     comisiones: z.number().min(0).max(1e12).optional(),
+    incluir_fondeo: z.boolean().optional(),
     ...perfilEntrada,
   }),
 } as const;
@@ -46,6 +51,10 @@ const props = {
   ingresos_anuales: { type: "number", description: "Ingresos anuales de la cédula general en pesos, para la tarifa marginal del art. 241." },
   tarifa_marginal_pct: { type: "number", description: "Tarifa marginal en % si no se dan ingresos (persona natural)." },
   incluir_gmf: { type: "boolean", description: "Incluir el GMF (4 × 1.000) sobre lo retirado." },
+  ganancia_ocasional_activo_fijo: {
+    type: "boolean",
+    description: "Tratar la utilidad en venta como ganancia ocasional si el título fue activo fijo 2 años o más. Por defecto no: la DIAN no lo ha confirmado para renta fija.",
+  },
 };
 
 export const HERRAMIENTAS_IMPUESTOS = [
@@ -78,6 +87,7 @@ export const HERRAMIENTAS_IMPUESTOS = [
         fecha_venta: { type: "string", description: "Fecha de venta AAAA-MM-DD." },
         tasa_venta_pct: { type: "number", description: "Título: tasa de venta en % (TIR, TIR real o spread, según el tipo). Por defecto la misma de compra." },
         comisiones: { type: "number", description: "Comisiones en pesos." },
+        incluir_fondeo: { type: "boolean", description: "Incluir el fondeo configurado en «Carry y fondeo» (por defecto no: capital propio)." },
         ...props,
       },
     },
@@ -85,7 +95,10 @@ export const HERRAMIENTAS_IMPUESTOS = [
 ];
 
 /** Perfil tributario: el del usuario con lo que pida el modelo encima. */
-function perfilDe(ctx: ContextoHerramientas, i: { tipo_contribuyente?: PerfilContribuyente["tipo"]; ingresos_anuales?: number; tarifa_marginal_pct?: number; incluir_gmf?: boolean }) {
+function perfilDe(
+  ctx: ContextoHerramientas,
+  i: { tipo_contribuyente?: PerfilContribuyente["tipo"]; ingresos_anuales?: number; tarifa_marginal_pct?: number; incluir_gmf?: boolean; ganancia_ocasional_activo_fijo?: boolean },
+) {
   const base = ctx.tributario?.perfil ?? PERFIL_INICIAL;
   const perfil: PerfilContribuyente = {
     ...base,
@@ -93,6 +106,7 @@ function perfilDe(ctx: ContextoHerramientas, i: { tipo_contribuyente?: PerfilCon
     ...(i.ingresos_anuales != null ? { ingresosAnuales: i.ingresos_anuales } : {}),
     ...(i.tarifa_marginal_pct != null ? { tarifaManual: i.tarifa_marginal_pct / 100, ingresosAnuales: i.ingresos_anuales ?? null } : {}),
     ...(i.incluir_gmf != null ? { gmf: i.incluir_gmf } : {}),
+    ...(i.ganancia_ocasional_activo_fijo != null ? { gananciaOcasionalTitulos: i.ganancia_ocasional_activo_fijo } : {}),
   };
   return { perfil, params: ctx.tributario?.params ?? conOficiales(null) };
 }
@@ -109,7 +123,8 @@ function normas(p: ParametrosTributarios, r: ResultadoPyG, perfil: PerfilContrib
   ];
   if (perfil.tipo === "pn_no_obligada")
     n.push(`Componente inflacionario ${F.pct(p.componenteInflacionario, 2)} (año ${p.anioComponente}): ${FUENTES.componenteInflacionario!.norma} (${FUENTES.componenteInflacionario!.enlace})`);
-  if (r.largoPlazo) n.push(`Ganancia ocasional ${F.pct(p.gananciaOcasional, 0)}: ${FUENTES.gananciaOcasional!.norma}; art. 300 E.T.`);
+  if (r.gananciaOcasional > 0) n.push(`Ganancia ocasional ${F.pct(p.gananciaOcasional, 0)}: ${FUENTES.gananciaOcasional!.norma}; art. 300 E.T.`);
+  else n.push(`Utilidad en venta como rendimiento financiero (renta ordinaria): ${FUENTES.aniosGananciaOcasional!.norma} (${FUENTES.aniosGananciaOcasional!.enlace})`);
   if (perfil.gmf) n.push(`GMF ${F.pct(p.gmf, 1)}: ${FUENTES.gmf!.norma}`);
   return n;
 }
@@ -128,9 +143,9 @@ function salidaPyG(r: ResultadoPyG, perfil: PerfilContribuyente, p: ParametrosTr
     dias_tenencia: r.dias,
     ...(r.capital
       ? {
-          rentabilidad_nominal_ea: F.pct(r.rentNominal, 2),
-          rentabilidad_despues_de_impuestos_ea: F.pct(r.rentDespues, 2),
-          rentabilidad_real_ea: F.pct(r.rentReal, 2),
+          rentabilidad_nominal_ea: textoRent(r.rentNominal),
+          rentabilidad_despues_de_impuestos_ea: textoRent(r.rentDespues),
+          rentabilidad_real_ea: textoRent(r.rentReal),
           frase: r.frase,
         }
       : {}),
@@ -156,8 +171,8 @@ export function herramientaImpuestos(ctx: ContextoHerramientas, i: z.infer<typeo
     limpioVenta: util,
     corridoVenta: 0,
     cupones: [{ fecha: venta, interes: i.rendimientos_financieros, amort: 0 }],
-    costoFondeo: i.costos_deducibles ?? 0,
-    comisiones: 0,
+    costoFondeo: 0,
+    comisiones: i.costos_deducibles ?? 0,
     inflacion: 0,
     inflacionProyectada: false,
     indexado: false,
@@ -167,7 +182,7 @@ export function herramientaImpuestos(ctx: ContextoHerramientas, i: z.infer<typeo
   const gmf = perfil.gmf ? params.gmf * (i.monto_retirado ?? Math.max(0, i.rendimientos_financieros + util)) : 0;
   const quitar = new Set(["inflacion", "real", "gmf", "neta"]);
   const base = salidaPyG({ ...r, lineas: r.lineas.filter((l) => !quitar.has(l.clave)), capital: 0 }, perfil, params, {
-    supuesto: `Tenencia de ${nf(1).format(anios)} años${anios >= params.aniosGananciaOcasional ? " (la utilidad en precio se trata como ganancia ocasional si el título fue activo fijo)" : ""}`,
+    supuesto: `Tenencia de ${nf(1).format(anios)} años${anios >= params.aniosGananciaOcasional && perfil.gananciaOcasionalTitulos ? " (la utilidad en venta se trata como ganancia ocasional: el usuario la marcó como activo fijo)" : " (la utilidad en venta es renta ordinaria)"}`,
   });
   return {
     ...base,
@@ -189,13 +204,11 @@ export function herramientaPyG(ctx: ContextoHerramientas, i: z.infer<typeof ENTR
     if (!t) return { error: "No hay un título válido abierto en la calculadora." };
     const alVenc = i.al_vencimiento ?? !i.fecha_venta;
     const fechaVenta = alVenc ? t.b.vencimiento : (i.fecha_venta as string);
-    const dias = toN(fechaVenta) - toN(t.b.valoracion);
-    const fondeo = ctx.fondeo && ctx.fondeo.tipo !== "propio" ? costoFondeo(t.o.giro, ctx.fondeo, mercadoFondeo(ctx.snap), dias) : 0;
     e = entradasDesdeMotor(
       ctx.motor,
       t.b,
       t.o,
-      alVenc ? { alVencimiento: true, costoFondeo: fondeo, comisiones: i.comisiones } : { fechaVenta, tasaVenta: i.tasa_venta_pct != null ? i.tasa_venta_pct / 100 : tasaDe(t.b), costoFondeo: fondeo, comisiones: i.comisiones },
+      alVenc ? { alVencimiento: true, comisiones: i.comisiones } : { fechaVenta, tasaVenta: i.tasa_venta_pct != null ? i.tasa_venta_pct / 100 : tasaDe(t.b), comisiones: i.comisiones },
       inf,
     );
     supuesto = alVenc
@@ -209,8 +222,19 @@ export function herramientaPyG(ctx: ContextoHerramientas, i: z.infer<typeof ENTR
     supuesto = `Portafolio de ${ctx.portafolio.length} títulos vendido el ${F.date(fechaVenta)} a las mismas tasas de compra (los que vencen antes, al vencimiento)`;
   }
   if ("error" in e) return e;
+  // Fondeo del panel de carry solo si se pide (misma lógica que el P&G de la página)
+  let fondeoTxt = "Capital propio (sin fondeo).";
+  if (i.incluir_fondeo) {
+    const c = ctx.fondeo;
+    const m = mercadoFondeo(ctx.snap);
+    const t = c && c.tipo !== "propio" ? tasaEfectiva(c, m) : null;
+    if (!c || c.tipo === "propio" || t == null) return { error: "El usuario no tiene un fondeo configurado en «Carry y fondeo» (o falta la tasa)." };
+    e = conFondeo(e, { fondeado: montos(e.capital, c).fondeado, tasaEA: t });
+    fondeoTxt = `Fondeo ${NOMBRE_FONDEO[c.tipo].toLowerCase()} a ${F.pct(t, 2)} E.A., haircut ${F.pct(c.haircut, 0)}; % sobre el capital propio.`;
+  }
   return salidaPyG(estadoPyG(e, perfil, params), perfil, params, {
     supuesto,
+    fondeo: fondeoTxt,
     inflacion_del_periodo: `${F.pct(e.inflacion, 2)} (${e.inflacionProyectada ? "proyectada con las expectativas de la encuesta del BanRep" : "IPC del DANE"})`,
   });
 }

@@ -66,6 +66,13 @@ export function entradasDesdeMotor(
 
   let limpioVenta = 0,
     corridoVenta = 0;
+  // Al vencimiento el «precio de venta» es 100: el capital del último pago se presenta como precio
+  // limpio de venta, no como cupón (el capital devuelto no es utilidad).
+  if (sv === toN(b.vencimiento) && cupones.length) {
+    const ultimo = cupones[cupones.length - 1];
+    limpioVenta = ultimo.amort;
+    cupones[cupones.length - 1] = { ...ultimo, amort: 0 };
+  }
   if (!v.alVencimiento && sv < toN(b.vencimiento)) {
     if (v.tasaVenta == null && v.sucioVenta == null) return { error: "Falta la tasa de venta." };
     // Con el precio sucio dado, el motor solo aporta el cupón corrido y la UVR de esa fecha.

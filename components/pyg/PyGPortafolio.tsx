@@ -9,11 +9,13 @@ import { F } from "@/lib/format";
 import { entradasPortafolio } from "@/lib/pyg/portafolio";
 import { BotonPyGPortafolio } from "./Botones";
 import { AvisoTributario } from "./Impuestos";
+import { useFondeoPyG } from "./useFondeoPyG";
 import { TablaPyG } from "./VentanaPyG";
 
 export function PyGPortafolio() {
   const { motor, datosMotor, pfValorado, pfDate } = useApp();
   const [fecha, setFecha] = useState(() => toS(edate(toN(pfDate), 12)));
+  const fondeo = useFondeoPyG(pfValorado.reduce((s, x) => s + x.o.giro, 0));
   if (!pfValorado.length) return null;
   const e = entradasPortafolio(motor, pfValorado.map((x) => ({ b: x.b, o: x.o })), fecha, { ipc: datosMotor.ipc, exp: datosMotor.exp });
   return (
@@ -32,7 +34,7 @@ export function PyGPortafolio() {
             {e.error}
           </p>
         ) : (
-          <TablaPyG entradas={e} comisiones={0} id="pf-pyg" />
+          <TablaPyG entradas={e} comisiones={0} id="pf-pyg" fondeo={fondeo} />
         )}
       </div>
     </Panel>

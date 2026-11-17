@@ -42,7 +42,8 @@ Resumen verificado el 17 de noviembre de 2026 en el normograma de la DIAN y en t
 
 - **Tarifa: 15 %** para personas naturales (art. 314 E.T.) y jurídicas (art. 313 E.T.), según la [Ley 2277 de 2022](https://normograma.dian.gov.co/dian/compilacion/docs/ley_2277_2022.htm).
 - **Cuándo aplica (art. 300 E.T.):** es ganancia ocasional la utilidad en la venta de bienes que fueron **activo fijo** del contribuyente durante **dos años o más** ([Oficio DIAN 49408 de 2014](https://normograma.dian.gov.co/dian/compilacion/docs/oficio_dian_49408_2014.htm)).
-  - En un título de renta fija, esto alcanza la utilidad en **precio**.
+  - **Renta fija: la DIAN no lo ha confirmado.** Para títulos de renta fija, la utilidad o pérdida se realiza al vender y es el precio menos el costo fiscal (art. 33 E.T.; [Oficio DIAN 1807 de 2018](https://normograma.dian.gov.co/dian/compilacion/docs/oficio_dian_1807_2018.htm)). En la venta de TIDIS, la DIAN trata la utilidad como rendimiento financiero.
+  - Por eso la calculadora trata por defecto la utilidad en venta de un bono como **renta ordinaria**. Solo la trata como ganancia ocasional si el usuario marca el título como activo fijo con 2 años o más y la utilidad es positiva. Esa decisión debe respaldarla un contador.
   - Los **intereses causados siempre son rendimientos financieros** (renta ordinaria).
 - **Cuándo no aplica:** si el título se tenía para negociar (inventario) o por menos de dos años, la utilidad es renta ordinaria.
 - **Depende del caso:** clasificar el título como activo fijo o como inventario depende de cada contribuyente.
@@ -114,7 +115,7 @@ Resumen verificado el 17 de noviembre de 2026 en el normograma de la DIAN y en t
 ### 7.4 Momento de la venta: año gravable y tiempo de tenencia
 
 - **Año gravable:** la persona natural no obligada a contabilidad declara los rendimientos cuando los recibe (art. 27 E.T.). Vender en diciembre o en enero cambia el año en que se declara la utilidad, y con ello la tarifa marginal (art. 241) y el porcentaje de componente inflacionario de ese año.
-- **Tenencia de dos años o más:** la utilidad en precio de un título que fue activo fijo puede ser ganancia ocasional al 15 % (art. 300) en lugar de renta ordinaria a la tarifa marginal. Para tarifas marginales altas puede convenir. Los intereses siguen siendo renta ordinaria.
+- **Tenencia de dos años o más:** solo si el título fue activo fijo, la utilidad en precio podría ser ganancia ocasional al 15 % (art. 300) en lugar de renta ordinaria. Para renta fija no está confirmado por la DIAN (ver la sección 4), así que no debe darse por hecho. Los intereses siempre son renta ordinaria.
 - **Riesgos:**
   - Esperar para vender expone al riesgo de mercado: la tasa puede subir y el precio caer.
   - La clasificación como activo fijo debe sostenerse.

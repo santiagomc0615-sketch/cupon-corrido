@@ -17,6 +17,7 @@ import { conOficiales } from "@/lib/impuestos/parametros";
 import { NOMBRE_CONTRIBUYENTE, PERFIL_INICIAL } from "@/lib/impuestos/perfil";
 import { compararOpciones, escenariosComparador, NOMBRE_OPCION, RIESGO } from "@/lib/pyg/comparador";
 import { costoFondeo } from "@/lib/pyg/desde-motor";
+import { textoRent } from "@/lib/pyg/estado";
 import type { ContextoHerramientas, PosicionAgente } from "./herramientas";
 
 const pct = (x: number, d = 2) => F.pct(x, d);
@@ -319,9 +320,9 @@ function herramientaComparador(ctx: ContextoHerramientas, i: z.infer<typeof ENTR
         ? {
             opcion: NOMBRE_OPCION[f.opcion],
             tasa: f.tasa,
-            ganancia_bruta: `${mill(f.pyg.utilidadAntes)} (${pct(f.pyg.rentNominal, 2)} E.A.)`,
-            despues_de_impuestos: `${mill(f.pyg.neta)} (${pct(f.pyg.rentDespues, 2)} E.A.)`,
-            real: `${mill(f.pyg.real)} (${pct(f.pyg.rentReal, 2)} E.A.)`,
+            ganancia_bruta: `${mill(f.pyg.utilidadAntes)} (${textoRent(f.pyg.rentNominal)} E.A.)`,
+            despues_de_impuestos: `${mill(f.pyg.neta)} (${textoRent(f.pyg.rentDespues)} E.A.)`,
+            real: `${mill(f.pyg.real)} (${textoRent(f.pyg.rentReal)} E.A.)`,
             duracion: f.duracion == null ? "—" : F.n(f.duracion, 2),
             riesgo_de_precio: RIESGO[f.opcion].precio,
             liquidez: RIESGO[f.opcion].liquidez,

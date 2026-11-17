@@ -1237,12 +1237,32 @@
     background: var(--sheet-2);
   }
   .pyg-tabla .pyg-total:last-child td:nth-child(3) {
-    color: var(--engrave);
     font-size: 15px;
   }
   .pyg-tabla .pyg-info th,
   .pyg-tabla .pyg-info td {
     color: var(--ink-2);
+  }
+  /* Negativos en rojo, positivos en verde (cifras y rentabilidades del P&G) */
+  .pyg-tabla td.v-pos,
+  .pyg-rent b.v-pos {
+    color: var(--pos);
+  }
+  .pyg-tabla td.v-neg,
+  .pyg-rent b.v-neg {
+    color: var(--neg);
+  }
+  .pyg-fondeo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px 16px;
+    padding: 10px 14px;
+    border-radius: var(--r-sm);
+    background: color-mix(in srgb, var(--warn) 10%, var(--sheet-2));
+    font-size: 13px;
+    margin-bottom: 10px;
   }
   .pyg-rent {
     display: grid;
@@ -1267,9 +1287,7 @@
   .pyg-rent .pyg-real {
     box-shadow: var(--sombra-2), inset 0 0 0 1px color-mix(in srgb, var(--engrave) 45%, transparent);
   }
-  .pyg-rent .pyg-real b {
-    color: var(--engrave);
-  }
+
   .pyg-frase {
     margin: 0;
     font-size: 16px;

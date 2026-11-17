@@ -116,6 +116,13 @@ export function PanelImpuestos() {
         <input type="checkbox" checked={perfil.gmf} onChange={(e) => cambiarPerfil({ gmf: e.target.checked })} />
         Incluir el GMF (4 × 1.000) sobre el dinero que se retira
       </label>
+      <label className="check">
+        <input type="checkbox" checked={!!perfil.gananciaOcasionalTitulos} onChange={(e) => cambiarPerfil({ gananciaOcasionalTitulos: e.target.checked })} />
+        Tratar la utilidad en venta como ganancia ocasional si el título fue activo fijo 2 años o más
+      </label>
+      <p className="src" style={{ margin: 0 }}>
+        La DIAN no ha confirmado la ganancia ocasional para títulos de renta fija: por defecto la utilidad en venta es renta ordinaria. Márquelo solo si su contador lo respalda.
+      </p>
 
       <details className="params-trib">
         <summary>

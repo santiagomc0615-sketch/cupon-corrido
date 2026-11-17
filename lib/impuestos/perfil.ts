@@ -17,9 +17,13 @@ export interface PerfilContribuyente {
   tarifaManual: number;
   /** Incluir el GMF sobre el dinero que se retira. */
   gmf: boolean;
+  /** Tratar la utilidad en venta como ganancia ocasional si el título fue activo fijo 2 años o más
+      (art. 300 E.T.). Por defecto no: la DIAN no lo ha confirmado para renta fija y trata la utilidad
+      en la venta de títulos como rendimiento financiero. */
+  gananciaOcasionalTitulos?: boolean;
 }
 
-export const PERFIL_INICIAL: PerfilContribuyente = { tipo: "pn_no_obligada", ingresosAnuales: null, tarifaManual: 0.19, gmf: false };
+export const PERFIL_INICIAL: PerfilContribuyente = { tipo: "pn_no_obligada", ingresosAnuales: null, tarifaManual: 0.19, gmf: false, gananciaOcasionalTitulos: false };
 
 export const esNatural = (t: TipoContribuyente) => t !== "juridica";
 

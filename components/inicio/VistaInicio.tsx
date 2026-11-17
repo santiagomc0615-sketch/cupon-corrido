@@ -13,7 +13,7 @@ import { PARAMETROS_OFICIALES } from "@/lib/impuestos/parametros";
 import { PERFIL_INICIAL } from "@/lib/impuestos/perfil";
 import { compararOpciones, NOMBRE_OPCION } from "@/lib/pyg/comparador";
 import { entradasDesdeMotor } from "@/lib/pyg/desde-motor";
-import { estadoPyG } from "@/lib/pyg/estado";
+import { estadoPyG, textoRent } from "@/lib/pyg/estado";
 import { F, nf } from "@/lib/format";
 import { CifraViva } from "./CifraViva";
 import { CurvaHeroe } from "./CurvaHeroe";
@@ -48,7 +48,7 @@ export function VistaInicio() {
     () =>
       compararOpciones(datosMotor, { monto: 1e8, plazoAnios: 3, fecha: snap.fechaAnalisis, tasaCDT: snap.dtf?.valor ?? 0.1 }, PERFIL_INICIAL, PARAMETROS_OFICIALES)
         .filter((f) => f.pyg)
-        .map((f) => [NOMBRE_OPCION[f.opcion], f.pyg!.rentReal] as const),
+        .map((f) => [NOMBRE_OPCION[f.opcion], f.pyg!.rentReal ?? -1] as const),
     [datosMotor, snap],
   );
   const maxCmp = Math.max(...cmp.map((c) => Math.abs(c[1])), 0.0001);
@@ -156,15 +156,15 @@ export function VistaInicio() {
                 <>
                   <span style={{ "--i": 0 } as React.CSSProperties}>
                     <i>Bruta</i>
-                    <b>{F.pct(pyg.rentNominal, 2)}</b>
+                    <b>{textoRent(pyg.rentNominal)}</b>
                   </span>
                   <span style={{ "--i": 1 } as React.CSSProperties}>
                     <i>Después de impuestos</i>
-                    <b>{F.pct(pyg.rentDespues, 2)}</b>
+                    <b>{textoRent(pyg.rentDespues)}</b>
                   </span>
                   <span className="dp-real" style={{ "--i": 2 } as React.CSSProperties}>
                     <i>Real al año</i>
-                    <b>{F.pct(pyg.rentReal, 2)}</b>
+                    <b>{textoRent(pyg.rentReal)}</b>
                   </span>
                 </>
               ) : null}

@@ -61,10 +61,13 @@ describe("calcular_impuestos (a mano)", () => {
     expect(j.aviso).toMatch(/confirme con un contador/);
   });
 
-  it("persona jurídica: 35 %; con 3 años de tenencia la utilidad en precio es ganancia ocasional al 15 %", () => {
+  it("persona jurídica: 35 %; la utilidad en venta es renta ordinaria salvo que se marque como activo fijo", () => {
     expect(correr("calcular_impuestos", { rendimientos_financieros: 10_000_000, tipo_contribuyente: "juridica" }).j.impuesto_estimado).toBe("$ 3.500.000");
-    // 10.000.000 × 35 % + 2.000.000 × 15 % = 3.800.000
-    const go = correr("calcular_impuestos", { rendimientos_financieros: 10_000_000, utilidad_en_venta: 2_000_000, anios_tenencia: 3, tipo_contribuyente: "juridica" }).j;
+    // por defecto: (10.000.000 + 2.000.000) × 35 % = 4.200.000
+    const ord = correr("calcular_impuestos", { rendimientos_financieros: 10_000_000, utilidad_en_venta: 2_000_000, anios_tenencia: 3, tipo_contribuyente: "juridica" }).j;
+    expect(ord.impuesto_estimado).toBe("$ 4.200.000");
+    // activo fijo con 3 años: 10.000.000 × 35 % + 2.000.000 × 15 % = 3.800.000
+    const go = correr("calcular_impuestos", { rendimientos_financieros: 10_000_000, utilidad_en_venta: 2_000_000, anios_tenencia: 3, tipo_contribuyente: "juridica", ganancia_ocasional_activo_fijo: true }).j;
     expect(go.impuesto_estimado).toBe("$ 3.800.000");
     expect(go.normas.join(" ")).toMatch(/Ganancia ocasional 15/);
   });
