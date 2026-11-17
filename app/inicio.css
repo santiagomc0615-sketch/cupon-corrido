@@ -362,11 +362,21 @@ a.funcion:active {
   justify-content: center;
 }
 .demo-noticias span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 12px;
   padding: 4px 8px;
-  border-left: 2px solid var(--seal);
   background: var(--sheet);
-  border-radius: 0 4px 4px 0;
+  border-radius: 4px;
+}
+.demo-noticias span::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--seal);
+  flex: none;
 }
 .demo-pdf {
   display: flex;
