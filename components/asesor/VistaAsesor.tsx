@@ -5,6 +5,7 @@
    cada cifra de una herramienta. La respuesta llega en NDJSON (texto + herramientas usadas). */
 import { useEffect, useRef, useState } from "react";
 import { useFondeo } from "@/components/fondeo/ControlesFondeo";
+import { AVISO_TRIBUTARIO, PanelImpuestos, useImpuestos } from "@/components/pyg/Impuestos";
 import { useApp } from "@/components/providers/AppProvider";
 import { BotonInformeAsesor, fondeoConfigurado } from "@/components/reporte/BotonReporte";
 import { Encabezado } from "@/components/ui";
@@ -71,6 +72,8 @@ type EventoNDJSON = { t: string; d?: string; id?: string; nombre?: string; estad
 export function VistaAsesor() {
   const { snap, mk, pf, pfDate, pfValorado, calc } = useApp();
   const { c: fondeo } = useFondeo();
+  const { perfil: perfilTrib, params: paramsTrib, editados } = useImpuestos();
+  const [verTrib, setVerTrib] = useState(false);
   const [perfil, setPerfil] = useGuardado<Perfil>("asesorPerfil", "moderado");
   const [comite, setComite] = useState(false);
   const [msgs, setMsgs] = useState<Mensaje[]>([BIENVENIDA]);
@@ -135,6 +138,7 @@ export function VistaAsesor() {
           titulo: calc.inputs[calc.type],
           portafolio: { fecha: pfDate, posiciones: pf.map((p) => p.inputs) },
           fondeo: fondeoConfigurado() ? fondeo : null,
+          tributario: { perfil: perfilTrib, params: editados ? paramsTrib : null },
         }),
       });
       const quedan = r.headers.get("X-Consultas-Restantes");
@@ -336,6 +340,15 @@ export function VistaAsesor() {
               Las cifras salen del motor; el modelo no calcula.
             </span>
           </div>
+          <div className="notice" style={{ fontSize: 12, flexDirection: "column", alignItems: "flex-start" }}>
+            <span>
+              <b>Impuestos:</b> {AVISO_TRIBUTARIO}
+            </span>
+            <button type="button" className="enlace" aria-expanded={verTrib} onClick={() => setVerTrib(!verTrib)}>
+              {verTrib ? "Ocultar perfil tributario" : "Ver o cambiar el perfil tributario"}
+            </button>
+          </div>
+          {verTrib && <PanelImpuestos />}
           <div className="notice" style={{ fontSize: 12 }}>
             <span className="chip warn">
               <span className="dot" />

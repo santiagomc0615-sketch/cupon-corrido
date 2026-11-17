@@ -4,9 +4,10 @@
    Funciones puras sobre un contexto (motor + datos del día + portafolio del usuario). */
 import type Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod";
-import { carryConConfig, carryPortafolioFondeo, comparacion, CONFIG_INICIAL, type ConfigFondeo, type MercadoFondeo } from "@/lib/carry/config";
+import { carryConConfig, carryPortafolioFondeo, comparacion, CONFIG_INICIAL, type ConfigFondeo } from "@/lib/carry/config";
 import { NOMBRE_ALTERNATIVA } from "@/lib/carry/exterior";
 import { NOMBRE_FONDEO, type TipoFondeo } from "@/lib/carry/fondeo";
+import { mercadoFondeo } from "@/lib/carry/mercado-snap";
 import { posicionDesdeMotor } from "@/lib/carry/posicion";
 import { tasaPeriodo } from "@/lib/carry/tasas";
 import { crearDefaults, toEngine, type EntradasUI } from "@/lib/calculadora";
@@ -16,7 +17,10 @@ import { escenarioPortafolio, SUPUESTOS_INICIALES } from "@/lib/escenarios";
 import { esError, pfMetrics, pvAt, tirInterpolada, toN, toS, type Bono, type Motor, type ResultadoValoracion, type TipoBono } from "@/lib/engine";
 import { F, nf } from "@/lib/format";
 import { spreadTesUst } from "@/lib/global";
+import type { ParametrosTributarios } from "@/lib/impuestos/parametros";
+import type { PerfilContribuyente } from "@/lib/impuestos/perfil";
 import { derivarMercado } from "@/lib/mercado-derivado";
+import { ENTRADAS_IMPUESTOS, herramientaImpuestos, herramientaPyG, HERRAMIENTAS_IMPUESTOS } from "./herramientas-impuestos";
 
 export interface PosicionAgente {
   titulo: string;
@@ -35,6 +39,8 @@ export interface ContextoHerramientas {
   titulo: PosicionAgente | null;
   /** Fondeo configurado por el usuario (null: el inicial). */
   fondeo: ConfigFondeo | null;
+  /** Perfil y parámetros tributarios del usuario (si no, los oficiales y persona natural no obligada). */
+  tributario?: { perfil: PerfilContribuyente; params: ParametrosTributarios };
 }
 
 /* ---------- utilidades ---------- */
@@ -46,19 +52,6 @@ const sumarAnios = (fecha: string, anios: number) => toS(toN(fecha) + Math.round
 const TIPOS = ["TF", "IBR", "IPC", "UVR"] as const;
 const NOMBRE_TIPO: Record<TipoBono, string> = { TF: "TES / bono tasa fija", IBR: "Bono IBR", IPC: "Bono IPC", UVR: "TES UVR" };
 
-function mercadoFondeo(snap: SnapshotMercado): MercadoFondeo {
-  const u = snap.datos.ibr[snap.datos.ibr.length - 1];
-  return {
-    sofr: snap.sofr?.valor ?? null,
-    sofrFecha: snap.sofr?.fecha,
-    spot: snap.trm?.valor ?? null,
-    spotFecha: snap.trm?.fecha,
-    spot12m: snap.trm?.hace12m ?? null,
-    tpm: snap.macro.tpm,
-    tpmFecha: snap.macro.tpmFecha,
-    ibr: u ? { fecha: u[0], on: u[1] / 100, m1: u[2] / 100, m3: u[3] / 100, m6: u[4] / 100 } : null,
-  };
-}
 
 /** Ficha de un título valorado (todas las cifras del motor y de la vista cliente). */
 function fichaTitulo(p: PosicionAgente) {
@@ -125,6 +118,7 @@ const ENTRADAS = {
   }),
   resumen_portafolio: z.object({}),
   datos_mercado: z.object({}),
+  ...ENTRADAS_IMPUESTOS,
 } as const;
 
 export type NombreHerramienta = keyof typeof ENTRADAS;
@@ -200,6 +194,7 @@ export const HERRAMIENTAS: Anthropic.Beta.BetaTool[] = [
       "Datos de mercado del día con fuente y fecha: tasa de política, inflación (12 meses, núcleo, expectativas), IBR por plazo, UVR, curva TES (referencias), TRM, SOFR, Tesoro de EE. UU. a 10 años, spread TES 10A − UST 10A y DTF.",
     input_schema: objeto({}),
   },
+  ...HERRAMIENTAS_IMPUESTOS,
 ].map((t) => ({ ...t, eager_input_streaming: true }));
 
 /* ---------- ejecución ---------- */
@@ -429,7 +424,11 @@ export function ejecutarHerramienta(nombre: string, entrada: unknown, ctx: Conte
               ? herramientaFondeo(ctx, v.data as z.infer<typeof ENTRADAS.analizar_fondeo>)
               : n === "resumen_portafolio"
                 ? herramientaPortafolio(ctx)
-                : herramientaMercado(ctx);
+                : n === "calcular_impuestos"
+                  ? herramientaImpuestos(ctx, v.data as z.infer<typeof ENTRADAS.calcular_impuestos>)
+                  : n === "calcular_pyg"
+                    ? herramientaPyG(ctx, v.data as z.infer<typeof ENTRADAS.calcular_pyg>)
+                    : herramientaMercado(ctx);
     return { contenido: JSON.stringify(r), error: "error" in (r as object) };
   } catch (e) {
     return { contenido: JSON.stringify({ error: e instanceof Error ? e.message : String(e) }), error: true };

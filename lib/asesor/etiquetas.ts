@@ -6,6 +6,8 @@ export const ETIQUETA_HERRAMIENTA: Record<string, string> = {
   analizar_fondeo: "Analizó el fondeo",
   resumen_portafolio: "Resumió el portafolio",
   datos_mercado: "Consultó los datos del día",
+  calcular_impuestos: "Liquidó los impuestos",
+  calcular_pyg: "Calculó el P&G",
 };
 
 export const etiquetaHerramienta = (nombre: string) => ETIQUETA_HERRAMIENTA[nombre] ?? nombre;

@@ -184,7 +184,12 @@ describe("POST /api/asesor", () => {
     expect(p0.fallbacks).toBe("default");
     expect(p0.betas).toEqual(["server-side-fallback-2026-07-01"]);
     expect(p0.output_config).toEqual({ effort: "medium" });
-    expect((p0.tools as unknown[]).length).toBe(6);
+    expect((p0.tools as unknown[]).length).toBe(8);
+    // el conocimiento tributario verificado va en el sistema, en el bloque que se guarda en caché
+    const sistema = p0.system as { text: string; cache_control?: unknown }[];
+    expect(sistema[1].text).toMatch(/CONOCIMIENTO TRIBUTARIO/);
+    expect(sistema[1].text).toMatch(/Decreto 898 de 2026/);
+    expect(sistema[1].cache_control).toEqual({ type: "ephemeral" });
     expect(JSON.stringify(p0.system)).toMatch(/CONSERVADOR/);
     expect(JSON.stringify(p0.system)).toMatch(/Caso en contra/);
     expect(p0.messages).toEqual([{ role: "user", content: "Resumen" }]);

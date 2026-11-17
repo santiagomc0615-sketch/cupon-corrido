@@ -1,6 +1,8 @@
 /* Validación de la petición al asesor (función pura, se prueba sin red). */
 import type { ConfigFondeo } from "@/lib/carry/config";
 import type { EntradasUI } from "@/lib/calculadora";
+import type { ParametrosTributarios, TramoRenta } from "@/lib/impuestos/parametros";
+import type { PerfilContribuyente } from "@/lib/impuestos/perfil";
 
 export const PERFILES = ["conservador", "moderado", "agresivo"] as const;
 export type Perfil = (typeof PERFILES)[number];
@@ -32,6 +34,49 @@ export interface PeticionAsesor {
   portafolio: { fecha: string | null; posiciones: EntradasUI[] };
   /** Fondeo configurado por el usuario. */
   fondeo: Partial<ConfigFondeo> | null;
+  /** Perfil tributario y parámetros editados por el usuario (los que falten, los oficiales). */
+  tributario: { perfil: Partial<PerfilContribuyente>; params: Partial<ParametrosTributarios> | null } | null;
+}
+
+const TIPOS_CONTRIBUYENTE = ["pn_no_obligada", "pn_obligada", "juridica"];
+/** Rangos válidos de los parámetros tributarios editables. */
+const RANGOS: Partial<Record<keyof ParametrosTributarios, [number, number]>> = {
+  retencion: [0, 0.2],
+  componenteInflacionario: [0, 1],
+  anioComponente: [2000, 2100],
+  uvt: [10_000, 500_000],
+  anioUvt: [2000, 2100],
+  gananciaOcasional: [0, 0.5],
+  aniosGananciaOcasional: [0, 10],
+  rentaJuridica: [0, 0.6],
+  gmf: [0, 0.02],
+};
+const enRango = (v: unknown, [a, b]: [number, number]) => typeof v === "number" && Number.isFinite(v) && v >= a && v <= b;
+
+/** Perfil y parámetros tributarios: solo campos conocidos y en rango. */
+function tributarioDe(x: unknown): PeticionAsesor["tributario"] {
+  if (!x || typeof x !== "object") return null;
+  const t = x as Record<string, unknown>;
+  const pr = (t.perfil && typeof t.perfil === "object" ? t.perfil : {}) as Record<string, unknown>;
+  const perfil: Partial<PerfilContribuyente> = {};
+  if (TIPOS_CONTRIBUYENTE.includes(pr.tipo as string)) perfil.tipo = pr.tipo as PerfilContribuyente["tipo"];
+  if (pr.ingresosAnuales === null) perfil.ingresosAnuales = null;
+  else if (enRango(pr.ingresosAnuales, [0, 1e13])) perfil.ingresosAnuales = pr.ingresosAnuales as number;
+  if (enRango(pr.tarifaManual, [0, 0.6])) perfil.tarifaManual = pr.tarifaManual as number;
+  if (typeof pr.gmf === "boolean") perfil.gmf = pr.gmf;
+  let params: Partial<ParametrosTributarios> | null = null;
+  if (t.params && typeof t.params === "object") {
+    const pa = t.params as Record<string, unknown>;
+    params = {};
+    for (const [k, r] of Object.entries(RANGOS) as [keyof ParametrosTributarios, [number, number]][])
+      if (enRango(pa[k], r)) (params as Record<string, number>)[k] = pa[k] as number;
+    if (Array.isArray(pa.tabla241) && pa.tabla241.length >= 2 && pa.tabla241.length <= 12) {
+      const tabla = pa.tabla241.map((f) => f as Record<string, unknown>);
+      const ok = tabla.every((f) => enRango(f.desde, [0, 1e6]) && (f.hasta === null || enRango(f.hasta, [0, 1e6])) && enRango(f.tarifa, [0, 0.6]) && enRango(f.fijo, [0, 1e6]));
+      if (ok) params.tabla241 = tabla.map((f) => ({ desde: f.desde, hasta: f.hasta, tarifa: f.tarifa, fijo: f.fijo }) as TramoRenta);
+    }
+  }
+  return { perfil, params };
 }
 
 export const LIMITES = {
@@ -98,6 +143,6 @@ export function validarPeticion(cuerpo: unknown): { ok: true; p: PeticionAsesor 
   const rapida = RAPIDAS_CACHEABLES.find((r) => r === c.rapida);
   return {
     ok: true,
-    p: { pregunta, historial: alternado, perfil, modo, titulo, portafolio: { fecha, posiciones }, fondeo, ...(rapida ? { rapida } : {}) },
+    p: { pregunta, historial: alternado, perfil, modo, titulo, portafolio: { fecha, posiciones }, fondeo, tributario: tributarioDe(c.tributario), ...(rapida ? { rapida } : {}) },
   };
 }
