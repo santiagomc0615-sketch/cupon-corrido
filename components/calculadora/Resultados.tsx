@@ -2,6 +2,10 @@
 import { useState, type ReactNode } from "react";
 import type { ClaveClase } from "@/lib/clase";
 import { AnalisisTitulo } from "./AnalisisTitulo";
+import { useFondeo, useMercadoFondeo } from "@/components/fondeo/ControlesFondeo";
+import { BotonPyG } from "@/components/pyg/VentanaPyG";
+import { fondeoConfigurado } from "@/components/reporte/BotonReporte";
+import { costoFondeo, entradasDesdeMotor } from "@/lib/pyg/desde-motor";
 import { CarryFondeo } from "./CarryFondeo";
 import { ETIQUETAS_CLASE, PasoAPaso } from "./PasoAPaso";
 import { Chart, nearest } from "@/components/charts/Chart";
@@ -330,7 +334,7 @@ function ResultadosOk({ b, o, avisosExtra, clase }: { b: Bono; o: ResultadoValor
 }
 
 function VentaAnticipada({ b, o }: { b: Bono; o: ResultadoValoracion }) {
-  const { calc, setCalc, motor, curvas, pedirCurva } = useApp();
+  const { calc, setCalc, motor, curvas, pedirCurva, datosMotor } = useApp();
   const t = o.tipo;
   const hv = calc.hv;
   const d = hv?.d || toS(edate(toN(b.valoracion), 12));
@@ -346,6 +350,11 @@ function VentaAnticipada({ b, o }: { b: Bono; o: ResultadoValoracion }) {
   const falta = curvaVenta && !curvaVenta.serie ? curvaVenta.id : null;
   useCurvaNecesaria(falta);
 
+  // Fondeo configurado por el usuario (para el costo en el P&G)
+  const { c: fondeo } = useFondeo();
+  const mercadoFondeo = useMercadoFondeo();
+  /** Precio sucio de venta de la simulación (para la ventana P&G). */
+  let sucioVenta: number | null = null;
   let cuerpo: ReactNode;
   if (falta && curvaVenta) {
     cuerpo =
@@ -361,6 +370,7 @@ function VentaAnticipada({ b, o }: { b: Bono; o: ResultadoValoracion }) {
       );
   } else if (modo === "curva" && b.tipo === "IBR" && o.tipo === "IBR") {
     const h = holdingCurvaIBR(motor.mercado, b, o, d, (+spreadV || 0) / 100, curvaSel || undefined);
+    if (!esError(h)) sucioVenta = h.pVenta;
     cuerpo = esError(h) ? (
       <div className="alert" role="alert">
         {h.error}
@@ -393,6 +403,7 @@ function VentaAnticipada({ b, o }: { b: Bono; o: ResultadoValoracion }) {
     );
   } else {
     const h = holding(b, o, d, +r / 100);
+    if (!esError(h)) sucioVenta = h.pVenta;
     cuerpo = esError(h) ? (
       <div className="alert" role="alert">
         {h.error}
@@ -476,6 +487,26 @@ function VentaAnticipada({ b, o }: { b: Bono; o: ResultadoValoracion }) {
         )}
       </div>
       {cuerpo}
+      {sucioVenta != null && (
+        <div className="pyg-accion">
+          <BotonPyG
+            titulo={`Venta el ${F.date(d)}`}
+            subtitulo={`Compra el ${F.date(b.valoracion)} · precio sucio de venta ${F.n(sucioVenta, 3)} %`}
+            construir={() => {
+              const dias = toN(d) - toN(b.valoracion);
+              const fondeado = fondeoConfigurado();
+              return entradasDesdeMotor(
+                motor,
+                b,
+                o,
+                { fechaVenta: d, sucioVenta: sucioVenta as number, costoFondeo: fondeado ? costoFondeo(o.giro, fondeo, mercadoFondeo, dias) : 0 },
+                { ipc: datosMotor.ipc, exp: datosMotor.exp },
+              );
+            }}
+          />
+          <span className="src">Estado de resultados con impuestos e inflación</span>
+        </div>
+      )}
     </Panel>
   );
 }

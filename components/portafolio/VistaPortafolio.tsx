@@ -6,6 +6,8 @@ import { Chart, nearest, type PuntoSerie } from "@/components/charts/Chart";
 import { useApp } from "@/components/providers/AppProvider";
 import { CarryRoll } from "./CarryRoll";
 import { ClientePortafolio, InterruptorCliente, useVistaCliente } from "@/components/cliente/Interruptor";
+import { BotonPyGPortafolio } from "@/components/pyg/Botones";
+import { Comparador } from "@/components/pyg/Comparador";
 import { BotonReportePortafolio } from "@/components/reporte/BotonReporte";
 import { EscenarioBanRep } from "./EscenarioBanRep";
 import { FondeoPortafolio } from "./FondeoPortafolio";
@@ -56,11 +58,13 @@ export function VistaPortafolio() {
       </div>
       {hidratado && !cliente && (
         <div className="reporte-barra">
+          <BotonPyGPortafolio />
           <BotonReportePortafolio />
         </div>
       )}
       {hidratado && cliente && <ClientePortafolio />}
       {hidratado ? <Cuerpo /> : <div className="panel empty">Cargando portafolio…</div>}
+      {hidratado && <Comparador />}
     </section>
   );
 }

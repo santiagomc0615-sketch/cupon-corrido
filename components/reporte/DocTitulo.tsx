@@ -5,6 +5,7 @@ import { F, nf } from "@/lib/format";
 import type { FlujoReporte, ReporteTitulo } from "@/lib/reporte/datos";
 import { C, FAMILIA } from "@/lib/reporte/estilo";
 import { BRAND } from "@/lib/brand";
+import { PaginaPyG, type DatosPyGReporte } from "./PaginaPyG";
 import { Encabezado, KV, Pie, Seccion, s } from "./piezas";
 
 const pct = (x: number, d = 2) => F.pct(x, d);
@@ -75,7 +76,7 @@ function Leyenda({ color, texto }: { color: string; texto: string }) {
   );
 }
 
-export function DocTitulo({ r, generado }: { r: ReporteTitulo; generado: string }) {
+export function DocTitulo({ r, generado, pyg }: { r: ReporteTitulo; generado: string; pyg?: DatosPyGReporte | null }) {
   const c = r.cliente_;
   const pc = c.proximo;
   return (
@@ -177,6 +178,7 @@ export function DocTitulo({ r, generado }: { r: ReporteTitulo; generado: string 
 
         <Pie fuentes={r.fuentes} generado={generado} />
       </Page>
+      {pyg ? <PaginaPyG d={pyg} titulo={r.titulo} valoracion={r.valoracion} cliente={r.cliente} fuentes={r.fuentes} generado={generado} /> : null}
     </Document>
   );
 }

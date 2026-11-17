@@ -136,3 +136,20 @@ Herramienta académica, no es asesoría financiera. Respuestas generadas por IA.
     if (process.env.REPORTE_SALIDA) writeFileSync(path.join(process.env.REPORTE_SALIDA, "informe-cliente.pdf"), buf);
   });
 });
+
+describe("Página P&G en el reporte", () => {
+  it("agrega una segunda página con el estado de resultados", async () => {
+    const { estadoPyG } = await import("@/lib/pyg/estado");
+    const { entradasDesdeMotor } = await import("@/lib/pyg/desde-motor");
+    const { PARAMETROS_OFICIALES } = await import("@/lib/impuestos/parametros");
+    const { PERFIL_INICIAL } = await import("@/lib/impuestos/perfil");
+    const v = valorar("TF");
+    const e = entradasDesdeMotor(motor, v.b, v.o, { alVencimiento: true }, { ipc: D.ipc, exp: D.exp });
+    if ("error" in e) throw new Error(e.error);
+    const r = armarReporteTitulo({ ...v, cliente: "Cliente de prueba", fuentes });
+    const pyg = { resultado: estadoPyG(e, PERFIL_INICIAL, PARAMETROS_OFICIALES), supuesto: "Se mantiene hasta el vencimiento", perfil: "Persona natural no obligada" };
+    const buf = await renderToBuffer(createElement(DocTitulo, { r, generado: "17 nov 2026", pyg }) as unknown as ReactElement<DocumentProps>);
+    expect(paginas(buf)).toBe(2);
+    if (process.env.REPORTE_SALIDA) writeFileSync(path.join(process.env.REPORTE_SALIDA, "reporte-TES-TF-2031-pyg.pdf"), buf);
+  });
+});
