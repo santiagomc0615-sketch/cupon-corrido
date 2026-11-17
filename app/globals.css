@@ -885,6 +885,103 @@
       --sombra-heroe: 0 2px 6px rgba(0, 0, 0, 0.5), 0 24px 48px -18px rgba(0, 0, 0, 0.8);
     }
   }
+  /* Análisis del título (components/calculadora/AnalisisTitulo.tsx) */
+  .analisis {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .semaforo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .semaforo > div {
+    display: flex;
+    flex-direction: column;
+  }
+  .semaforo b {
+    font-size: 17px;
+  }
+  .semaforo-luz,
+  .dot-luz {
+    border-radius: var(--r-circle);
+    background: currentColor;
+    flex: none;
+  }
+  .semaforo-luz {
+    width: 22px;
+    height: 22px;
+    box-shadow: 0 0 0 4px color-mix(in srgb, currentColor 18%, transparent);
+  }
+  .dot-luz {
+    width: 9px;
+    height: 9px;
+  }
+  .semaforo-luz.pos,
+  .dot-luz.pos {
+    color: var(--pos);
+  }
+  .semaforo-luz.warn,
+  .dot-luz.warn {
+    color: var(--warn);
+  }
+  .semaforo-luz.neg,
+  .dot-luz.neg {
+    color: var(--neg);
+  }
+  .senales {
+    list-style: none;
+    margin: 12px 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .senales li {
+    display: grid;
+    grid-template-columns: auto 8.5rem 1fr;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+  }
+  .senales li span:not(.dot-luz) {
+    color: var(--ink-2);
+    font-family: var(--f-mono);
+    font-size: 12px;
+  }
+  .check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    align-self: end;
+    min-height: 36px;
+  }
+  .umbrales {
+    margin-top: 10px;
+  }
+  .umbrales summary {
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--ink-2);
+  }
+  .spread-cab {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .spread-cab > div {
+    display: flex;
+    flex-direction: column;
+  }
+  .spread-pb {
+    font: 600 28px/1.1 var(--f-cifra);
+    font-variant-numeric: tabular-nums;
+  }
+
   /* Reporte PDF: nombre del cliente + botón */
   .reporte-pdf {
     display: flex;
