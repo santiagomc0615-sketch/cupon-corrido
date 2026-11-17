@@ -1,4 +1,11 @@
 /* Validación de la petición al asesor (función pura, se prueba sin red). */
+import type { ConfigFondeo } from "@/lib/carry/config";
+import type { EntradasUI } from "@/lib/calculadora";
+
+export const PERFILES = ["conservador", "moderado", "agresivo"] as const;
+export type Perfil = (typeof PERFILES)[number];
+export const MODOS = ["chat", "comite", "informe"] as const;
+export type Modo = (typeof MODOS)[number];
 
 export interface TurnoHistorial {
   role: "user" | "assistant";
@@ -15,16 +22,43 @@ export interface PeticionAsesor {
   pregunta: string;
   /** Turnos anteriores (solo texto), los más recientes. */
   historial: TurnoHistorial[];
-  /** Resumen de mercado y portafolio (ctxSnapshot). */
-  contexto: unknown;
+  /** Perfil de riesgo del cliente. */
+  perfil: Perfil;
+  /** chat normal, comité de inversión (a favor / en contra / conclusión) o informe para el cliente. */
+  modo: Modo;
+  /** Entradas del título abierto en la calculadora (el servidor lo valora con el motor). */
+  titulo: EntradasUI | null;
+  /** Posiciones del portafolio (entradas de la calculadora) y su fecha de valoración. */
+  portafolio: { fecha: string | null; posiciones: EntradasUI[] };
+  /** Fondeo configurado por el usuario. */
+  fondeo: Partial<ConfigFondeo> | null;
 }
 
 export const LIMITES = {
   pregunta: 2000,
   turnos: 6,
   turno: 6000,
-  contexto: 40_000,
+  posiciones: 30,
+  entradas: 4_000,
+  fondeo: 2_000,
 };
+
+const TIPOS = ["TF", "IBR", "IPC", "UVR"];
+const FECHA = /^\d{4}-\d{2}-\d{2}$/;
+
+/** Entradas de un título: objeto plano de textos y números, con tipo válido y tamaño acotado. */
+function entradas(x: unknown): EntradasUI | null {
+  if (!x || typeof x !== "object" || Array.isArray(x)) return null;
+  const r = x as Record<string, unknown>;
+  if (!TIPOS.includes(r.tipo as string)) return null;
+  if (JSON.stringify(r).length > LIMITES.entradas) return null;
+  const limpio: Record<string, string | number> = {};
+  for (const [k, v] of Object.entries(r)) {
+    if (typeof v === "string") limpio[k] = v.slice(0, 200);
+    else if (typeof v === "number" && Number.isFinite(v)) limpio[k] = v;
+  }
+  return { nombre: "", ...limpio } as EntradasUI;
+}
 
 export function validarPeticion(cuerpo: unknown): { ok: true; p: PeticionAsesor } | { ok: false; error: string } {
   if (!cuerpo || typeof cuerpo !== "object") return { ok: false, error: "Petición inválida." };
@@ -45,12 +79,25 @@ export function validarPeticion(cuerpo: unknown): { ok: true; p: PeticionAsesor 
   const alternado = historial.filter((t, i) => i === 0 || t.role !== historial[i - 1].role);
   if (alternado.length && alternado[alternado.length - 1].role === "user") alternado.pop();
 
-  let contexto: unknown = null;
-  if (c.contexto != null) {
-    const texto = JSON.stringify(c.contexto);
-    if (texto.length > LIMITES.contexto) return { ok: false, error: "El contexto enviado es demasiado grande." };
-    contexto = c.contexto;
+  const perfil = PERFILES.find((x) => x === c.perfil) ?? "moderado";
+  const modo = MODOS.find((x) => x === c.modo) ?? "chat";
+  const titulo = entradas(c.titulo);
+
+  const pfCrudo = (c.portafolio && typeof c.portafolio === "object" ? c.portafolio : {}) as Record<string, unknown>;
+  const lista = Array.isArray(pfCrudo.posiciones) ? pfCrudo.posiciones : [];
+  if (lista.length > LIMITES.posiciones) return { ok: false, error: `El portafolio tiene demasiadas posiciones (máximo ${LIMITES.posiciones}).` };
+  const posiciones = lista.map(entradas).filter((x): x is EntradasUI => x != null);
+  const fecha = typeof pfCrudo.fecha === "string" && FECHA.test(pfCrudo.fecha) ? pfCrudo.fecha : null;
+
+  let fondeo: Partial<ConfigFondeo> | null = null;
+  if (c.fondeo && typeof c.fondeo === "object" && !Array.isArray(c.fondeo)) {
+    if (JSON.stringify(c.fondeo).length > LIMITES.fondeo) return { ok: false, error: "La configuración de fondeo es demasiado grande." };
+    fondeo = c.fondeo as Partial<ConfigFondeo>;
   }
+
   const rapida = RAPIDAS_CACHEABLES.find((r) => r === c.rapida);
-  return { ok: true, p: { pregunta, historial: alternado, contexto, ...(rapida ? { rapida } : {}) } };
+  return {
+    ok: true,
+    p: { pregunta, historial: alternado, perfil, modo, titulo, portafolio: { fecha, posiciones }, fondeo, ...(rapida ? { rapida } : {}) },
+  };
 }

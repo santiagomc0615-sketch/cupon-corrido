@@ -4,8 +4,22 @@
     {
       "name": "cupon-corrido",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
+      "runtimeArgs": [
+        "run",
+        "dev"
+      ],
       "port": 3000
+    },
+    {
+      "name": "prod-3002",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "next",
+        "start",
+        "-p",
+        "3002"
+      ],
+      "port": 3002
     }
   ]
 }

@@ -6,11 +6,12 @@ import { useState, type ReactElement } from "react";
 import { useFondeo, useMercadoFondeo } from "@/components/fondeo/ControlesFondeo";
 import { useApp } from "@/components/providers/AppProvider";
 import type { Bono, ResultadoValoracion } from "@/lib/engine";
-import { armarReportePortafolio, armarReporteTitulo } from "@/lib/reporte/datos";
+import { seccionesInforme } from "@/lib/asesor/informe";
+import { armarReportePortafolio, armarReporteTitulo, fuentesReporte } from "@/lib/reporte/datos";
 import { useGuardado } from "@/lib/storage";
 
 /** ¿El usuario configuró el fondeo alguna vez? (si no, el reporte no trae el bloque de carry). */
-function fondeoConfigurado(): boolean {
+export function fondeoConfigurado(): boolean {
   try {
     return localStorage.getItem("cc_fondeo-v2") != null;
   } catch {
@@ -38,7 +39,7 @@ async function generarYDescargar(crear: () => Promise<ReactElement>, archivo: st
 
 const ahora = () => new Date().toLocaleString("es-CO", { timeZone: "America/Bogota", dateStyle: "medium", timeStyle: "short" });
 
-function Formulario({ alGenerar, id }: { alGenerar: (cliente: string) => Promise<void>; id: string }) {
+function Formulario({ alGenerar, id, etiqueta = "Descargar reporte PDF" }: { alGenerar: (cliente: string) => Promise<void>; id: string; etiqueta?: string }) {
   const [cliente, setCliente] = useGuardado<string>("reporteCliente", "");
   const [estado, setEstado] = useState<"listo" | "generando" | "error">("listo");
   const generar = async () => {
@@ -58,7 +59,7 @@ function Formulario({ alGenerar, id }: { alGenerar: (cliente: string) => Promise
         <input id={id} type="text" maxLength={80} placeholder="Nombre para el reporte" value={cliente} onChange={(e) => setCliente(e.target.value)} />
       </div>
       <button type="button" className="btn primary" onClick={() => void generar()} disabled={estado === "generando"}>
-        {estado === "generando" ? "Generando PDF…" : "Descargar reporte PDF"}
+        {estado === "generando" ? "Generando PDF…" : etiqueta}
       </button>
       {estado === "error" && (
         <span className="src" role="alert">
@@ -115,6 +116,30 @@ export function BotonReportePortafolio() {
           const { DocPortafolio } = await import("./DocPortafolio");
           return <DocPortafolio r={r} generado={ahora()} />;
         }, nombreArchivo("portafolio", pfDate));
+      }}
+    />
+  );
+}
+
+/** PDF del «Informe para el cliente» que redactó el asesor de IA. */
+export function BotonInformeAsesor({ texto, perfil }: { texto: string; perfil: string }) {
+  const { snap } = useApp();
+  return (
+    <Formulario
+      id="reporte-cliente-informe"
+      etiqueta="Descargar informe PDF"
+      alGenerar={async (cliente) => {
+        const r = {
+          secciones: seccionesInforme(texto),
+          perfil,
+          valoracion: snap.fechaAnalisis,
+          cliente,
+          fuentes: fuentesReporte(snap.fuentes, ["tpm", "ibr", "ipc", "uvr", "tes", "trm", "sofr", "dtf"]),
+        };
+        await generarYDescargar(async () => {
+          const { DocInforme } = await import("./DocInforme");
+          return <DocInforme r={r} generado={ahora()} />;
+        }, nombreArchivo("informe cliente", snap.fechaAnalisis));
       }}
     />
   );

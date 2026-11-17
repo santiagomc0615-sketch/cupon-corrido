@@ -1,14 +1,23 @@
-/* Ruta /api/asesor con la API de Anthropic simulada: streaming de texto, rechazo y errores. */
+/* Ruta /api/asesor con la API de Anthropic simulada: streaming NDJSON, herramientas, rechazo y errores. */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
+vi.mock("@/lib/data/mercado", async () => {
+  const { SNAP_PRUEBA } = await import("./snap-prueba");
+  return { obtenerMercado: async () => estado.snap ?? SNAP_PRUEBA };
+});
 
 const estado = vi.hoisted(() => ({
   eventos: [] as unknown[],
-  final: { stop_reason: "end_turn" } as { stop_reason: string },
+  final: { stop_reason: "end_turn", content: [] } as { stop_reason: string; content: unknown[] },
+  /** Respuestas por vuelta del agente (si se dan, mandan sobre eventos/final). */
+  vueltas: null as { eventos: unknown[]; final: { stop_reason: string; content: unknown[] } }[] | null,
+  peticiones: [] as Record<string, unknown>[],
+  snap: null as Record<string, unknown> | null,
   errorInicial: null as Error | null,
   ultimaPeticion: null as Record<string, unknown> | null,
   llamadas: 0,
+  inicioVueltas: 0,
 }));
 
 vi.mock("@anthropic-ai/sdk", () => {
@@ -33,13 +42,15 @@ vi.mock("@anthropic-ai/sdk", () => {
       messages: {
         stream: (params: Record<string, unknown>) => {
           estado.ultimaPeticion = params;
+          estado.peticiones.push(structuredClone(params));
+          const v = estado.vueltas?.[estado.llamadas - estado.inicioVueltas] ?? { eventos: estado.eventos, final: estado.final };
           estado.llamadas++;
           return {
             async *[Symbol.asyncIterator]() {
               if (estado.errorInicial) throw estado.errorInicial;
-              for (const ev of estado.eventos) yield ev;
+              for (const ev of v.eventos) yield ev;
             },
-            finalMessage: async () => estado.final,
+            finalMessage: async () => v.final,
             abort: () => {},
           };
         },
@@ -60,9 +71,18 @@ const peticion = (cuerpo: unknown, ip = "200.1.1.1") =>
 beforeEach(() => {
   process.env.ANTHROPIC_API_KEY = "clave-de-prueba";
   estado.eventos = [];
-  estado.final = { stop_reason: "end_turn" };
+  estado.final = { stop_reason: "end_turn", content: [] };
   estado.errorInicial = null;
+  estado.vueltas = null;
+  estado.peticiones = [];
+  estado.snap = null;
 });
+
+/** Lee la respuesta NDJSON: texto unido y eventos. */
+async function leer(r: Response) {
+  const lineas = (await r.text()).split("\n").filter(Boolean).map((l) => JSON.parse(l) as { t: string; d?: string; nombre?: string; estado?: string });
+  return { texto: lineas.filter((e) => e.t === "texto" || e.t === "nota").map((e) => e.d).join(""), eventos: lineas };
+}
 afterEach(() => {
   delete process.env.ANTHROPIC_API_KEY;
   delete process.env.ASESOR_MAX_TOKENS;
@@ -107,19 +127,22 @@ describe("Modo demo y configuración", () => {
   it("«Resumen de la economía» se guarda 24 h: la segunda vez no llama a la API ni gasta cupo", async () => {
     const { POST } = await import("@/app/api/asesor/route");
     estado.eventos = [texto("### Economía\n"), texto("- Inflación 6,29 %")];
-    const cuerpo = { pregunta: "Resumen", rapida: "resumen", contexto: { macro: { tasa_politica: 0.1225 }, portafolio: { valor: 1 } } };
+    const { SNAP_PRUEBA } = await import("./snap-prueba");
+    estado.snap = { ...SNAP_PRUEBA, actualizado: "2026-11-04 09:00" };
+    const cuerpo = { pregunta: "Resumen", rapida: "resumen", portafolio: { posiciones: [{ tipo: "TF", nombre: "A" }] } };
     const r1 = await POST(peticion(cuerpo, "200.7.7.7"));
     expect(r1.headers.get("X-Asesor-Cache")).toBe("MISS");
-    expect(await r1.text()).toBe("### Economía\n- Inflación 6,29 %");
+    expect((await leer(r1)).texto).toBe("### Economía\n- Inflación 6,29 %");
     const llamadas = estado.llamadas;
     // otro portafolio, mismos datos de mercado → misma respuesta guardada
-    const r2 = await POST(peticion({ ...cuerpo, contexto: { ...cuerpo.contexto, portafolio: { valor: 2 } } }, "200.7.7.7"));
+    const r2 = await POST(peticion({ ...cuerpo, portafolio: { posiciones: [] } }, "200.7.7.7"));
     expect(r2.headers.get("X-Asesor-Cache")).toBe("HIT");
     expect(r2.headers.get("X-Consultas-Restantes")).toBeNull();
-    expect(await r2.text()).toBe("### Economía\n- Inflación 6,29 %");
+    expect((await leer(r2)).texto).toBe("### Economía\n- Inflación 6,29 %");
     expect(estado.llamadas).toBe(llamadas);
     // si cambian los datos de mercado, se genera una respuesta nueva
-    const r3 = await POST(peticion({ ...cuerpo, contexto: { macro: { tasa_politica: 0.12 } } }, "200.7.7.7"));
+    estado.snap = { ...SNAP_PRUEBA, actualizado: "2026-11-05 09:00" };
+    const r3 = await POST(peticion(cuerpo, "200.7.7.7"));
     expect(r3.headers.get("X-Asesor-Cache")).toBe("MISS");
     await r3.text();
     expect(estado.llamadas).toBe(llamadas + 1);
@@ -127,11 +150,13 @@ describe("Modo demo y configuración", () => {
 
   it("una respuesta declinada no se guarda en caché", async () => {
     const { POST } = await import("@/app/api/asesor/route");
+    const { SNAP_PRUEBA } = await import("./snap-prueba");
+    estado.snap = { ...SNAP_PRUEBA, actualizado: "2026-11-06 09:00" };
     estado.eventos = [texto("parcial")];
-    estado.final = { stop_reason: "refusal" };
-    const cuerpo = { pregunta: "Resumen", rapida: "resumen", contexto: { macro: { tasa_politica: 0.099 } } };
+    estado.final = { stop_reason: "refusal", content: [] };
+    const cuerpo = { pregunta: "Resumen", rapida: "resumen" };
     await (await POST(peticion(cuerpo, "200.8.8.8"))).text();
-    estado.final = { stop_reason: "end_turn" };
+    estado.final = { stop_reason: "end_turn", content: [] };
     const r = await POST(peticion(cuerpo, "200.8.8.8"));
     expect(r.headers.get("X-Asesor-Cache")).toBe("MISS");
     await r.text();
@@ -139,28 +164,40 @@ describe("Modo demo y configuración", () => {
 });
 
 describe("POST /api/asesor", () => {
-  it("devuelve el texto en streaming y arma la petición con el contexto en el sistema", async () => {
+  it("devuelve NDJSON en streaming, con herramientas, perfil y modo en el sistema", async () => {
     const { POST } = await import("@/app/api/asesor/route");
-    estado.eventos = [{ type: "message_start" }, texto("### Resumen\n"), texto("- La TPM está en **12,25 %**.")];
-    const r = await POST(peticion({ pregunta: "Resumen", historial: [], contexto: { macro: { tasa_politica: 0.1225 } } }, "200.1.1.1"));
+    const pedido = { type: "tool_use", id: "t1", name: "datos_mercado", input: {} };
+    estado.inicioVueltas = estado.llamadas;
+    estado.vueltas = [
+      { eventos: [{ type: "content_block_start", index: 0, content_block: pedido }], final: { stop_reason: "tool_use", content: [pedido] } },
+      { eventos: [texto("### Resumen\n"), texto("- La TPM está en **12,25 %**.")], final: { stop_reason: "end_turn", content: [] } },
+    ];
+    const r = await POST(peticion({ pregunta: "Resumen", perfil: "conservador", modo: "comite", historial: [] }, "200.1.1.1"));
     expect(r.status).toBe(200);
-    expect(r.headers.get("Content-Type")).toMatch(/text\/plain/);
-    expect(await r.text()).toBe("### Resumen\n- La TPM está en **12,25 %**.");
-    const p = estado.ultimaPeticion!;
-    expect(p.model).toBe("claude-opus-5-5");
-    expect(p.fallbacks).toBe("default");
-    expect(p.betas).toEqual(["server-side-fallback-2026-07-01"]);
-    expect(p.output_config).toEqual({ effort: "medium" });
-    expect(JSON.stringify(p.system)).toContain("tasa_politica");
-    expect(p.messages).toEqual([{ role: "user", content: "Resumen" }]);
+    expect(r.headers.get("Content-Type")).toMatch(/application\/x-ndjson/);
+    const { texto: t, eventos } = await leer(r);
+    expect(t).toBe("### Resumen\n- La TPM está en **12,25 %**.");
+    expect(eventos.filter((e) => e.t === "herramienta").map((e) => e.estado)).toEqual(["pidiendo", "listo"]);
+    expect(eventos[eventos.length - 1]).toEqual({ t: "fin", stop: "end_turn" });
+    const [p0, p1] = estado.peticiones;
+    expect(p0.model).toBe("claude-opus-5-5");
+    expect(p0.fallbacks).toBe("default");
+    expect(p0.betas).toEqual(["server-side-fallback-2026-07-01"]);
+    expect(p0.output_config).toEqual({ effort: "medium" });
+    expect((p0.tools as unknown[]).length).toBe(6);
+    expect(JSON.stringify(p0.system)).toMatch(/CONSERVADOR/);
+    expect(JSON.stringify(p0.system)).toMatch(/Caso en contra/);
+    expect(p0.messages).toEqual([{ role: "user", content: "Resumen" }]);
+    // la segunda vuelta lleva el resultado de la herramienta calculado en el servidor
+    expect(JSON.stringify(p1.messages)).toContain("tasa_politica");
   });
 
   it("agrega una nota si el modelo declina la consulta", async () => {
     const { POST } = await import("@/app/api/asesor/route");
     estado.eventos = [{ type: "message_start" }];
-    estado.final = { stop_reason: "refusal" };
+    estado.final = { stop_reason: "refusal", content: [] };
     const r = await POST(peticion({ pregunta: "x" }, "200.1.1.2"));
-    expect(await r.text()).toMatch(/no puede responder/);
+    expect((await leer(r)).texto).toMatch(/no puede responder/);
   });
 
   it("convierte un error de autenticación en un mensaje claro", async () => {

@@ -1,20 +1,19 @@
-/* Asesor de IA: recibe la pregunta, un historial corto y el contexto de mercado y portafolio,
-   y responde en streaming (texto plano) con la API de Anthropic.
+/* Asesor de IA como agente con herramientas. Recibe la pregunta, un historial corto, el perfil del
+   cliente, el modo (chat, comité o informe) y las entradas del portafolio, del título de la
+   calculadora y del fondeo. El servidor los valora con el motor y el modelo solo obtiene cifras
+   llamando a las herramientas (lib/asesor/herramientas.ts).
+   Responde en streaming NDJSON: una línea JSON por evento ({t:"texto"|"herramienta"|"reintento"|"nota"|"fin"}).
    - Sin ANTHROPIC_API_KEY funciona en modo demo: GET informa el estado y POST responde 503 con
-     { demo: true } sin llamar a la API. Al configurar la clave se activa sin tocar código.
-   - Control de costos (lib/asesor/config.ts): 20 consultas/hora por IP, longitud máxima de
-     respuesta, modelo y esfuerzo por variables de entorno, y caché de 24 h para
-     "Resumen de la economía" (no consume el límite). */
+     { demo: true } sin llamar a la API.
+   - Control de costos (lib/asesor/config.ts): consultas por hora por IP, longitud máxima, modelo y
+     esfuerzo por variables de entorno, y caché de 24 h para "Resumen de la economía". */
 import Anthropic from "@anthropic-ai/sdk";
+import { armarContexto, correrAgente, SISTEMA_AGENTE, sistemaVariable, type EventoAgente } from "@/lib/asesor/agente";
 import { claveCache, guardarCache, leerCache } from "@/lib/asesor/cache";
 import { configAsesor, HORAS_CACHE_RESUMEN, MENSAJE_DEMO } from "@/lib/asesor/config";
-import { SYS } from "@/lib/asesor/contexto";
 import { ipDe, revisarLimite } from "@/lib/asesor/limite";
 import { validarPeticion } from "@/lib/asesor/peticion";
-
-/** Instrucción adicional para un chat: empezar a responder pronto. */
-const SISTEMA = `${SYS}
-Es un chat: empieza la respuesta visible de inmediato.`;
+import { obtenerMercado } from "@/lib/data/mercado";
 
 let cliente: Anthropic | null = null;
 const anthropic = () => (cliente ??= new Anthropic());
@@ -22,8 +21,8 @@ const anthropic = () => (cliente ??= new Anthropic());
 const json = (cuerpo: unknown, status: number, headers: Record<string, string> = {}) =>
   Response.json(cuerpo, { status, headers: { "Cache-Control": "no-store", ...headers } });
 
-const texto = (t: string, headers: Record<string, string>) =>
-  new Response(t, { headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store", ...headers } });
+const NDJSON = { "Content-Type": "application/x-ndjson; charset=utf-8", "Cache-Control": "no-store" };
+const linea = (e: EventoAgente) => JSON.stringify(e) + "\n";
 
 function errorDeApi(e: unknown, modelo: string): Response {
   if (e instanceof Anthropic.AuthenticationError || e instanceof Anthropic.PermissionDeniedError)
@@ -63,13 +62,19 @@ export async function POST(req: Request) {
   }
   const v = validarPeticion(cuerpo);
   if (!v.ok) return json({ error: v.error }, 400);
-  const { pregunta, historial, contexto, rapida } = v.p;
+  const p = v.p;
+
+  const snap = await obtenerMercado();
 
   // "Resumen de la economía": si ya se respondió con estos mismos datos de mercado, se reutiliza.
-  const clave = rapida && historial.length === 0 ? claveCache(rapida, cfg.modelo, contexto) : null;
+  const huella = { fecha: snap.fechaAnalisis, actualizado: snap.actualizado, curva: snap.datos.curveDate, tpm: snap.macro.tpm, perfil: p.perfil, modo: p.modo };
+  const clave = p.rapida && p.historial.length === 0 ? claveCache(p.rapida, cfg.modelo, huella) : null;
   if (clave) {
     const guardada = await leerCache(clave);
-    if (guardada) return texto(guardada, { "X-Asesor-Cache": "HIT", "X-Modelo": cfg.modelo });
+    if (guardada)
+      return new Response(linea({ t: "texto", d: guardada }) + linea({ t: "fin", stop: "end_turn" }), {
+        headers: { ...NDJSON, "X-Asesor-Cache": "HIT", "X-Modelo": cfg.modelo },
+      });
   }
 
   const limite = await revisarLimite(ipDe(req), cfg.consultasPorHora);
@@ -83,30 +88,25 @@ export async function POST(req: Request) {
     );
   }
 
-  const system: Anthropic.Beta.BetaTextBlockParam[] = [
-    { type: "text", text: SISTEMA },
-    {
-      type: "text",
-      text: `CONTEXTO (JSON, tasas en fracción decimal):\n${JSON.stringify(contexto ?? {})}`,
-      cache_control: { type: "ephemeral" },
-    },
-  ];
-  const messages: Anthropic.Beta.BetaMessageParam[] = [...historial, { role: "user", content: pregunta }];
-
-  const stream = anthropic().beta.messages.stream({
-    model: cfg.modelo,
-    max_tokens: cfg.maxTokens,
-    system,
-    messages,
-    output_config: { effort: cfg.esfuerzo },
-    // Si los filtros de seguridad declinan, la API reintenta en el modelo de respaldo recomendado.
-    betas: ["server-side-fallback-2026-07-01"],
-    fallbacks: "default",
+  const { ctx, invalidas } = armarContexto(snap, p);
+  const corte = new AbortController();
+  const eventos = correrAgente({
+    cliente: anthropic(),
+    modelo: cfg.modelo,
+    maxTokens: cfg.maxTokens,
+    esfuerzo: cfg.esfuerzo,
+    // El bloque fijo (y las herramientas, que van antes) se guarda en la caché de prompts.
+    system: [
+      { type: "text", text: SISTEMA_AGENTE, cache_control: { type: "ephemeral" } },
+      { type: "text", text: sistemaVariable(p.perfil, p.modo, ctx, invalidas) },
+    ],
+    messages: [...p.historial, { role: "user", content: p.pregunta }],
+    ctx,
+    signal: corte.signal,
   });
 
   // Se espera el primer evento para devolver errores de la API (clave, modelo, límite) como JSON.
-  const eventos = stream[Symbol.asyncIterator]();
-  let primero: IteratorResult<Anthropic.Beta.BetaRawMessageStreamEvent>;
+  let primero: IteratorResult<EventoAgente>;
   try {
     primero = await eventos.next();
   } catch (e) {
@@ -118,11 +118,12 @@ export async function POST(req: Request) {
   const cuerpoRespuesta = new ReadableStream<Uint8Array>({
     async start(ctrl) {
       let completo = "";
-      const emitir = (ev: Anthropic.Beta.BetaRawMessageStreamEvent) => {
-        if (ev.type === "content_block_delta" && ev.delta.type === "text_delta") {
-          completo += ev.delta.text;
-          ctrl.enqueue(cod.encode(ev.delta.text));
-        }
+      let fin: string | null = null;
+      const emitir = (e: EventoAgente) => {
+        if (e.t === "texto") completo += e.d;
+        if (e.t === "reintento") completo = "";
+        if (e.t === "fin") fin = e.stop;
+        ctrl.enqueue(cod.encode(linea(e)));
       };
       try {
         if (!primero.done) emitir(primero.value);
@@ -131,30 +132,22 @@ export async function POST(req: Request) {
           if (r.done) break;
           emitir(r.value);
         }
-        const final = await stream.finalMessage();
-        if (final.stop_reason === "refusal")
-          ctrl.enqueue(cod.encode("\n\n_El asesor no puede responder esta consulta. Reformúlela en términos del curso._"));
-        else if (final.stop_reason === "max_tokens") ctrl.enqueue(cod.encode("\n\n_(Respuesta recortada por longitud.)_"));
-        else if (clave && final.stop_reason === "end_turn" && completo.trim()) await guardarCache(clave, completo);
+        if (clave && fin === "end_turn" && completo.trim()) await guardarCache(clave, completo);
       } catch (e) {
         console.error("[asesor] Error durante la respuesta:", e);
-        ctrl.enqueue(cod.encode("\n\n_Se interrumpió la respuesta. Intente de nuevo._"));
+        emitir({ t: "nota", d: "Se interrumpió la respuesta. Intente de nuevo." });
+        emitir({ t: "fin", stop: "error" });
       } finally {
         ctrl.close();
       }
     },
     cancel() {
-      stream.abort();
+      corte.abort();
+      void eventos.return(undefined);
     },
   });
 
   return new Response(cuerpoRespuesta, {
-    headers: {
-      "Content-Type": "text/plain; charset=utf-8",
-      "Cache-Control": "no-store",
-      "X-Modelo": cfg.modelo,
-      ...(clave ? { "X-Asesor-Cache": "MISS" } : {}),
-      ...cabecerasLimite,
-    },
+    headers: { ...NDJSON, "X-Modelo": cfg.modelo, ...(clave ? { "X-Asesor-Cache": "MISS" } : {}), ...cabecerasLimite },
   });
 }
