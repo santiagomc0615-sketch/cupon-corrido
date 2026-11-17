@@ -1,5 +1,6 @@
 /* Validación de la petición al asesor (función pura, se prueba sin red). */
 import type { ConfigFondeo } from "@/lib/carry/config";
+import type { DatosUVR } from "@/lib/analisis/inflacion-implicita";
 import type { EntradasUI } from "@/lib/calculadora";
 import type { ParametrosTributarios, TramoRenta } from "@/lib/impuestos/parametros";
 import type { PerfilContribuyente } from "@/lib/impuestos/perfil";
@@ -36,6 +37,21 @@ export interface PeticionAsesor {
   fondeo: Partial<ConfigFondeo> | null;
   /** Perfil tributario y parámetros editados por el usuario (los que falten, los oficiales). */
   tributario: { perfil: Partial<PerfilContribuyente>; params: Partial<ParametrosTributarios> | null } | null;
+  /** TIR de TES UVR que cargó el usuario para la inflación implícita (null si no hay o son de ejemplo). */
+  uvr: DatosUVR | null;
+}
+
+/** TIR UVR del usuario: fecha válida, fuente corta y hasta 40 referencias con vencimiento y TIR real en rango. */
+function uvrDe(x: unknown): DatosUVR | null {
+  if (!x || typeof x !== "object") return null;
+  const u = x as Record<string, unknown>;
+  if (u.ejemplo === true || typeof u.fecha !== "string" || !FECHA.test(u.fecha) || !Array.isArray(u.refs)) return null;
+  const refs = u.refs
+    .slice(0, 40)
+    .map((r) => r as Record<string, unknown>)
+    .filter((r) => typeof r.vencimiento === "string" && FECHA.test(r.vencimiento) && enRango(r.tirReal, [-0.05, 0.3]))
+    .map((r) => ({ titulo: String(r.titulo ?? "TES UVR").slice(0, 60), vencimiento: r.vencimiento as string, tirReal: r.tirReal as number }));
+  return refs.length ? { fecha: u.fecha, fuente: String(u.fuente ?? "").slice(0, 120), refs } : null;
 }
 
 const TIPOS_CONTRIBUYENTE = ["pn_no_obligada", "pn_obligada", "juridica"];
@@ -143,6 +159,6 @@ export function validarPeticion(cuerpo: unknown): { ok: true; p: PeticionAsesor 
   const rapida = RAPIDAS_CACHEABLES.find((r) => r === c.rapida);
   return {
     ok: true,
-    p: { pregunta, historial: alternado, perfil, modo, titulo, portafolio: { fecha, posiciones }, fondeo, tributario: tributarioDe(c.tributario), ...(rapida ? { rapida } : {}) },
+    p: { pregunta, historial: alternado, perfil, modo, titulo, portafolio: { fecha, posiciones }, fondeo, tributario: tributarioDe(c.tributario), uvr: uvrDe(c.uvr), ...(rapida ? { rapida } : {}) },
   };
 }

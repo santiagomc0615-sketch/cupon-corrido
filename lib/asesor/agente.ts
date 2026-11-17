@@ -22,7 +22,8 @@ export const SISTEMA_AGENTE = `Eres el asesor de una calculadora académica de r
 Cifras: regla sin excepciones
 - Toda cifra que escribas (tasas, precios, duraciones, DV01, montos, pb, porcentajes, fechas de datos) debe venir textualmente del resultado de una herramienta de esta conversación. Cópiala con el formato en que llega (coma decimal).
 - No calcules nada tú mismo: ni sumas, restas, promedios, diferencias en pb, conversiones de tasa, proyecciones ni reglas de tres. Si necesitas una cifra que no está en un resultado, llama a la herramienta que la produce; si ninguna la produce, dilo sin inventarla.
-- Antes de responder, llama a las herramientas que necesites; puedes pedir varias a la vez. Para hablar del mercado usa datos_mercado; del portafolio, resumen_portafolio; de un título, valorar_titulo; de escenarios, simular_escenario_tasas; de alternativas, comparar_opciones; de fondeo o carry, analizar_fondeo; de impuestos, calcular_impuestos; del resultado de vender o mantener con impuestos e inflación, calcular_pyg.
+- Antes de responder, llama a las herramientas que necesites; puedes pedir varias a la vez. Para hablar del mercado usa datos_mercado; del portafolio, resumen_portafolio; de un título, valorar_titulo; de escenarios, simular_escenario_tasas; de alternativas, comparar_opciones; de fondeo, carry y fondeo en dólares, analizar_fondeo; de impuestos, calcular_impuestos; del resultado de vender o mantener con impuestos e inflación, calcular_pyg; de la forma de la curva, spots y forwards, curva_tes; de inflación implícita y breakeven frente a la meta y las expectativas, inflacion_implicita; del retorno esperado, carry y roll-down a 30, 90, 180 o 365 días, retorno_esperado; de liquidez, potencial de valorización, spread o resultado desde la compra, analisis_titulo; de vender antes del vencimiento (TIR de la inversión), simular_venta; de los pagos que recibirá, flujos; de CDT vs. bonos con impuestos y escenarios, comparador_cdt_tes. Los datos globales (TRM, devaluación, SOFR, Tesoro de EE. UU., spread TES−UST, DTF) y las expectativas de inflación están en datos_mercado.
+- Si el usuario pregunta qué puede hacer la calculadora o cómo funciona una sección, explícalo con estas mismas herramientas y nombra la sección de la página (pestañas: Resumen, Riesgo y sensibilidad, Flujos, Carry y fondeo, Venta y P&G, Análisis; páginas: Mercado, Curva TES, Portafolio, Asesor, Noticias, Cargar datos).
 - Cita la fuente y la fecha que trae cada resultado (BanRep, DANE, Fed de Nueva York, datos.gov.co, curva TES del día).
 - Si una herramienta devuelve un error, explícalo en palabras simples y sigue con lo que sí tengas.
 
@@ -92,7 +93,7 @@ function valorarEntradas(motor: Motor, e: EntradasUI, fecha: string): PosicionAg
 }
 
 /** Arma el contexto de las herramientas con el motor del día y lo que mandó el navegador. */
-export function armarContexto(snap: SnapshotMercado, p: Pick<PeticionAsesor, "titulo" | "portafolio" | "fondeo"> & Partial<Pick<PeticionAsesor, "tributario">>) {
+export function armarContexto(snap: SnapshotMercado, p: Pick<PeticionAsesor, "titulo" | "portafolio" | "fondeo"> & Partial<Pick<PeticionAsesor, "tributario" | "uvr">>) {
   const motor = crearMotor(snap.datos);
   const fecha = snap.fechaAnalisis;
   const fechaPf = p.portafolio.fecha ?? fecha;
@@ -102,7 +103,7 @@ export function armarContexto(snap: SnapshotMercado, p: Pick<PeticionAsesor, "ti
   const f = p.fondeo;
   const fondeo: ConfigFondeo | null = f ? { ...CONFIG_INICIAL, ...f, exterior: { ...CONFIG_INICIAL.exterior, ...(f.exterior ?? {}) } } : null;
   const tributario = { perfil: { ...PERFIL_INICIAL, ...(p.tributario?.perfil ?? {}) }, params: conOficiales(p.tributario?.params) };
-  const ctx: ContextoHerramientas = { motor, snap, fecha, portafolio, titulo, fondeo, tributario };
+  const ctx: ContextoHerramientas = { motor, snap, fecha, portafolio, titulo, fondeo, tributario, uvr: p.uvr ?? null };
   return { ctx, invalidas: valoradas.length - portafolio.length };
 }
 

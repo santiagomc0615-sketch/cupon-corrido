@@ -20,6 +20,8 @@ import { spreadTesUst } from "@/lib/global";
 import type { ParametrosTributarios } from "@/lib/impuestos/parametros";
 import type { PerfilContribuyente } from "@/lib/impuestos/perfil";
 import { derivarMercado } from "@/lib/mercado-derivado";
+import type { DatosUVR } from "@/lib/analisis/inflacion-implicita";
+import { ejecutarAnalisis, ENTRADAS_ANALISIS, HERRAMIENTAS_ANALISIS } from "./herramientas-analisis";
 import { ENTRADAS_IMPUESTOS, herramientaImpuestos, herramientaPyG, HERRAMIENTAS_IMPUESTOS } from "./herramientas-impuestos";
 
 export interface PosicionAgente {
@@ -41,6 +43,8 @@ export interface ContextoHerramientas {
   fondeo: ConfigFondeo | null;
   /** Perfil y parámetros tributarios del usuario (si no, los oficiales y persona natural no obligada). */
   tributario?: { perfil: PerfilContribuyente; params: ParametrosTributarios };
+  /** TIR de TES UVR que cargó el usuario (inflación implícita); si no, la curva UVR del servidor. */
+  uvr?: DatosUVR | null;
 }
 
 /* ---------- utilidades ---------- */
@@ -81,6 +85,9 @@ function fichaTitulo(p: PosicionAgente) {
     proximo_cupon: r.proximo ? `${F.date(r.proximo.fecha)}: ${F.n(r.proximo.pct, 3)} % · ${mill(r.proximo.cop)}` : "sin cupones pendientes",
     total_a_recibir_hasta_vencimiento: mill(r.totalPagos),
     colchon: `${nf(0).format(r.colchonPb)} pb (las tasas pueden subir eso en un año antes de perder)`,
+    sensibilidad: o.sens
+      .filter((x) => [-200, -100, 100, 200].includes(x.bp))
+      .map((x) => ({ cambio_tasa: (x.bp > 0 ? "+" : "") + x.bp + " pb", precio_real: F.n(x.real, 3) + " %", aprox_solo_duracion: F.n(x.eD, 3) + " %", aprox_duracion_y_convexidad: F.n(x.eDC, 3) + " %", cambio_valor: F.copM(x.dVal) })),
   };
 }
 
@@ -119,6 +126,7 @@ const ENTRADAS = {
   resumen_portafolio: z.object({}),
   datos_mercado: z.object({}),
   ...ENTRADAS_IMPUESTOS,
+  ...ENTRADAS_ANALISIS,
 } as const;
 
 export type NombreHerramienta = keyof typeof ENTRADAS;
@@ -195,6 +203,7 @@ export const HERRAMIENTAS: Anthropic.Beta.BetaTool[] = [
     input_schema: objeto({}),
   },
   ...HERRAMIENTAS_IMPUESTOS,
+  ...HERRAMIENTAS_ANALISIS,
 ].map((t) => ({ ...t, eager_input_streaming: true }));
 
 /* ---------- ejecución ---------- */
@@ -394,11 +403,23 @@ function herramientaMercado(ctx: ContextoHerramientas) {
     tasa_politica: { valor: pct(snap.macro.tpm), fecha: snap.macro.tpmFecha, fuente: snap.macro.tpmFuente, ultima_decision: `${F.date(snap.macro.decisionFecha)}: ${snap.macro.decision}` },
     inflacion_12m: { valor: pct(mk.ipcLast.annual), mes: F.mes(mk.ipcLast.f), fuente: f("ipc")?.fuente ?? "DANE" },
     inflacion_nucleo: pct(snap.macro.nucleo, 1),
+    expectativas_inflacion: {
+      fuente: snap.fuentes.exp?.fuente ?? "Encuesta del BanRep",
+      trayectoria: snap.datos.exp.filter((_, k, a) => k === 0 || k === a.length - 1 || k % 3 === 0).map(([f, v]) => ({ mes: F.mes(f), inflacion_anual_esperada: pct(v) })),
+      a_2_anios: pct(snap.macro.exp2y),
+    },
     tasa_real_ex_post: pct(mk.realRate),
     ibr: { fecha: mk.ibrLast.f, fuente: f("ibr")?.fuente, overnight: nf(3).format(ibr[1]) + " % N.A.", "1m": nf(3).format(ibr[2]) + " %", "3m": nf(3).format(ibr[3]) + " %", "6m": nf(3).format(ibr[4]) + " %", "12m": nf(3).format(ibr[5]) + " %" },
     uvr: { valor: nf(4).format(mk.uvrHoy.v), fecha: mk.uvrHoy.f, fuente: f("uvr")?.fuente },
     curva_tes: { fecha: snap.datos.curveDate, fuente: f("tes")?.fuente, referencias: mk.tesSorted.map((r) => ({ titulo: r[0], plazo_anios: nf(2).format(r[4]), tir: pct(r[3], 3) })) },
-    trm: snap.trm ? { valor: nf(2).format(snap.trm.valor), fecha: snap.trm.fecha, fuente: "datos.gov.co · Superfinanciera" } : "sin dato",
+    trm: snap.trm
+      ? {
+          valor: nf(2).format(snap.trm.valor),
+          fecha: snap.trm.fecha,
+          fuente: "datos.gov.co · Superfinanciera",
+          ...(snap.trm.hace12m ? { devaluacion_12_meses: pct(snap.trm.valor / snap.trm.hace12m.valor - 1), trm_hace_12_meses: `${nf(2).format(snap.trm.hace12m.valor)} (${snap.trm.hace12m.fecha})` } : {}),
+        }
+      : "sin dato",
     sofr: snap.sofr ? { valor: pct(snap.sofr.valor), fecha: snap.sofr.fecha, fuente: "Fed de Nueva York" } : "sin dato",
     ust_10a: snap.ust10 ? { valor: pct(snap.ust10.valor), fecha: snap.ust10.fecha, fuente: "Tesoro de EE. UU." } : "sin dato",
     spread_tes10_ust10: spread ? { valor: pb(spread.pb), fecha_curva: spread.fecha } : "sin dato",
@@ -428,7 +449,9 @@ export function ejecutarHerramienta(nombre: string, entrada: unknown, ctx: Conte
                   ? herramientaImpuestos(ctx, v.data as z.infer<typeof ENTRADAS.calcular_impuestos>)
                   : n === "calcular_pyg"
                     ? herramientaPyG(ctx, v.data as z.infer<typeof ENTRADAS.calcular_pyg>)
-                    : herramientaMercado(ctx);
+                    : n in ENTRADAS_ANALISIS
+                      ? ejecutarAnalisis(n as keyof typeof ENTRADAS_ANALISIS, v.data, ctx)
+                      : herramientaMercado(ctx);
     return { contenido: JSON.stringify(r), error: "error" in (r as object) };
   } catch (e) {
     return { contenido: JSON.stringify({ error: e instanceof Error ? e.message : String(e) }), error: true };

@@ -11,6 +11,7 @@ import { BotonInformeAsesor, fondeoConfigurado } from "@/components/reporte/Boto
 import { Encabezado } from "@/components/ui";
 import { md, MENSAJE_DEMO, QUICK } from "@/lib/asesor/contexto";
 import { etiquetaHerramienta } from "@/lib/asesor/etiquetas";
+import type { DatosUVR } from "@/lib/analisis/inflacion-implicita";
 import type { Modo, Perfil } from "@/lib/asesor/peticion";
 import { BRAND } from "@/lib/brand";
 import { F } from "@/lib/format";
@@ -74,6 +75,8 @@ export function VistaAsesor() {
   const { c: fondeo } = useFondeo();
   const { perfil: perfilTrib, params: paramsTrib, editados } = useImpuestos();
   const [verTrib, setVerTrib] = useState(false);
+  // TIR de TES UVR que el usuario cargó en Curva TES › Inflación implícita (si las editó)
+  const [uvrGuardado] = useGuardado<DatosUVR | null>("inflacionImplicita-v1", null);
   const [perfil, setPerfil] = useGuardado<Perfil>("asesorPerfil", "moderado");
   const [comite, setComite] = useState(false);
   const [msgs, setMsgs] = useState<Mensaje[]>([BIENVENIDA]);
@@ -139,6 +142,7 @@ export function VistaAsesor() {
           portafolio: { fecha: pfDate, posiciones: pf.map((p) => p.inputs) },
           fondeo: fondeoConfigurado() ? fondeo : null,
           tributario: { perfil: perfilTrib, params: editados ? paramsTrib : null },
+          uvr: uvrGuardado && !uvrGuardado.ejemplo ? uvrGuardado : null,
         }),
       });
       const quedan = r.headers.get("X-Consultas-Restantes");
