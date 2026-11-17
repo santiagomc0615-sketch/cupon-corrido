@@ -9,6 +9,7 @@ import { AvisoTributario } from "@/components/pyg/Impuestos";
 import { BotonPyG, TablaPyG } from "@/components/pyg/VentanaPyG";
 import { Pestanas, SiguientePaso, SiguientesPasos } from "@/components/ui/Pestanas";
 import { resumenTitulo } from "@/lib/cliente";
+import { RetornoTitulo } from "@/components/analisis/RetornoHorizonte";
 import { AvisoGanancia } from "./AvisoGanancia";
 import { ResumenTitulo } from "./ResumenTitulo";
 import { fondeoConfigurado } from "@/components/reporte/BotonReporte";
@@ -334,6 +335,7 @@ function ResultadosOk({ b, o, avisosExtra, clase }: { b: Bono; o: ResultadoValor
             contenido: (
               <div className="pestana">
                 <CarryFondeo b={b} o={o} />
+                <RetornoTitulo b={b} o={o} />
                 <SiguientesPasos>
                   <SiguientePaso titulo="Mira tu P&G si vendes" texto="Con impuestos e inflación" pestana="venta" />
                 </SiguientesPasos>
