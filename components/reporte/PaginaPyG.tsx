@@ -36,7 +36,7 @@ export function PaginaPyG({
   const pct = (v: number) => F.pct(r.capital ? v / r.capital : 0, 2);
   return (
     <Page size="LETTER" style={s.pagina}>
-      <Encabezado tipo="Estado de resultados (P&G)" titulo={titulo} valoracion={valoracion} cliente={cliente} />
+      <Encabezado tipo="Venta y P&G · estado de resultados" titulo={titulo} valoracion={valoracion} cliente={cliente} />
       <Text style={{ marginTop: 10, fontSize: 8.5, color: C.tinta2 }}>
         {d.supuesto} · {nf(0).format(r.dias)} días · {d.perfil}
       </Text>

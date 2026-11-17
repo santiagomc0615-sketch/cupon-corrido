@@ -7,7 +7,11 @@ import { useApp } from "@/components/providers/AppProvider";
 import { CarryRoll } from "./CarryRoll";
 import { ClientePortafolio, InterruptorCliente, useVistaCliente } from "@/components/cliente/Interruptor";
 import { BotonPyGPortafolio } from "@/components/pyg/Botones";
+import { Contador } from "@/components/cliente/Contador";
 import { Comparador } from "@/components/pyg/Comparador";
+import { PyGPortafolio } from "@/components/pyg/PyGPortafolio";
+import { Pestanas, SiguientePaso, SiguientesPasos } from "@/components/ui/Pestanas";
+import { resumenPortafolio } from "@/lib/cliente";
 import { BotonReportePortafolio } from "@/components/reporte/BotonReporte";
 import { EscenarioBanRep } from "./EscenarioBanRep";
 import { FondeoPortafolio } from "./FondeoPortafolio";
@@ -64,7 +68,6 @@ export function VistaPortafolio() {
       )}
       {hidratado && cliente && <ClientePortafolio />}
       {hidratado ? <Cuerpo /> : <div className="panel empty">Cargando portafolio…</div>}
-      {hidratado && <Comparador />}
     </section>
   );
 }
@@ -112,6 +115,9 @@ function Cuerpo() {
   const ld = m.ladder.map(([y, v]) => [y, v.TF + v.IBR + v.IPC + v.UVR] as [string, number]);
   const pts: PuntoSerie[] = V.map((x) => [x.o.mac, x.o.yieldCOP, x.p.inputs.nombre.replace(" (ejemplo)", "")]);
 
+  const resumen = resumenPortafolio(V.map((x) => ({ b: x.b, o: x.o, titulo: String(x.p.inputs.nombre) })));
+  const pc = resumen?.proximo ?? null;
+
   return (
     <>
       {isEx && (
@@ -120,14 +126,39 @@ function Cuerpo() {
           guardan solo en este navegador.
         </Aviso>
       )}
-      <div className="kpis k3">
-        <Kpi l="Valor de mercado" v={F.copM(m.mv)} s={`${m.n} títulos · giro sucio`} />
-        <Kpi l="TIR ponderada (pesos)" v={F.pct(m.ytm, 2)} s="UVR convertida a pesos" />
-        <Kpi l="Duración modificada" v={F.n(m.mod, 3)} s={`Macaulay ${F.n(m.mac, 2)} años`} />
-        <Kpi l="DV01 total" v={F.copM(m.dv01)} s="por 1 pb paralelo" />
-        <Kpi l="Convexidad" v={F.n(m.conv, 2)} s="ponderada por valor" />
-        <Kpi l="Spread vs. TES a su duración" v={F.bp((m.ytm - z(m.mac)) * 1e4)} s={`TES cero ${F.pct(z(m.mac), 2)}`} />
-      </div>
+      <section className="resumen" aria-label="Resumen del portafolio">
+        <div className="r-cifra r-heroe">
+          <span className="r-etq">Valor del portafolio</span>
+          <span className="r-valor">
+            <Contador valor={m.mv} formato={(v) => F.copM(v)} />
+          </span>
+          <span className="r-nota">{`${m.n} títulos · giro sucio al ${F.date(pfDate)}`}</span>
+        </div>
+        <div className="resumen-apoyo">
+          <div className="r-cifra">
+            <span className="r-etq">TIR ponderada (pesos)</span>
+            <span className="r-valor">
+              <Contador valor={m.ytm} formato={(v) => F.pct(v, 2)} />
+            </span>
+            <span className="r-nota">UVR convertida a pesos</span>
+          </div>
+          <div className="r-cifra">
+            <span className="r-etq">Ganancia al año</span>
+            <span className="r-valor">{resumen ? <Contador valor={resumen.gananciaAnual} formato={(v) => F.mill(v, 1)} /> : "—"}</span>
+            <span className="r-nota">{resumen ? `$ ${nf(0).format(Math.round(resumen.gananciaDiaria))} cada día` : ""}</span>
+          </div>
+          <div className="r-cifra">
+            <span className="r-etq">Próximo cupón</span>
+            <span className="r-valor">{pc ? <Contador valor={pc.cop} formato={(v) => F.mill(v, 1)} /> : "—"}</span>
+            <span className="r-nota">{pc ? `${F.date(pc.fecha)} · faltan ${nf(0).format(pc.dias)} días${pc.titulo ? ` · ${pc.titulo}` : ""}` : "Sin cupones pendientes"}</span>
+          </div>
+          <div className="r-cifra">
+            <span className="r-etq">Colchón</span>
+            <span className="r-valor">{resumen ? <Contador valor={resumen.colchonPb} formato={(v) => nf(0).format(v) + " pb"} /> : "—"}</span>
+            <span className="r-nota">Subida de tasas que aguanta un año sin perder</span>
+          </div>
+        </div>
+      </section>
       {alertas.map((a) => (
         <div className="alert" key={a}>
           {a}
@@ -139,8 +170,14 @@ function Cuerpo() {
           fecha elegida (por ejemplo, porque ya vencieron).
         </div>
       )}
-
-      <Panel titulo="Posiciones" src={`Valoradas al ${F.date(pfDate)} con su tasa de negociación`}>
+      <Pestanas
+        pantalla="portafolio"
+        pestanas={[
+          {
+            id: "resumen",
+            contenido: (
+              <div className="pestana">
+                <Panel titulo="Posiciones" src={`Valoradas al ${F.date(pfDate)} con su tasa de negociación`}>
         <div className="tbl" style={{ maxHeight: "none" }}>
           <table>
             <thead>
@@ -197,9 +234,7 @@ function Cuerpo() {
           </table>
         </div>
       </Panel>
-
-      <div className="grid-c g2">
-        <Panel titulo="Composición por indexación">
+                <Panel titulo="Composición por indexación">
           <div className="alloc">
             {types.map(([k, v]) => (
               <div key={k} style={{ flex: v, background: TYPE_CLR[k] }} title={TYPE_LBL[k]}>
@@ -215,7 +250,80 @@ function Cuerpo() {
               </span>
             ))}
           </div>
-          <h3 style={{ margin: "20px 0 8px" }}>Escalera de flujos en pesos</h3>
+          </Panel>
+                <SiguientesPasos>
+                  <SiguientePaso titulo="Mira el riesgo si cambian las tasas" texto="Estrés, escenario del BanRep y valor relativo" pestana="riesgo" />
+                  <SiguientePaso titulo="Agrega otro título" texto="Valóralo en la calculadora" href="/calculadora" />
+                </SiguientesPasos>
+              </div>
+            ),
+          },
+          {
+            id: "riesgo",
+            contenido: (
+              <div className="pestana">
+                <div className="kpis k4 riesgo-kpis">
+                  <Kpi l="Duración modificada" v={F.n(m.mod, 3)} s={`Macaulay ${F.n(m.mac, 2)} años`} />
+                  <Kpi l="DV01 total" v={F.copM(m.dv01)} s="por 1 pb paralelo" />
+                  <Kpi l="Convexidad" v={F.n(m.conv, 2)} s="ponderada por valor" />
+                  <Kpi l="Spread vs. TES a su duración" v={F.bp((m.ytm - z(m.mac)) * 1e4)} s={`TES cero ${F.pct(z(m.mac), 2)}`} />
+                </div>
+                <Panel titulo="Pruebas de estrés de tasa" src="Revaloración completa · Δ valor">
+          <BarrasH
+            label="Pruebas de estrés: cambio de valor del portafolio"
+            filas={m.stress.map(([nombre, d]) => ({
+              etiqueta: nombre,
+              valor: d,
+              texto: F.copM(d),
+              sub: F.pct(d / m.mv, 2) + " del valor",
+              descripcion: `${nombre}: ${F.copM(d)}, ${F.pct(d / m.mv, 2)} del valor`,
+            }))}
+          />
+          <p className="src" style={{ marginTop: 8 }}>
+            Empinamiento: tasas cortas −, largas + (0,15 pb por cada año de duración frente a 3 años). Aplanamiento: lo
+            contrario.
+          </p>
+        </Panel>
+                <EscenarioBanRep />
+                <Panel titulo="Posiciones frente a la curva TES" src="Duración vs. TIR en pesos · encima de la curva = paga prima sobre el soberano">
+        <Chart
+          series={[
+            { data: mk.curva.zs, cls: "s-a" },
+            { data: pts, pointsOnly: true, points: "pt-b", labels: true, r: 5 },
+          ]}
+          xmin={0}
+          yf={pctAx(0)}
+          xf={(v) => v + "a"}
+          label="Valor relativo frente a la curva TES"
+          tip={(x) => {
+            const p = nearest(pts, x);
+            return {
+              x: p[0],
+              y: p[1],
+              content: (
+                <>
+                  {p[2]}
+                  <br />
+                  Duración {F.n(p[0], 2)} · TIR {F.pct(p[1], 2)}
+                  <br />
+                  Spread {F.bp((p[1] - z(p[0])) * 1e4)}
+                </>
+              ),
+            };
+          }}
+        />
+      </Panel>
+                <SiguientesPasos>
+                  <SiguientePaso titulo="Mira lo que vas a recibir" texto="Cupones y capital por año" pestana="flujos" />
+                </SiguientesPasos>
+              </div>
+            ),
+          },
+          {
+            id: "flujos",
+            contenido: (
+              <div className="pestana">
+                <Panel titulo="Flujos: escalera en pesos" src="Cupones y capital que recibe cada año">
           <Chart
             series={[]}
             bars={{ data: ld.map((d) => [d[0], d[1] / 1e9, "bar-pos"]) }}
@@ -250,58 +358,51 @@ function Cuerpo() {
             Miles de millones de pesos por año.
           </p>
         </Panel>
-        <Panel titulo="Pruebas de estrés de tasa" src="Revaloración completa · Δ valor">
-          <BarrasH
-            label="Pruebas de estrés: cambio de valor del portafolio"
-            filas={m.stress.map(([nombre, d]) => ({
-              etiqueta: nombre,
-              valor: d,
-              texto: F.copM(d),
-              sub: F.pct(d / m.mv, 2) + " del valor",
-              descripcion: `${nombre}: ${F.copM(d)}, ${F.pct(d / m.mv, 2)} del valor`,
-            }))}
-          />
-          <p className="src" style={{ marginTop: 8 }}>
-            Empinamiento: tasas cortas −, largas + (0,15 pb por cada año de duración frente a 3 años). Aplanamiento: lo
-            contrario.
-          </p>
-        </Panel>
-      </div>
-
-      <EscenarioBanRep />
-
-      <FondeoPortafolio />
-
-      <CarryRoll />
-
-      <Panel titulo="Posiciones frente a la curva TES" src="Duración vs. TIR en pesos · encima de la curva = paga prima sobre el soberano">
-        <Chart
-          series={[
-            { data: mk.curva.zs, cls: "s-a" },
-            { data: pts, pointsOnly: true, points: "pt-b", labels: true, r: 5 },
-          ]}
-          xmin={0}
-          yf={pctAx(0)}
-          xf={(v) => v + "a"}
-          label="Valor relativo frente a la curva TES"
-          tip={(x) => {
-            const p = nearest(pts, x);
-            return {
-              x: p[0],
-              y: p[1],
-              content: (
-                <>
-                  {p[2]}
-                  <br />
-                  Duración {F.n(p[0], 2)} · TIR {F.pct(p[1], 2)}
-                  <br />
-                  Spread {F.bp((p[1] - z(p[0])) * 1e4)}
-                </>
-              ),
-            };
-          }}
-        />
-      </Panel>
+                <SiguientesPasos>
+                  <SiguientePaso titulo="¿Y si lo fondeas?" texto="Carry del portafolio y fondeo en pesos o dólares" pestana="carry" />
+                </SiguientesPasos>
+              </div>
+            ),
+          },
+          {
+            id: "carry",
+            contenido: (
+              <div className="pestana">
+                <FondeoPortafolio />
+                <SiguientesPasos>
+                  <SiguientePaso titulo="Mira tu P&G si vendes" texto="Con impuestos e inflación" pestana="venta" />
+                </SiguientesPasos>
+              </div>
+            ),
+          },
+          {
+            id: "venta",
+            contenido: (
+              <div className="pestana">
+                <PyGPortafolio />
+                <Comparador />
+                <SiguientesPasos>
+                  <SiguientePaso titulo="Analiza el carry y el roll-down" pestana="analisis" />
+                  <SiguientePaso titulo="Pregúntale al asesor" texto="Con tu perfil de cliente y tributario" href="/asesor" />
+                </SiguientesPasos>
+              </div>
+            ),
+          },
+          {
+            id: "analisis",
+            contenido: (
+              <div className="pestana">
+                <CarryRoll />
+                <SiguientesPasos>
+                  <SiguientePaso titulo="Pregúntale al asesor" texto="Un análisis con las cifras del motor" href="/asesor" />
+                  <SiguientePaso titulo="Descarga el reporte PDF" texto="Botón arriba de la página" onClick={() => window.scrollTo({ top: 0 })} />
+                </SiguientesPasos>
+              </div>
+            ),
+          },
+        ]}
+      />
     </>
   );
 }
+

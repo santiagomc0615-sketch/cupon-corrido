@@ -94,7 +94,7 @@ export function DocTitulo({ r, generado, pyg }: { r: ReporteTitulo; generado: st
         </View>
 
         <View style={{ ...s.fila, gap: 14, marginTop: 14 }}>
-          <Seccion titulo="Datos del título" style={{ flexGrow: 1, flexBasis: 0 }}>
+          <Seccion titulo="Resumen · datos del título" style={{ flexGrow: 1, flexBasis: 0 }}>
             <KV
               filas={[
                 ["Tipo", r.tipo],
@@ -109,34 +109,7 @@ export function DocTitulo({ r, generado, pyg }: { r: ReporteTitulo; generado: st
               ]}
             />
           </Seccion>
-          <Seccion titulo="Riesgo en palabras simples" style={{ flexGrow: 1, flexBasis: 0 }}>
-            <View style={{ ...s.caja, gap: 7 }}>
-              <Text>
-                <Text style={{ fontWeight: 600 }}>Duración {F.n(r.duracionMod, 2)}. </Text>
-                <Text style={{ color: C.tinta2 }}>Si las tasas suben 1 %, el precio cae cerca de {F.n(r.duracionMod, 2)} %. Duración de Macaulay: {F.n(r.macaulay, 2)} años.</Text>
-              </Text>
-              <Text>
-                <Text style={{ fontWeight: 600 }}>DV01 {F.cop(r.dv01)}. </Text>
-                <Text style={{ color: C.tinta2 }}>Es lo que cambia el valor por cada punto básico (0,01 %) que se mueva la tasa.</Text>
-              </Text>
-              <Text>
-                <Text style={{ fontWeight: 600, color: C.positivo }}>Colchón {nf(0).format(c.colchonPb)} pb. </Text>
-                <Text style={{ color: C.tinta2 }}>Las tasas pueden subir hasta {nf(0).format(c.colchonPb)} pb en un año antes de perder plata.</Text>
-              </Text>
-            </View>
-          </Seccion>
-        </View>
-
-        <View style={{ ...s.fila, gap: 14, marginTop: 14 }}>
-          <Seccion titulo="Flujos que recibe (pesos)" style={{ flexGrow: 1, flexBasis: 0 }}>
-            <GraficoFlujos flujos={r.flujos} />
-            <View style={{ ...s.fila, gap: 10, marginTop: 3 }}>
-              <Leyenda color={C.acento} texto="Cupones" />
-              <Leyenda color={C.dorado} texto="Capital" />
-              <Text style={s.src}>Total {mill(c.totalPagos)}</Text>
-            </View>
-          </Seccion>
-          <Seccion titulo="Frente a un CDT al mismo plazo" style={{ flexGrow: 1, flexBasis: 0 }}>
+          <Seccion titulo="Resumen · frente a un CDT" style={{ flexGrow: 1, flexBasis: 0 }}>
             {r.cdt ? (
               <View style={s.caja}>
                 <KV
@@ -153,6 +126,33 @@ export function DocTitulo({ r, generado, pyg }: { r: ReporteTitulo; generado: st
             ) : (
               <Text style={{ color: C.tinta2 }}>Sin tasa de CDT para comparar.</Text>
             )}
+          </Seccion>
+        </View>
+
+        <View style={{ ...s.fila, gap: 14, marginTop: 14 }}>
+          <Seccion titulo="Riesgo y sensibilidad" style={{ flexGrow: 1, flexBasis: 0 }}>
+            <View style={{ ...s.caja, gap: 7 }}>
+              <Text>
+                <Text style={{ fontWeight: 600 }}>Duración {F.n(r.duracionMod, 2)}. </Text>
+                <Text style={{ color: C.tinta2 }}>Si las tasas suben 1 %, el precio cae cerca de {F.n(r.duracionMod, 2)} %. Duración de Macaulay: {F.n(r.macaulay, 2)} años.</Text>
+              </Text>
+              <Text>
+                <Text style={{ fontWeight: 600 }}>DV01 {F.cop(r.dv01)}. </Text>
+                <Text style={{ color: C.tinta2 }}>Es lo que cambia el valor por cada punto básico (0,01 %) que se mueva la tasa.</Text>
+              </Text>
+              <Text>
+                <Text style={{ fontWeight: 600, color: C.positivo }}>Colchón {nf(0).format(c.colchonPb)} pb. </Text>
+                <Text style={{ color: C.tinta2 }}>Las tasas pueden subir hasta {nf(0).format(c.colchonPb)} pb en un año antes de perder plata.</Text>
+              </Text>
+            </View>
+          </Seccion>
+          <Seccion titulo="Flujos (pesos)" style={{ flexGrow: 1, flexBasis: 0 }}>
+            <GraficoFlujos flujos={r.flujos} />
+            <View style={{ ...s.fila, gap: 10, marginTop: 3 }}>
+              <Leyenda color={C.acento} texto="Cupones" />
+              <Leyenda color={C.dorado} texto="Capital" />
+              <Text style={s.src}>Total {mill(c.totalPagos)}</Text>
+            </View>
           </Seccion>
         </View>
 

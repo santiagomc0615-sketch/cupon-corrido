@@ -75,7 +75,7 @@ export function VistaCliente({
       {r.pagos.length > 0 && (
         <article className="tarjeta tarjeta-pagos">
           <div className="pagos-cab">
-            <h3>Lo que va a recibir</h3>
+            <h3>Flujos: lo que va a recibir</h3>
             <p>
               <Contador className="cifra-sec" valor={r.totalPagos} formato={millones} /> en {r.pagos.length} pagos
             </p>

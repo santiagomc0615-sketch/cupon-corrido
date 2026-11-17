@@ -39,61 +39,7 @@ export function DocPortafolio({ r, generado, pyg }: { r: ReportePortafolio; gene
           <Cifra etiqueta="Colchón" valor={`${nf(0).format(r.colchonPb)} pb`} nota="Subida de tasas que aguanta un año sin perder" />
         </View>
 
-        <View style={{ ...s.fila, gap: 14, marginTop: 14 }}>
-          <Seccion titulo="Composición por tipo" style={{ flexGrow: 1, flexBasis: 0 }}>
-            <View style={{ flexDirection: "row", height: 12, borderRadius: 3, overflow: "hidden", marginBottom: 6 }}>
-              {r.composicion.map((c) => (
-                <View key={c.tipo} style={{ width: `${c.peso * 100}%`, backgroundColor: COLOR_TIPO[c.tipo] ?? C.tinta3 }} />
-              ))}
-            </View>
-            {r.composicion.map((c) => (
-              <View key={c.tipo} style={s.kvFila}>
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-                  <View style={{ width: 6, height: 6, backgroundColor: COLOR_TIPO[c.tipo] ?? C.tinta3 }} />
-                  <Text style={s.kvL}>{c.tipo}</Text>
-                </View>
-                <Text style={s.kvV}>
-                  {F.pct(c.peso, 1)} · {F.mill(c.valor, 1)}
-                </Text>
-              </View>
-            ))}
-          </Seccion>
-          <Seccion titulo="Riesgo en palabras simples" style={{ flexGrow: 1, flexBasis: 0 }}>
-            <View style={{ ...s.caja, gap: 6 }}>
-              <Text>
-                <Text style={{ fontWeight: 600 }}>Duración {F.n(r.duracionMod, 2)}. </Text>
-                <Text style={{ color: C.tinta2 }}>Si las tasas suben 1 %, el portafolio cae cerca de {F.n(r.duracionMod, 2)} %. Macaulay {F.n(r.macaulay, 2)} años.</Text>
-              </Text>
-              <Text>
-                <Text style={{ fontWeight: 600 }}>DV01 {F.cop(r.dv01)}. </Text>
-                <Text style={{ color: C.tinta2 }}>Cambio de valor por cada punto básico.</Text>
-              </Text>
-            </View>
-          </Seccion>
-        </View>
-
-        <Seccion titulo="Escenarios de estrés (revaloración completa)" style={{ marginTop: 14 }}>
-          {r.estres.map((e) => (
-            <View key={e.escenario} style={{ flexDirection: "row", alignItems: "center", paddingVertical: 1.8 }}>
-              <Text style={{ width: 70, color: C.tinta2 }}>{e.escenario}</Text>
-              <View style={{ flexGrow: 1, flexDirection: "row", height: 7 }}>
-                <View style={{ width: "50%", flexDirection: "row", justifyContent: "flex-end" }}>
-                  {e.cambio < 0 && <View style={{ width: `${(Math.abs(e.cambio) / maxEstres) * 100}%`, backgroundColor: C.negativo }} />}
-                </View>
-                <View style={{ width: 0.75, backgroundColor: C.tinta3 }} />
-                <View style={{ width: "50%", flexDirection: "row" }}>
-                  {e.cambio > 0 && <View style={{ width: `${(e.cambio / maxEstres) * 100}%`, backgroundColor: C.positivo }} />}
-                </View>
-              </View>
-              <Text style={{ width: 92, textAlign: "right", fontFamily: FAMILIA.mono, fontSize: 8, color: e.cambio >= 0 ? C.positivo : C.negativo }}>
-                {F.mill(e.cambio, 1)}
-              </Text>
-              <Text style={{ width: 52, textAlign: "right", fontFamily: FAMILIA.mono, fontSize: 8, color: C.tinta2 }}>{F.pct(e.pct, 2).replace("-", "−")}</Text>
-            </View>
-          ))}
-        </Seccion>
-
-        <Seccion titulo="Posiciones" style={{ marginTop: 14 }}>
+        <Seccion titulo="Resumen · posiciones" style={{ marginTop: 14 }}>
           <View style={{ flexDirection: "row", paddingBottom: 3, borderBottomWidth: 0.75, borderBottomColor: C.tinta3 }}>
             {[
               ["Título", 150, false],
@@ -124,6 +70,61 @@ export function DocPortafolio({ r, generado, pyg }: { r: ReportePortafolio; gene
             <Text style={{ ...s.src, marginTop: 3 }}>Y {r.posiciones.length - MAX_FILAS} posiciones más (incluidas en los totales).</Text>
           )}
         </Seccion>
+
+        <View style={{ ...s.fila, gap: 14, marginTop: 14 }}>
+          <Seccion titulo="Resumen · composición" style={{ flexGrow: 1, flexBasis: 0 }}>
+            <View style={{ flexDirection: "row", height: 12, borderRadius: 3, overflow: "hidden", marginBottom: 6 }}>
+              {r.composicion.map((c) => (
+                <View key={c.tipo} style={{ width: `${c.peso * 100}%`, backgroundColor: COLOR_TIPO[c.tipo] ?? C.tinta3 }} />
+              ))}
+            </View>
+            {r.composicion.map((c) => (
+              <View key={c.tipo} style={s.kvFila}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+                  <View style={{ width: 6, height: 6, backgroundColor: COLOR_TIPO[c.tipo] ?? C.tinta3 }} />
+                  <Text style={s.kvL}>{c.tipo}</Text>
+                </View>
+                <Text style={s.kvV}>
+                  {F.pct(c.peso, 1)} · {F.mill(c.valor, 1)}
+                </Text>
+              </View>
+            ))}
+          </Seccion>
+          <Seccion titulo="Riesgo y sensibilidad" style={{ flexGrow: 1, flexBasis: 0 }}>
+            <View style={{ ...s.caja, gap: 6 }}>
+              <Text>
+                <Text style={{ fontWeight: 600 }}>Duración {F.n(r.duracionMod, 2)}. </Text>
+                <Text style={{ color: C.tinta2 }}>Si las tasas suben 1 %, el portafolio cae cerca de {F.n(r.duracionMod, 2)} %. Macaulay {F.n(r.macaulay, 2)} años.</Text>
+              </Text>
+              <Text>
+                <Text style={{ fontWeight: 600 }}>DV01 {F.cop(r.dv01)}. </Text>
+                <Text style={{ color: C.tinta2 }}>Cambio de valor por cada punto básico.</Text>
+              </Text>
+            </View>
+          </Seccion>
+        </View>
+
+        <Seccion titulo="Riesgo y sensibilidad · estrés (revaloración completa)" style={{ marginTop: 14 }}>
+          {r.estres.map((e) => (
+            <View key={e.escenario} style={{ flexDirection: "row", alignItems: "center", paddingVertical: 1.8 }}>
+              <Text style={{ width: 70, color: C.tinta2 }}>{e.escenario}</Text>
+              <View style={{ flexGrow: 1, flexDirection: "row", height: 7 }}>
+                <View style={{ width: "50%", flexDirection: "row", justifyContent: "flex-end" }}>
+                  {e.cambio < 0 && <View style={{ width: `${(Math.abs(e.cambio) / maxEstres) * 100}%`, backgroundColor: C.negativo }} />}
+                </View>
+                <View style={{ width: 0.75, backgroundColor: C.tinta3 }} />
+                <View style={{ width: "50%", flexDirection: "row" }}>
+                  {e.cambio > 0 && <View style={{ width: `${(e.cambio / maxEstres) * 100}%`, backgroundColor: C.positivo }} />}
+                </View>
+              </View>
+              <Text style={{ width: 92, textAlign: "right", fontFamily: FAMILIA.mono, fontSize: 8, color: e.cambio >= 0 ? C.positivo : C.negativo }}>
+                {F.mill(e.cambio, 1)}
+              </Text>
+              <Text style={{ width: 52, textAlign: "right", fontFamily: FAMILIA.mono, fontSize: 8, color: C.tinta2 }}>{F.pct(e.pct, 2).replace("-", "−")}</Text>
+            </View>
+          ))}
+        </Seccion>
+
 
         <Pie fuentes={r.fuentes} generado={generado} />
       </Page>
