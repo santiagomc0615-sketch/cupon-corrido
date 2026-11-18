@@ -1654,144 +1654,181 @@
   }
 
 
-  /* Retorno esperado al horizonte: barras apiladas (positivos arriba del cero, costos abajo). */
+  /* Retorno esperado al horizonte: cascada + curva acumulada + tabla */
   .retorno {
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 16px;
+  }
+  .cs-cab {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 12px 20px;
   }
   .retorno-frase {
     margin: 0;
+    flex: 1 1 340px;
     font-size: 15px;
+    line-height: 1.5;
   }
-  .apiladas {
+  .retorno .v-pos,
+  .retorno-tabla td.v-pos {
+    color: var(--pos);
+  }
+  .retorno .v-neg,
+  .retorno-tabla td.v-neg {
+    color: var(--neg);
+  }
+  .cascada {
     margin: 0;
   }
-  .ap-area {
+  .cs-area {
     position: relative;
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: clamp(12px, 4vw, 40px);
-    height: 230px;
-    padding: 22px 8px 26px;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    gap: var(--cs-gap);
+    --cs-gap: clamp(14px, 4vw, 44px);
+    height: 240px;
+    padding: 28px 4px 30px;
   }
-  .ap-col {
+  .cs-col {
     position: relative;
     height: 100%;
   }
-  .ap-pos,
-  .ap-neg {
-    position: absolute;
-    left: 18%;
-    right: 18%;
-    display: flex;
-  }
-  .ap-pos {
-    bottom: var(--cero);
-    top: 0;
-    flex-direction: column-reverse;
-  }
-  .ap-neg {
-    top: calc(100% - var(--cero));
-    bottom: 0;
-    flex-direction: column;
-  }
-  .ap-col::after {
+  /* Línea del cero */
+  .cs-col::before {
     content: "";
     position: absolute;
-    left: 6%;
-    right: 6%;
+    left: 0;
+    right: calc(-1 * var(--cs-gap));
     bottom: var(--cero);
     height: 1px;
-    background: var(--ink-4, var(--rule));
+    background: var(--rule);
   }
-  .ap-seg {
-    display: block;
-    flex: none;
-    min-height: 1px;
-    transform-origin: bottom;
-    animation: cc-crecer-y 520ms var(--ease-out) backwards;
-    animation-delay: calc(var(--i, 0) * 60ms);
-  }
-  .ap-neg .ap-seg {
-    transform-origin: top;
-  }
-  .ap-caus {
-    background: var(--engrave);
-    border-radius: 4px 4px 0 0;
-  }
-  .ap-pos .ap-roll {
-    background: var(--seal);
-    border-radius: 4px 4px 0 0;
-  }
-  .ap-pos .ap-roll + .ap-caus,
-  .ap-pos .ap-caus:has(+ .ap-roll) {
-    border-radius: 0;
-  }
-  .ap-costo {
-    background: var(--neg);
-    border-radius: 0 0 4px 4px;
-    opacity: 0.85;
-  }
-  .ap-neg .ap-roll {
-    background: var(--seal);
-  }
-  .ap-total {
-    position: absolute;
-    left: 0;
+  .cs-col:last-child::before {
     right: 0;
-    height: 0;
-    border-top: 2px solid var(--ink);
-    margin-inline: 8%;
   }
-  .ap-total b {
+  .cs-barra {
     position: absolute;
-    left: 50%;
-    bottom: 4px;
-    translate: -50% 0;
-    padding: 1px 6px;
-    border-radius: var(--r-xs);
-    background: var(--sheet);
-    font: 600 12px var(--f-cifra);
-    font-variant-numeric: tabular-nums;
-    white-space: nowrap;
+    left: 14%;
+    right: 14%;
+    border-radius: 4px;
+    transition:
+      bottom 460ms var(--ease-out),
+      height 460ms var(--ease-out);
   }
-  .ap-eje {
+  /* Causación en verde claro para distinguirla del total (acento sólido) */
+  .cs-caus {
+    background: color-mix(in srgb, var(--pos) 55%, var(--sheet));
+  }
+  .cs-roll {
+    background: var(--seal);
+  }
+  .cs-costo {
+    background: var(--neg);
+  }
+  .cs-total {
+    background: var(--acento-fondo);
+    box-shadow: var(--sombra-1);
+  }
+  .cs-total.cs-neg {
+    background: var(--neg);
+  }
+  .cs-valor {
     position: absolute;
-    bottom: -22px;
     left: 0;
     right: 0;
     text-align: center;
-    font: 500 11px var(--f-mono);
-    color: var(--ink-3);
+    font: 600 12.5px var(--f-cifra);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    color: var(--ink);
+    transition: bottom 460ms var(--ease-out);
   }
-  .legend .ap-l-caus {
-    background: var(--engrave);
+  /* Del borde derecho de esta barra al borde izquierdo de la siguiente (columnas del mismo ancho) */
+  .cs-conector {
+    position: absolute;
+    left: 86%;
+    right: calc(-1 * var(--cs-gap) - 14%);
+    height: 0;
+    border-top: 1px dashed var(--ink-4, var(--ink-3));
+    transition: bottom 460ms var(--ease-out);
   }
-  .legend .ap-l-roll {
+  .cs-eje {
+    position: absolute;
+    bottom: -24px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font: 500 11.5px var(--f-body);
+    color: var(--ink-2);
+  }
+  .legend .cs-l-caus {
+    background: color-mix(in srgb, var(--pos) 55%, var(--sheet));
+  }
+  .legend .cs-l-roll {
     background: var(--seal);
   }
-  .legend .ap-l-costo {
+  .legend .cs-l-costo {
     background: var(--neg);
   }
-  .legend .ap-l-total {
-    height: 2px !important;
-    background: var(--ink);
+  .legend .cs-l-total {
+    background: var(--acento-fondo);
   }
-  @keyframes cc-crecer-y {
-    from {
-      transform: scaleY(0);
-    }
+  .cs-acum .h-sub {
+    margin-bottom: 6px;
+  }
+  .retorno-tabla .col-info {
+    color: var(--ink-3);
+  }
+  /* 9 columnas: encabezados en dos líneas y celdas compactas para que quepan sin cortar */
+  .retorno-tabla th {
+    white-space: normal;
+    line-height: 1.25;
+    vertical-align: bottom;
+    padding: 6px 7px;
+  }
+  .retorno-tabla td {
+    padding: 6px 7px;
+    font-size: 12px;
+  }
+  .retorno-tabla caption {
+    caption-side: top;
+    text-align: right;
+    padding-bottom: 4px;
+  }
+  .retorno-tabla tr.fila-activa td {
+    background: color-mix(in srgb, var(--engrave) 7%, transparent);
+  }
+  .cs-anual-cp {
+    display: block;
   }
   @media (max-width: 520px) {
-    .ap-total b {
+    .cs-cab .seg {
+      flex-wrap: nowrap;
+    }
+    .cs-cab .seg button {
+      padding: 7px 9px;
+      font-size: 12.5px;
+    }
+    .cs-area {
+      height: 210px;
+    }
+    .cs-valor {
       font-size: 10.5px;
-      padding: 1px 3px;
+    }
+    .cs-eje {
+      font-size: 10px;
     }
   }
   @media (prefers-reduced-motion: reduce) {
-    .ap-seg {
-      animation: none;
+    .cs-barra,
+    .cs-valor,
+    .cs-conector {
+      transition: none;
     }
   }
 
