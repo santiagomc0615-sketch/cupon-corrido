@@ -2804,6 +2804,63 @@
     border-radius: var(--r);
   }
 
+  /* curva FRAC cargada por el usuario (calculadora IBR y Curva TES) */
+  .frac-usuario {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .frac-usuario-barra {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 10px;
+  }
+  .frac-usuario-estado {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px 10px;
+    margin: 0;
+    font-size: 13px;
+  }
+  .frac-usuario-errores {
+    padding: 10px 14px;
+    border-radius: var(--r-sm);
+    background: color-mix(in srgb, var(--neg) 8%, var(--sheet));
+    color: var(--ink);
+    font-size: 13px;
+  }
+  .frac-usuario-errores ul {
+    margin: 6px 0 0;
+    padding-left: 18px;
+    color: var(--ink-2);
+  }
+  .frac-usuario-previa {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px 14px;
+    border-radius: var(--r);
+    background: var(--sheet);
+    box-shadow: var(--sombra-1), var(--brillo-borde);
+  }
+  .frac-usuario-previa dl {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 8px 14px;
+    margin: 0;
+  }
+  .frac-usuario-previa dt {
+    font-size: 12px;
+    color: var(--ink-3);
+  }
+  .frac-usuario-previa dd {
+    margin: 0;
+    font-family: var(--f-mono);
+    font-variant-numeric: tabular-nums;
+  }
+
   /* asesor */
   .advisor {
     display: grid;
