@@ -1,5 +1,6 @@
 "use client";
 import { useDeferredValue, useMemo } from "react";
+import { CargarCurvaFrac } from "@/components/frac/CargarCurvaFrac";
 import { useApp, useCurvaNecesaria } from "@/components/providers/AppProvider";
 import { LAYOUT, OPTS, toEngine, type Campo, type EntradasUI } from "@/lib/calculadora";
 import { esError, toN, type TipoBono } from "@/lib/engine";
@@ -172,6 +173,11 @@ function Formulario() {
                 </option>
               ))}
             </select>
+          </div>
+        )}
+        {tipo === "IBR" && (
+          <div className="f w">
+            <CargarCurvaFrac compacto />
           </div>
         )}
       </fieldset>
