@@ -96,9 +96,10 @@ export function PaginaPyG({
         ].map(([l, v, n, real]) => (
           <View key={l as string} style={{ ...s.caja, flexGrow: 1, flexBasis: 0, padding: 8, ...(real ? { borderColor: C.acento } : {}) }}>
             <Text style={{ fontSize: 7, color: C.tinta2 }}>{l as string}</Text>
-            <View style={{ height: 18, justifyContent: "flex-end" }}>
-              <Text style={{ fontWeight: 600, fontSize: 14, color: v == null || (v as number) < 0 ? C.negativo : real ? C.acento : C.positivo, fontFamily: FAMILIA.texto }}>{textoRent(v as number | null)}</Text>
-            </View>
+            {/* Sin alto fijo: react-pdf descarta el texto que no cabe en una caja de alto fijo. */}
+            <Text style={{ marginTop: 3, fontWeight: 600, fontSize: 14, lineHeight: 1.25, color: v == null || (v as number) < 0 ? C.negativo : real ? C.acento : C.positivo, fontFamily: FAMILIA.texto }}>
+              {textoRent(v as number | null)}
+            </Text>
             <Text style={{ ...s.src, marginTop: 2 }}>{n as string}</Text>
           </View>
         ))}
