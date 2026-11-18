@@ -30,7 +30,7 @@ export const BRAND = {
     pais: "Colombia",
   },
   /** Fecha de la última actualización de /privacidad y /terminos. */
-  fechaLegal: "5 de noviembre de 2026",
+  fechaLegal: "18 de noviembre de 2026",
   /** Logo: sello guilloché dibujado en canvas con el color --engrave del tema. */
   logo: {
     alt: `Sello guilloché de ${NOMBRE}`,

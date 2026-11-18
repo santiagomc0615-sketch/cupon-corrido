@@ -2,7 +2,8 @@
    cliente y devuelve cifras YA calculadas y formateadas (es-CO), con fuente y fecha. El modelo no
    calcula: solo elige la herramienta, lee el resultado y lo explica.
    Funciones puras sobre un contexto (motor + datos del día + portafolio del usuario). */
-import type Anthropic from "@anthropic-ai/sdk";
+import { herramientasAnthropic } from "@/lib/ia/herramientas";
+import type { DefinicionHerramienta } from "@/lib/ia/tipos";
 import { z } from "zod";
 import { carryConConfig, carryPortafolioFondeo, comparacion, CONFIG_INICIAL, type ConfigFondeo } from "@/lib/carry/config";
 import { NOMBRE_ALTERNATIVA } from "@/lib/carry/exterior";
@@ -134,7 +135,8 @@ export type NombreHerramienta = keyof typeof ENTRADAS;
 /* ---------- definiciones para la API ---------- */
 const objeto = (properties: Record<string, unknown>, required: string[] = []) => ({ type: "object" as const, properties, required });
 
-export const HERRAMIENTAS: Anthropic.Beta.BetaTool[] = [
+/** Definiciones únicas (JSON Schema). lib/ia/herramientas.ts las traduce a cada proveedor. */
+export const DEFINICIONES_HERRAMIENTAS: DefinicionHerramienta[] = [
   {
     name: "valorar_titulo",
     description:
@@ -204,7 +206,10 @@ export const HERRAMIENTAS: Anthropic.Beta.BetaTool[] = [
   },
   ...HERRAMIENTAS_IMPUESTOS,
   ...HERRAMIENTAS_ANALISIS,
-].map((t) => ({ ...t, eager_input_streaming: true }));
+];
+
+/** Formato de Anthropic (tool use con streaming de la entrada). */
+export const HERRAMIENTAS = herramientasAnthropic(DEFINICIONES_HERRAMIENTAS);
 
 /* ---------- ejecución ---------- */
 function valorar(ctx: ContextoHerramientas, b: Bono, titulo: string): PosicionAgente | { error: string } {

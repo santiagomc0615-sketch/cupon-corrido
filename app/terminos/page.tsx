@@ -32,7 +32,7 @@ export default function Terminos() {
 
         <h2>2. Respuestas generadas por inteligencia artificial</h2>
         <p>
-          Las respuestas del asesor son generadas automáticamente por un modelo de IA (Claude, de Anthropic) a partir de los
+          Las respuestas del asesor son generadas automáticamente por un modelo de IA (Gemini, de Google, o Claude, de Anthropic, según la configuración del sitio) a partir de los
           datos cargados en el sitio. Pueden contener errores, omisiones o interpretaciones incorrectas, y no reemplazan el
           juicio de un analista. Verifique siempre las cifras. El uso del asesor está limitado a 20 consultas por hora por
           dirección IP y puede suspenderse sin aviso.
@@ -70,7 +70,7 @@ export default function Terminos() {
 
         <h2>7. Propiedad intelectual</h2>
         <p>
-          Las marcas, nombres y contenidos de terceros (Banco de la República, DANE, Bloomberg Línea, Anthropic y otros)
+          Las marcas, nombres y contenidos de terceros (Banco de la República, DANE, Bloomberg Línea, Anthropic, Google y otros)
           pertenecen a sus titulares y se citan solo como fuente.
         </p>
 

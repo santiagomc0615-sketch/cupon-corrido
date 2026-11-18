@@ -64,6 +64,9 @@ interface EstadoAsesor {
   activo: boolean;
   mensajeDemo: string | null;
   consultasPorHora: number;
+  /** Proveedor activo ("Google (Gemini)" o "Anthropic (Claude)") y su aviso de privacidad. */
+  proveedorEtiqueta?: string;
+  avisoPrivacidad?: string;
 }
 
 const DEMO_POR_DEFECTO = MENSAJE_DEMO;
@@ -150,7 +153,7 @@ export function VistaAsesor() {
       if (!r.ok || !r.body) {
         const j = await r.json().catch(() => ({}));
         if (j.demo) {
-          setEstado((e) => ({ activo: false, mensajeDemo: j.error, consultasPorHora: e?.consultasPorHora ?? 20 }));
+          setEstado((e) => ({ ...e, activo: false, mensajeDemo: j.error, consultasPorHora: e?.consultasPorHora ?? 20 }));
           actualizarUltimo({ texto: j.error, ia: false, demo: true });
           return;
         }
@@ -220,8 +223,8 @@ export function VistaAsesor() {
             Demo
           </span>
           <span>
-            <b>{mensajeDemo}</b> Puede recorrer la interfaz y las consultas rápidas; las respuestas de Claude aparecen cuando
-            el servidor tiene configurada la variable ANTHROPIC_API_KEY.
+            <b>{mensajeDemo}</b> Puede recorrer la interfaz y las consultas rápidas; las respuestas de la IA aparecen cuando
+            el servidor tiene configurada la clave del proveedor (GEMINI_API_KEY o ANTHROPIC_API_KEY).
           </span>
         </div>
       )}
@@ -359,8 +362,9 @@ export function VistaAsesor() {
               IA
             </span>
             <span>
-              Respuestas generadas por IA (Claude, de Anthropic). {BRAND.avisoLegal} Límite: {estado?.consultasPorHora ?? 20}{" "}
-              consultas por hora.
+              Respuestas generadas por IA{estado?.proveedorEtiqueta ? ` (${estado.proveedorEtiqueta})` : ""}.{" "}
+              {estado?.avisoPrivacidad ?? "No escribas datos personales."} {BRAND.avisoLegal} Límite:{" "}
+              {estado?.consultasPorHora ?? 20} consultas por hora.
             </span>
           </div>
         </div>
