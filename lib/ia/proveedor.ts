@@ -3,7 +3,10 @@
    y traducir errores). La ruta /api/asesor solo habla con esta capa.
    - AI_PROVIDER: "gemini" o "anthropic". Si no se define: gemini si solo hay GEMINI_API_KEY; si no, anthropic.
    - GEMINI_API_KEY / ANTHROPIC_API_KEY: la clave del proveedor activo. Sin ella, modo demo.
-   - AI_MODEL: modelo (por defecto gemini-3.8-flash, nivel gratuito con function calling; o
+   - AI_MODEL_RESPALDO: modelos de respaldo separados por coma (Gemini; por defecto
+     gemini-3.8-flash,gemini-4-hydrogen), si el principal está saturado o sin cuota.
+   - AI_MODEL: modelo (por defecto gemini-3.5-flash-lite: nivel gratuito, function calling y el que Google
+     recomienda para proyectos nuevos; o
      claude-opus-5-5). ASESOR_MODELO se mantiene como alternativa para Anthropic. */
 import { proveedorAnthropic } from "./anthropic";
 import { proveedorGemini } from "./gemini";
@@ -14,6 +17,6 @@ export { avisoPrivacidad, configIA, ETIQUETA_PROVEEDOR, MODELO_POR_DEFECTO, nomb
 export type { BloquesSistema, EntradaAgente, ErrorIA, EventoAgente, NombreProveedor, ProveedorIA } from "./tipos";
 export { MENSAJE_SATURADO } from "./tipos";
 
-export function crearProveedor(o: { proveedor: NombreProveedor; modelo: string; maxTokens: number; esfuerzo: Esfuerzo }): ProveedorIA {
+export function crearProveedor(o: { proveedor: NombreProveedor; modelo: string; respaldos?: string[]; maxTokens: number; esfuerzo: Esfuerzo }): ProveedorIA {
   return o.proveedor === "gemini" ? proveedorGemini(o) : proveedorAnthropic(o);
 }

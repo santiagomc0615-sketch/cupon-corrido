@@ -57,7 +57,7 @@ describe("/api/asesor con Gemini", () => {
   it("GET informa el proveedor, el modelo y el aviso de privacidad", async () => {
     const { GET } = await import("@/app/api/asesor/route");
     const e = await (await GET()).json();
-    expect(e).toMatchObject({ activo: true, proveedor: "gemini", proveedorEtiqueta: "Google (Gemini)", modelo: "gemini-3.8-flash" });
+    expect(e).toMatchObject({ activo: true, proveedor: "gemini", proveedorEtiqueta: "Google (Gemini)", modelo: "gemini-3.5-flash-lite" });
     expect(e.avisoPrivacidad).toMatch(/nivel gratuito de Google pueden usarse para mejorar sus productos/);
   });
 

@@ -3,7 +3,9 @@
    en el servidor con ejecutarHerramienta (motor validado) y se devuelven todas juntas.
    - Se reenvían las partes del modelo tal como llegaron (incluidas las firmas de razonamiento,
      thoughtSignature), como exige Gemini 3 para seguir con las llamadas a funciones.
-   - 429 (cuota del nivel gratuito) y 503 (saturado) → "El asesor está muy solicitado…". */
+   - Si el modelo responde 429 (cuota del nivel gratuito) o 503 (saturado), se intenta con los modelos
+     de respaldo (AI_MODEL_RESPALDO; la cuota gratuita es por modelo). Si todos fallan →
+     "El asesor está muy solicitado…". */
 import { ApiError, FunctionCallingConfigMode, GoogleGenAI, ThinkingLevel, type Content, type GenerateContentResponse, type Part } from "@google/genai";
 import { DEFINICIONES_HERRAMIENTAS, ejecutarHerramienta } from "@/lib/asesor/herramientas";
 import { herramientasGemini } from "./herramientas";
@@ -18,9 +20,20 @@ export interface ClienteGemini {
 export interface OpcionesGemini {
   cliente: ClienteGemini;
   modelo: string;
+  /** Modelos que se prueban, en orden, si el principal está saturado o sin cuota. */
+  respaldos?: string[];
   maxTokens: number;
   esfuerzo: Esfuerzo;
 }
+
+/** Tiempo máximo de cada llamada a Gemini, incluida la lectura del stream (el SDK no trae límite). */
+export const TIEMPO_MAXIMO_MS = 30_000;
+
+/** Se venció el tiempo máximo de la llamada (Google no respondió). */
+const esTiempoAgotado = (e: unknown) => e instanceof Error && (e.name === "TimeoutError" || e.name === "AbortError");
+
+/** 429 (cuota), 503 (saturado), 529 o sin respuesta a tiempo: conviene probar otro modelo o esperar. */
+const esSaturado = (e: unknown) => (e instanceof ApiError && [429, 503, 529].includes(e.status)) || esTiempoAgotado(e);
 
 const NIVEL: Record<Esfuerzo, ThinkingLevel> = {
   low: ThinkingLevel.LOW,
@@ -56,21 +69,44 @@ export async function* correrGemini(o: OpcionesGemini, e: EntradaAgente): AsyncG
     ...(e.signal ? { abortSignal: e.signal } : {}),
   };
 
+  const modelos = [o.modelo, ...(o.respaldos ?? []).filter((m) => m && m !== o.modelo)];
+  let actual = 0;
+  const abrir = async (): Promise<AsyncGenerator<GenerateContentResponse>> => {
+    for (;;) {
+      try {
+        return await o.cliente.models.generateContentStream({ model: modelos[actual], contents, config });
+      } catch (err) {
+        if (!esSaturado(err) || actual >= modelos.length - 1 || e.signal?.aborted) throw err;
+        actual++; // el siguiente modelo de respaldo (se queda en él el resto de la consulta)
+      }
+    }
+  };
+
   let reintentos = 0;
   for (let vuelta = 0; vuelta < MAX_VUELTAS; vuelta++) {
-    const stream: AsyncGenerator<GenerateContentResponse> = await o.cliente.models.generateContentStream({ model: o.modelo, contents, config });
+    const stream = await abrir();
     const partes: Part[] = [];
     let fin: string | undefined;
     let bloqueado = false;
-    for await (const ch of stream) {
-      if (ch.promptFeedback?.blockReason) bloqueado = true;
-      const c = ch.candidates?.[0];
-      for (const p of c?.content?.parts ?? []) {
-        partes.push(p);
-        if (p.functionCall?.name) yield { t: "herramienta", id: p.functionCall.id ?? `g${vuelta}-${partes.length}`, nombre: p.functionCall.name, estado: "pidiendo" };
-        else if (p.text && !p.thought) yield { t: "texto", d: p.text };
+    try {
+      for await (const ch of stream) {
+        if (ch.promptFeedback?.blockReason) bloqueado = true;
+        const c = ch.candidates?.[0];
+        for (const p of c?.content?.parts ?? []) {
+          partes.push(p);
+          if (p.functionCall?.name) yield { t: "herramienta", id: p.functionCall.id ?? `g${vuelta}-${partes.length}`, nombre: p.functionCall.name, estado: "pidiendo" };
+          else if (p.text && !p.thought) yield { t: "texto", d: p.text };
+        }
+        if (c?.finishReason) fin = c.finishReason;
       }
-      if (c?.finishReason) fin = c.finishReason;
+    } catch (err) {
+      // Google puede cortar el stream a mitad (503, cuota o sin respuesta a tiempo): se descarta el
+      // texto de esta vuelta y se repite con el siguiente modelo de respaldo.
+      if (!esSaturado(err) || actual >= modelos.length - 1 || e.signal?.aborted) throw err;
+      actual++;
+      vuelta--;
+      yield { t: "reintento" };
+      continue;
     }
 
     if (bloqueado || (fin && BLOQUEO.has(fin))) {
@@ -120,6 +156,7 @@ export async function* correrGemini(o: OpcionesGemini, e: EntradaAgente): AsyncG
 }
 
 export function traducirErrorGemini(e: unknown, modelo: string): ErrorIA | null {
+  if (esTiempoAgotado(e)) return { tipo: "limite", status: 503, mensaje: MENSAJE_SATURADO };
   if (!(e instanceof ApiError)) {
     if (e instanceof TypeError && /fetch/i.test(e.message)) return { tipo: "conexion", status: 502, mensaje: "No hubo conexión con el servicio de IA. Intente de nuevo." };
     return null;
@@ -140,7 +177,7 @@ export function proveedorGemini(o: Omit<OpcionesGemini, "cliente"> & { cliente?:
     nombre: "gemini",
     etiqueta: "Google (Gemini)",
     modelo: o.modelo,
-    correr: (e) => correrGemini({ ...o, cliente: o.cliente ?? (cliente ??= new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })) }, e),
+    correr: (e) => correrGemini({ ...o, cliente: o.cliente ?? (cliente ??= new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY, httpOptions: { timeout: TIEMPO_MAXIMO_MS } })) }, e),
     traducirError: (e) => traducirErrorGemini(e, o.modelo),
   };
 }

@@ -20,6 +20,20 @@
         "3002"
       ],
       "port": 3002
+    },
+    {
+      "name": "prod-3002-ca",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "next",
+        "start",
+        "-p",
+        "3002"
+      ],
+      "port": 3002,
+      "env": {
+        "NODE_OPTIONS": "--use-system-ca"
+      }
     }
   ]
 }

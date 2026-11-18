@@ -362,7 +362,7 @@ export function VistaAsesor() {
               IA
             </span>
             <span>
-              Respuestas generadas por IA{estado?.proveedorEtiqueta ? ` (${estado.proveedorEtiqueta})` : ""}.{" "}
+              Respuestas generadas por IA{estado?.proveedorEtiqueta ? ` de ${estado.proveedorEtiqueta}` : ""}.{" "}
               {estado?.avisoPrivacidad ?? "No escribas datos personales."} {BRAND.avisoLegal} Límite:{" "}
               {estado?.consultasPorHora ?? 20} consultas por hora.
             </span>

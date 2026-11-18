@@ -20,9 +20,17 @@ const sistema = bloquesSistema("moderado", "chat", ctx, "Art. 241 E.T. …");
 
 describe("Elección del proveedor (variables de entorno)", () => {
   it("AI_PROVIDER manda; el modelo por defecto depende del proveedor", () => {
-    expect(configIA({ AI_PROVIDER: "gemini", GEMINI_API_KEY: "g" })).toEqual({ proveedor: "gemini", etiqueta: "Google (Gemini)", modelo: "gemini-3.8-flash", activo: true });
+    expect(configIA({ AI_PROVIDER: "gemini", GEMINI_API_KEY: "g" })).toEqual({
+      proveedor: "gemini",
+      etiqueta: "Google (Gemini)",
+      modelo: "gemini-3.5-flash-lite",
+      respaldos: ["gemini-3.8-flash", "gemini-4-hydrogen"],
+      activo: true,
+    });
+    expect(configIA({ AI_PROVIDER: "gemini", AI_MODEL_RESPALDO: "a, b ,gemini-3.5-flash-lite" }).respaldos).toEqual(["a", "b"]);
+    expect(configIA({ AI_PROVIDER: "anthropic" }).respaldos).toEqual([]);
     expect(configIA({ AI_PROVIDER: "anthropic", ANTHROPIC_API_KEY: "a" })).toMatchObject({ proveedor: "anthropic", modelo: "claude-opus-5-5", activo: true });
-    expect(configIA({ AI_PROVIDER: "gemini", GEMINI_API_KEY: "g", AI_MODEL: "gemini-3.5-flash-lite" }).modelo).toBe("gemini-3.5-flash-lite");
+    expect(configIA({ AI_PROVIDER: "gemini", GEMINI_API_KEY: "g", AI_MODEL: "gemini-3.8-flash" }).modelo).toBe("gemini-3.8-flash");
     expect(configIA({ AI_PROVIDER: "anthropic", ANTHROPIC_API_KEY: "a", ASESOR_MODELO: "claude-sonnet-5-5" }).modelo).toBe("claude-sonnet-5-5");
   });
 
@@ -162,6 +170,47 @@ describe("Bucle de Gemini (function calling)", () => {
     expect(peticiones).toHaveLength(2);
   });
 
+  it("si el modelo está saturado o sin cuota, sigue con el de respaldo", async () => {
+    const modelos: string[] = [];
+    const cliente = {
+      models: {
+        generateContentStream: async (p: { model: string }) => {
+          modelos.push(p.model);
+          if (p.model !== "lite") throw new ApiError({ message: "UNAVAILABLE", status: modelos.length === 1 ? 503 : 429 });
+          return (async function* () {
+            yield trozo([{ text: "ok" }], "STOP");
+          })();
+        },
+      },
+    } as unknown as ClienteGemini;
+    const ev = await todos(correrGemini({ ...opciones(cliente), respaldos: ["otro", "lite"] }, entrada));
+    expect(modelos).toEqual(["gemini-3.8-flash", "otro", "lite"]);
+    expect(ev[ev.length - 1]).toEqual({ t: "fin", stop: "end_turn" });
+    // si todos fallan, el error sale para que la ruta muestre «muy solicitado»
+    await expect(todos(correrGemini({ ...opciones(cliente), respaldos: ["otro"] }, entrada))).rejects.toBeInstanceOf(ApiError);
+  });
+
+  it("si Google corta el stream a mitad (503), descarta ese texto y repite con el respaldo", async () => {
+    const modelos: string[] = [];
+    const cliente = {
+      models: {
+        generateContentStream: async (p: { model: string }) => {
+          modelos.push(p.model);
+          return (async function* () {
+            yield trozo([{ text: "parcial" }]);
+            if (p.model === "gemini-3.8-flash") throw new ApiError({ message: "UNAVAILABLE", status: 503 });
+            yield trozo([{ text: "completa" }], "STOP");
+          })();
+        },
+      },
+    } as unknown as ClienteGemini;
+    const ev = await todos(correrGemini({ ...opciones(cliente), respaldos: ["lite"] }, entrada));
+    expect(modelos).toEqual(["gemini-3.8-flash", "lite"]);
+    expect(ev.map((x) => x.t)).toEqual(["texto", "reintento", "texto", "texto", "fin"]);
+    // sin más respaldos, el error sale (la ruta muestra «muy solicitado»)
+    await expect(todos(correrGemini(opciones(cliente), entrada))).rejects.toBeInstanceOf(ApiError);
+  });
+
   it("se detiene tras el máximo de vueltas", async () => {
     const { cliente, peticiones } = clienteFalso([[trozo([{ functionCall: { name: "datos_mercado", args: {} } }], "STOP")]]);
     const ev = await todos(correrGemini(opciones(cliente), entrada));
@@ -177,6 +226,9 @@ describe("Errores de Gemini sin detalles técnicos", () => {
       expect(t).toEqual({ tipo: "limite", status: 503, mensaje: MENSAJE_SATURADO });
     }
     expect(MENSAJE_SATURADO).toBe("El asesor está muy solicitado, intenta en un minuto.");
+    // sin respuesta a tiempo (el SDK aborta la llamada)
+    const abortado = Object.assign(new Error("This operation was aborted"), { name: "AbortError" });
+    expect(traducirErrorGemini(abortado, "m")?.mensaje).toBe(MENSAJE_SATURADO);
   });
 
   it("clave inválida, modelo inexistente y otros errores", () => {

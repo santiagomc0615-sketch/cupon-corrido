@@ -217,10 +217,46 @@ function valorar(ctx: ContextoHerramientas, b: Bono, titulo: string): PosicionAg
   return esError(o) ? { error: o.error } : { titulo, b, o };
 }
 
+/** Aplica al bono de la calculadora los campos que dio el modelo (las tasas del bono van en decimal). */
+function cambiosSobreTitulo(b: Bono, i: z.infer<typeof ENTRADAS.valorar_titulo>): { b: Bono; texto: string } | null {
+  const tasaFija = b.tipo === "TF" || b.tipo === "UVR";
+  const c: Record<string, unknown> = {};
+  const t: string[] = [];
+  if (i.nominal) {
+    c.nominal = i.nominal;
+    t.push(`nominal ${F.cop(i.nominal)}`);
+  }
+  if (i.emision) {
+    c.emision = i.emision;
+    t.push(`emisión ${i.emision}`);
+  }
+  if (i.vencimiento) {
+    c.vencimiento = i.vencimiento;
+    t.push(`vencimiento ${i.vencimiento}`);
+  }
+  if (i.frecuencia) {
+    c.frecuencia = i.frecuencia;
+    t.push(`frecuencia ${i.frecuencia.toLowerCase()}`);
+  }
+  if (i.cupon_o_spread_facial_pct != null) {
+    c[tasaFija ? "cupon" : "spread"] = i.cupon_o_spread_facial_pct / 100;
+    t.push(`${tasaFija ? "cupón" : "spread facial"} ${nf(2).format(i.cupon_o_spread_facial_pct)} %`);
+  }
+  if (i.tasa_compra_pct != null) {
+    c[tasaFija ? "tasaCompra" : "spreadCompra"] = i.tasa_compra_pct / 100;
+    t.push(`${tasaFija ? "tasa de compra" : "spread de compra"} ${nf(2).format(i.tasa_compra_pct)} %`);
+  }
+  return t.length ? { b: { ...b, ...c } as Bono, texto: t.join(", ") } : null;
+}
+
 function herramientaValorar(ctx: ContextoHerramientas, i: z.infer<typeof ENTRADAS.valorar_titulo>) {
   if (i.usar_titulo_calculadora || (!i.tipo && ctx.titulo)) {
     if (!ctx.titulo) return { error: "No hay un título válido abierto en la calculadora." };
-    return fichaTitulo(ctx.titulo);
+    // Campos dados (p. ej. otra tasa de compra) se aplican sobre el título de la calculadora.
+    const cambios = cambiosSobreTitulo(ctx.titulo.b, i);
+    if (!cambios) return fichaTitulo(ctx.titulo);
+    const v = valorar(ctx, cambios.b, `${ctx.titulo.titulo} (${cambios.texto})`);
+    return "error" in v ? v : { ...fichaTitulo(v), supuestos: `Título de la calculadora con ${cambios.texto}; lo demás igual.` };
   }
   const tipo = i.tipo ?? "TF";
   const base: EntradasUI = { ...crearDefaults(ctx.fecha)[tipo] };
