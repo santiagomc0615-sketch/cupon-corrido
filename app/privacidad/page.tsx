@@ -3,6 +3,7 @@ import Link from "next/link";
 import { BorrarDatos } from "@/components/legal/BorrarDatos";
 import { Encabezado } from "@/components/ui";
 import { BRAND } from "@/lib/brand";
+import { avisoPrivacidad, configIA } from "@/lib/ia/config";
 
 export const metadata: Metadata = {
   title: "Política de privacidad",
@@ -11,7 +12,12 @@ export const metadata: Metadata = {
 
 const R = BRAND.responsable;
 
+/** Encargado del asesor según el proveedor activo (AI_PROVIDER). */
+const ENCARGADO = { gemini: "Google LLC (proveedor del modelo Gemini)", anthropic: "Anthropic, PBC (proveedor del modelo Claude)" } as const;
+
 export default function Privacidad() {
+  const ia = configIA();
+  const encargado = ENCARGADO[ia.proveedor];
   return (
     <section className="view">
       <Encabezado eyebrow={`Última actualización: ${BRAND.fechaLegal}`}>
@@ -56,7 +62,10 @@ export default function Privacidad() {
         </p>
         <h3>2.3 Consultas al asesor de IA</h3>
         <p>
-          Cuando usted hace una pregunta al asesor, el servidor envía a Anthropic, PBC (proveedor del modelo Claude) la
+          {avisoPrivacidad(ia.proveedor)}
+        </p>
+        <p>
+          Cuando usted hace una pregunta al asesor, el servidor envía a {encargado} la
           pregunta, las últimas preguntas y respuestas de esa conversación y un resumen de los datos de mercado y de su
           portafolio (títulos, tasas, duraciones y pesos; sin su nombre ni datos de identificación). La página no guarda las
           conversaciones. La respuesta a «Resumen de la economía» se guarda hasta 24 horas para reutilizarla, y no contiene
@@ -80,9 +89,10 @@ export default function Privacidad() {
         <h2>4. Encargados y transferencias internacionales</h2>
         <p>
           Para funcionar, el sitio usa proveedores que actúan como encargados y procesan datos fuera de Colombia,
-          principalmente en Estados Unidos: Vercel Inc. (alojamiento y almacenamiento de archivos), Anthropic, PBC (modelo
-          de IA del asesor) y, si está configurado, Upstash Inc. (contador de consultas y caché). Al usar el asesor de IA
-          usted autoriza el envío de su consulta a Anthropic con la finalidad descrita en el punto 2.3. Cada proveedor
+          principalmente en Estados Unidos: Vercel Inc. (alojamiento y almacenamiento de archivos), {encargado.split(" (")[0]}{" "}
+          (modelo de IA del asesor) y, si está configurado, Upstash Inc. (contador de consultas y caché). Al usar el asesor
+          de IA usted autoriza el envío de su consulta a {ia.proveedor === "gemini" ? "Google" : "Anthropic"} con la finalidad
+          descrita en el punto 2.3. Cada proveedor
           aplica sus propias políticas de seguridad y retención.
         </p>
 
@@ -109,7 +119,7 @@ export default function Privacidad() {
 
         <h2>7. Seguridad</h2>
         <p>
-          La conexión al sitio es cifrada (HTTPS). Las claves de servicio (como la de la API de Anthropic) solo existen en el
+          La conexión al sitio es cifrada (HTTPS). Las claves de servicio (como la de la API de Gemini o de Anthropic) solo existen en el
           servidor y nunca se envían al navegador. Las funciones de carga de datos requieren una clave de administrador.
         </p>
 

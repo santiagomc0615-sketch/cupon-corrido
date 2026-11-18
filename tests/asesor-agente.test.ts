@@ -2,8 +2,8 @@
 import { describe, expect, it } from "vitest";
 import { armarContexto, correrAgente, MAX_VUELTAS, SISTEMA_AGENTE, sistemaVariable, type EventoAgente } from "@/lib/asesor/agente";
 import { ejecutarHerramienta, HERRAMIENTAS } from "@/lib/asesor/herramientas";
-import { crearDefaults, crearPfEjemplo } from "@/lib/calculadora";
-import { pfMetrics } from "@/lib/engine";
+import { crearDefaults, crearPfEjemplo, toEngine } from "@/lib/calculadora";
+import { esError, pfMetrics } from "@/lib/engine";
 import { F } from "@/lib/format";
 import { SNAP_PRUEBA } from "./snap-prueba";
 
@@ -16,6 +16,20 @@ const correr = (nombre: string, entrada: unknown = {}) => {
 };
 
 describe("Herramientas del asesor", () => {
+  it("valorar_titulo con el título de la calculadora aplica la tasa que se pida (no la ignora)", () => {
+    const { j } = correr("valorar_titulo", { usar_titulo_calculadora: true, tasa_compra_pct: 12 });
+    expect(j.tir).toBe("12,000 % E.A.");
+    expect(j.supuestos).toMatch(/tasa de compra 12,00 %/);
+    // misma cifra que la calculadora con esa tasa
+    const b = toEngine({ ...def.TF, tasaCompra: 12, valoracion: "2026-11-04" });
+    const o = ctx.motor.price(b);
+    if (esError(o)) throw new Error(o.error);
+    expect(j.precio_sucio).toBe(F.n(o.dirty, 3) + " %");
+    expect(j.precio_limpio).toBe(F.n(o.clean, 3) + " %");
+    // sin cambios, la ficha del título tal cual
+    expect(correr("valorar_titulo", { usar_titulo_calculadora: true }).j.tir).toBe("13,600 % E.A.");
+  });
+
   it("se declaran las quince, con streaming de entrada", () => {
     expect(HERRAMIENTAS.map((h) => h.name)).toEqual([
       "valorar_titulo",

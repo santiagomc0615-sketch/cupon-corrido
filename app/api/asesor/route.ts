@@ -3,21 +3,21 @@
    calculadora y del fondeo. El servidor los valora con el motor y el modelo solo obtiene cifras
    llamando a las herramientas (lib/asesor/herramientas.ts).
    Responde en streaming NDJSON: una línea JSON por evento ({t:"texto"|"herramienta"|"reintento"|"nota"|"fin"}).
-   - Sin ANTHROPIC_API_KEY funciona en modo demo: GET informa el estado y POST responde 503 con
+   - El proveedor (Gemini o Anthropic) lo elige la capa común lib/ia/proveedor.ts (AI_PROVIDER); esta
+     ruta no sabe cuál hay detrás.
+   - Sin la clave del proveedor activo funciona en modo demo: GET informa el estado y POST responde 503 con
      { demo: true } sin llamar a la API.
    - Control de costos (lib/asesor/config.ts): consultas por hora por IP, longitud máxima, modelo y
      esfuerzo por variables de entorno, y caché de 24 h para "Resumen de la economía". */
-import Anthropic from "@anthropic-ai/sdk";
-import { armarContexto, correrAgente, SISTEMA_AGENTE, sistemaVariable, type EventoAgente } from "@/lib/asesor/agente";
+import { armarContexto } from "@/lib/asesor/agente";
 import { claveCache, guardarCache, leerCache } from "@/lib/asesor/cache";
 import { conocimientoTributario } from "@/lib/asesor/conocimiento";
 import { configAsesor, HORAS_CACHE_RESUMEN, MENSAJE_DEMO } from "@/lib/asesor/config";
 import { ipDe, revisarLimite } from "@/lib/asesor/limite";
 import { validarPeticion } from "@/lib/asesor/peticion";
 import { obtenerMercado } from "@/lib/data/mercado";
-
-let cliente: Anthropic | null = null;
-const anthropic = () => (cliente ??= new Anthropic());
+import { bloquesSistema } from "@/lib/ia/instrucciones";
+import { avisoPrivacidad, crearProveedor, type EventoAgente, type ProveedorIA } from "@/lib/ia/proveedor";
 
 const json = (cuerpo: unknown, status: number, headers: Record<string, string> = {}) =>
   Response.json(cuerpo, { status, headers: { "Cache-Control": "no-store", ...headers } });
@@ -25,15 +25,10 @@ const json = (cuerpo: unknown, status: number, headers: Record<string, string> =
 const NDJSON = { "Content-Type": "application/x-ndjson; charset=utf-8", "Cache-Control": "no-store" };
 const linea = (e: EventoAgente) => JSON.stringify(e) + "\n";
 
-function errorDeApi(e: unknown, modelo: string): Response {
-  if (e instanceof Anthropic.AuthenticationError || e instanceof Anthropic.PermissionDeniedError)
-    return json({ error: "La clave de la API de Anthropic no es válida o no tiene permisos. Revise ANTHROPIC_API_KEY." }, 500);
-  if (e instanceof Anthropic.NotFoundError) return json({ error: `El modelo «${modelo}» no está disponible para esta cuenta.` }, 500);
-  if (e instanceof Anthropic.RateLimitError) return json({ error: "El servicio de IA está recibiendo muchas consultas. Intente en un minuto." }, 503);
-  if (e instanceof Anthropic.BadRequestError) return json({ error: "La consulta no es válida para la API: " + e.message }, 400);
-  if (e instanceof Anthropic.APIError) return json({ error: `El servicio de IA respondió con un error (${e.status ?? "sin estado"}). Intente de nuevo.` }, 502);
-  if (e instanceof Anthropic.APIConnectionError) return json({ error: "No hubo conexión con el servicio de IA. Intente de nuevo." }, 502);
-  return json({ error: "No se pudo completar el análisis." }, 500);
+/** Error del proveedor → JSON con un mensaje sin detalles técnicos. */
+function errorDeApi(e: unknown, ia: ProveedorIA): Response {
+  const t = ia.traducirError(e);
+  return t ? json({ error: t.mensaje }, t.status) : json({ error: "No se pudo completar el análisis. Intente de nuevo." }, 500);
 }
 
 /** Estado del asesor para la interfaz (sin revelar la clave). */
@@ -44,6 +39,9 @@ export async function GET() {
       activo: c.activo,
       mensajeDemo: c.activo ? null : MENSAJE_DEMO,
       modelo: c.activo ? c.modelo : null,
+      proveedor: c.proveedor,
+      proveedorEtiqueta: c.etiqueta,
+      avisoPrivacidad: avisoPrivacidad(c.proveedor),
       consultasPorHora: c.consultasPorHora,
       horasCacheResumen: HORAS_CACHE_RESUMEN,
     },
@@ -69,12 +67,12 @@ export async function POST(req: Request) {
 
   // "Resumen de la economía": si ya se respondió con estos mismos datos de mercado, se reutiliza.
   const huella = { fecha: snap.fechaAnalisis, actualizado: snap.actualizado, curva: snap.datos.curveDate, tpm: snap.macro.tpm, perfil: p.perfil, modo: p.modo };
-  const clave = p.rapida && p.historial.length === 0 ? claveCache(p.rapida, cfg.modelo, huella) : null;
+  const clave = p.rapida && p.historial.length === 0 ? claveCache(p.rapida, `${cfg.proveedor}:${cfg.modelo}`, huella) : null;
   if (clave) {
     const guardada = await leerCache(clave);
     if (guardada)
       return new Response(linea({ t: "texto", d: guardada }) + linea({ t: "fin", stop: "end_turn" }), {
-        headers: { ...NDJSON, "X-Asesor-Cache": "HIT", "X-Modelo": cfg.modelo },
+        headers: { ...NDJSON, "X-Asesor-Cache": "HIT", "X-Modelo": cfg.modelo, "X-Proveedor": cfg.proveedor },
       });
   }
 
@@ -91,19 +89,12 @@ export async function POST(req: Request) {
 
   const { ctx, invalidas } = armarContexto(snap, p);
   const corte = new AbortController();
-  const eventos = correrAgente({
-    cliente: anthropic(),
-    modelo: cfg.modelo,
-    maxTokens: cfg.maxTokens,
-    esfuerzo: cfg.esfuerzo,
-    // Los bloques fijos (herramientas, instrucciones y conocimiento tributario) se guardan en la caché de prompts.
-    system: [
-      { type: "text", text: SISTEMA_AGENTE },
-      { type: "text", text: `CONOCIMIENTO TRIBUTARIO (verificado; cita la norma y el enlace de aquí):
-${conocimientoTributario()}`, cache_control: { type: "ephemeral" } },
-      { type: "text", text: sistemaVariable(p.perfil, p.modo, ctx, invalidas) },
-    ],
-    messages: [...p.historial, { role: "user", content: p.pregunta }],
+  const ia = crearProveedor(cfg);
+  const eventos = ia.correr({
+    // Mismas instrucciones para ambos proveedores (lib/ia/instrucciones.ts).
+    sistema: bloquesSistema(p.perfil, p.modo, ctx, conocimientoTributario(), invalidas),
+    historial: p.historial,
+    pregunta: p.pregunta,
     ctx,
     signal: corte.signal,
   });
@@ -114,7 +105,7 @@ ${conocimientoTributario()}`, cache_control: { type: "ephemeral" } },
     primero = await eventos.next();
   } catch (e) {
     console.error("[asesor] Error al iniciar la respuesta:", e);
-    return errorDeApi(e, cfg.modelo);
+    return errorDeApi(e, ia);
   }
 
   const cod = new TextEncoder();
@@ -138,7 +129,8 @@ ${conocimientoTributario()}`, cache_control: { type: "ephemeral" } },
         if (clave && fin === "end_turn" && completo.trim()) await guardarCache(clave, completo);
       } catch (e) {
         console.error("[asesor] Error durante la respuesta:", e);
-        emitir({ t: "nota", d: "Se interrumpió la respuesta. Intente de nuevo." });
+        const t = ia.traducirError(e);
+        emitir({ t: "nota", d: t?.tipo === "limite" ? t.mensaje : "Se interrumpió la respuesta. Intente de nuevo." });
         emitir({ t: "fin", stop: "error" });
       } finally {
         ctrl.close();
@@ -151,6 +143,6 @@ ${conocimientoTributario()}`, cache_control: { type: "ephemeral" } },
   });
 
   return new Response(cuerpoRespuesta, {
-    headers: { ...NDJSON, "X-Modelo": cfg.modelo, ...(clave ? { "X-Asesor-Cache": "MISS" } : {}), ...cabecerasLimite },
+    headers: { ...NDJSON, "X-Modelo": cfg.modelo, "X-Proveedor": cfg.proveedor, ...(clave ? { "X-Asesor-Cache": "MISS" } : {}), ...cabecerasLimite },
   });
 }
