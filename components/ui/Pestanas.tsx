@@ -7,7 +7,7 @@ import Link from "next/link";
 import { createContext, useContext, useId, useRef, type KeyboardEvent, type ReactNode } from "react";
 import { useGuardado, useHidratado } from "@/lib/storage";
 
-export type IdPestana = "resumen" | "riesgo" | "flujos" | "carry" | "venta" | "analisis";
+export type IdPestana = "resumen" | "riesgo" | "flujos" | "carry" | "venta" | "analisis" | "objetivo";
 
 /** Nombres únicos para todas las pantallas y el PDF. */
 export const NOMBRES_PESTANAS: Record<IdPestana, string> = {
@@ -17,6 +17,7 @@ export const NOMBRES_PESTANAS: Record<IdPestana, string> = {
   carry: "Carry y fondeo",
   venta: "Venta y P&G",
   analisis: "Análisis",
+  objetivo: "Buscar objetivo",
 };
 
 export interface Pestana {

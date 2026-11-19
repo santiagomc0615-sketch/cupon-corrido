@@ -3,6 +3,7 @@ import { ID_CURVA_USUARIO } from "@/lib/cargas-usuario/datos";
 import { useMemo, useState, type ReactNode } from "react";
 import type { ClaveClase } from "@/lib/clase";
 import { AnalisisTitulo } from "./AnalisisTitulo";
+import { BuscarObjetivo } from "@/components/objetivo/BuscarObjetivo";
 import { FrenteCDT } from "@/components/cliente/FrenteCDT";
 import { BotonPyGTitulo } from "@/components/pyg/Botones";
 import { AvisoTributario } from "@/components/pyg/Impuestos";
@@ -367,11 +368,15 @@ function ResultadosOk({ b, o, avisosExtra, clase }: { b: Bono; o: ResultadoValor
               <div className="pestana">
                 <AnalisisTitulo b={b} o={o} />
                 <SiguientesPasos>
+                  <SiguientePaso titulo="Busca un objetivo" texto="El spread o la tasa que dan una rentabilidad" pestana="objetivo" />
                   <SiguientePaso titulo="Pregúntale al asesor" texto="Un análisis con las cifras del motor" href="/asesor" />
-                  <SiguientePaso titulo="Compáralo con un CDT y otros bonos" texto="Comparador en el portafolio" href="/portafolio" />
                 </SiguientesPasos>
               </div>
             ),
+          },
+          {
+            id: "objetivo",
+            contenido: <BuscarObjetivo />,
           },
         ]}
       />
