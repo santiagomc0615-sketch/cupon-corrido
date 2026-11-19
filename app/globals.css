@@ -2804,39 +2804,91 @@
     border-radius: var(--r);
   }
 
-  /* curva FRAC cargada por el usuario (calculadora IBR y Curva TES) */
-  .frac-usuario {
+  /* datos cargados por el usuario: curva FRAC y expectativas (calculadora y Curva TES) */
+  .carga-usuario {
     display: flex;
     flex-direction: column;
     gap: 10px;
   }
-  .frac-usuario-barra {
+  .carga-barra {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 8px 10px;
   }
-  .frac-usuario-estado {
+  .carga-estado {
     display: flex;
     flex-wrap: wrap;
-    align-items: baseline;
+    align-items: center;
     gap: 6px 10px;
-    margin: 0;
     font-size: 13px;
   }
-  .frac-usuario-errores {
-    padding: 10px 14px;
+  .carga-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: var(--r);
+    background: var(--sheet-2);
+  }
+  .carga-tipos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 8px;
+    margin-top: -6px;
+  }
+  .carga-panel > p.src {
+    margin: 0;
+  }
+  .carga-tipo {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: var(--r-sm);
+    background: var(--sheet);
+    box-shadow: var(--sombra-1), var(--brillo-borde);
+    cursor: pointer;
+    font-size: 13px;
+  }
+  .carga-tipo > span {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .carga-tipo.on {
+    box-shadow: var(--sombra-1), inset 0 0 0 1px color-mix(in srgb, var(--engrave) 55%, transparent);
+  }
+  /* dentro del formulario de la calculadora no heredan el estilo de los campos (.f) */
+  .carga-usuario .carga-tipo,
+  .sheet .f .carga-tipo {
+    font-size: 13px;
+    letter-spacing: 0;
+    color: var(--ink);
+  }
+  .carga-usuario .carga-tipo input[type="radio"],
+  .sheet .f .carga-tipo input[type="radio"] {
+    flex: none;
+    width: auto;
+    margin: 3px 0 0;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    accent-color: var(--acento-fondo);
+  }
+  .carga-columnas {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 8px 12px;
+  }
+  .carga-error {
+    margin: 0;
+    padding: 8px 12px;
     border-radius: var(--r-sm);
     background: color-mix(in srgb, var(--neg) 8%, var(--sheet));
-    color: var(--ink);
     font-size: 13px;
   }
-  .frac-usuario-errores ul {
-    margin: 6px 0 0;
-    padding-left: 18px;
-    color: var(--ink-2);
-  }
-  .frac-usuario-previa {
+  .carga-previa {
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -2845,20 +2897,24 @@
     background: var(--sheet);
     box-shadow: var(--sombra-1), var(--brillo-borde);
   }
-  .frac-usuario-previa dl {
+  .carga-previa dl {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
     gap: 8px 14px;
     margin: 0;
   }
-  .frac-usuario-previa dt {
+  .carga-previa dt {
     font-size: 12px;
     color: var(--ink-3);
   }
-  .frac-usuario-previa dd {
+  .carga-previa dd {
     margin: 0;
     font-family: var(--f-mono);
     font-variant-numeric: tabular-nums;
+  }
+  .carga-previa caption {
+    text-align: left;
+    padding-bottom: 4px;
   }
 
   /* asesor */

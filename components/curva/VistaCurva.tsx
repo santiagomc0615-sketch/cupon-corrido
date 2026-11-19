@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { Chart, nearest, type PuntoSerie } from "@/components/charts/Chart";
 import { useApp } from "@/components/providers/AppProvider";
-import { CargarCurvaFrac } from "@/components/frac/CargarCurvaFrac";
+import { CargarDatos } from "@/components/cargas-usuario/CargarDatos";
 import { InflacionImplicita } from "./InflacionImplicita";
 import { Encabezado, Kpi, Panel } from "@/components/ui";
 import { F, pctAx } from "@/lib/format";
@@ -83,8 +83,8 @@ export function VistaCurva() {
         </div>
       </Panel>
 
-      <Panel titulo="Curva FRAC (IBR forward)" src="La usa la calculadora IBR con la metodología «Curva FRAC»">
-        <CargarCurvaFrac />
+      <Panel titulo="Cargar datos: curva FRAC y expectativas" src="Los usa la calculadora con «Curva FRAC» (IBR) y con «Expectativas» (IPC y UVR)">
+        <CargarDatos />
       </Panel>
 
       <InflacionImplicita />

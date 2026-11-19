@@ -1,4 +1,5 @@
 "use client";
+import { ID_CURVA_USUARIO } from "@/lib/cargas-usuario/datos";
 import { useMemo, useState, type ReactNode } from "react";
 import type { ClaveClase } from "@/lib/clase";
 import { AnalisisTitulo } from "./AnalisisTitulo";
@@ -538,7 +539,7 @@ function VentaAnticipada({ b, o }: { b: Bono; o: ResultadoValoracion }) {
               </option>
               {motor.mercado.curvasFrac.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.nombre} · {F.date(c.fechaBase)}
+                  {c.id === ID_CURVA_USUARIO ? c.nombre : `${c.nombre} · ${F.date(c.fechaBase)}`}
                 </option>
               ))}
             </select>
