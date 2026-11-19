@@ -8,7 +8,7 @@ import { Chart, nearest } from "@/components/charts/Chart";
 import { useApp } from "@/components/providers/AppProvider";
 import { filasCSV, type Celda } from "@/lib/cargas/leer";
 import { etiquetaSerie, type SerieUsuario } from "@/lib/cargas-usuario/datos";
-import { analizarArchivo, CONFIG_TIPO, extremos, leerSerie, type Seleccion, type TipoSerieUsuario } from "@/lib/cargas-usuario/lector";
+import { analizarArchivo, CONFIG_TIPO, extremos, fechaEnNombre, leerSerie, type Seleccion, type TipoSerieUsuario } from "@/lib/cargas-usuario/lector";
 import { toN, type TuplaFecha } from "@/lib/engine";
 import { F, nf, pctAx } from "@/lib/format";
 
@@ -128,11 +128,14 @@ export function CargarDatos({ tipoInicial = "frac", abierto: abiertoInicial = fa
 
   const usar = () => {
     if (!lectura?.ok || !archivo || !sel) return;
+    const nombreHoja = archivo.hojas[sel.hoja].hoja;
+    const fechaCurva = tipo === "frac" ? (fechaEnNombre(nombreHoja) ?? fechaEnNombre(archivo.nombre)) : null;
     const serie: SerieUsuario = {
       tipo,
       datos: lectura.serie.datos,
-      archivo: archivo.hojas.length > 1 ? `${archivo.nombre} · ${archivo.hojas[sel.hoja].hoja}` : archivo.nombre,
+      archivo: nombreHoja !== archivo.nombre ? `${archivo.nombre} · ${nombreHoja}` : archivo.nombre,
       cargada: new Date().toISOString(),
+      ...(fechaCurva ? { fechaCurva } : {}),
     };
     usarDatosUsuario(serie);
     cancelar();

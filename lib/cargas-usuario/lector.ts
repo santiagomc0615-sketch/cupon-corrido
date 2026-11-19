@@ -222,6 +222,15 @@ export function textoDescartes(d: Descartes, tipo: TipoSerieUsuario): string {
   return `Se descartaron ${nf(0).format(total)} fila(s): ${partes.join(", ")}.`;
 }
 
+/** Fecha escrita en el nombre del archivo o de la hoja («FRA IBR 17-11-2026», «curva_frac_2026-11-17.csv»). */
+export function fechaEnNombre(nombre: string): string | null {
+  let m = nombre.match(/(\d{4})[-_.](\d{2})[-_.](\d{2})/);
+  if (m) return fechaCelda(`${m[1]}-${m[2]}-${m[3]}`);
+  m = nombre.match(/(\d{1,2})[-_.](\d{1,2})[-_.](\d{4})/);
+  if (m) return fechaCelda(`${m[3]}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}`);
+  return null;
+}
+
 /** Primeras y últimas filas para la vista previa. */
 export function extremos(datos: TuplaFecha[], n = 3): { primeras: TuplaFecha[]; ultimas: TuplaFecha[] } {
   return datos.length <= 2 * n ? { primeras: datos, ultimas: [] } : { primeras: datos.slice(0, n), ultimas: datos.slice(-n) };

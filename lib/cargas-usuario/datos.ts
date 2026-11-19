@@ -18,6 +18,8 @@ export interface SerieUsuario {
   archivo: string;
   /** Fecha y hora de carga (ISO). */
   cargada: string;
+  /** FRAC: fecha de la curva tomada del nombre del archivo o de la hoja. */
+  fechaCurva?: string;
 }
 
 export interface DatosUsuario {
@@ -28,7 +30,14 @@ export interface DatosUsuario {
 export const SIN_DATOS_USUARIO: DatosUsuario = {};
 
 /** Fecha que se muestra: la de la curva (primera fecha) en FRAC; la de carga en expectativas. */
-export const fechaSerie = (s: SerieUsuario) => (s.tipo === "frac" ? s.datos[0][0] : fechaBogota(s.cargada));
+export const fechaSerie = (s: SerieUsuario) => (s.tipo === "frac" ? fechaBaseFrac(s) : fechaBogota(s.cargada));
+
+/** Fecha de la curva FRAC: la del nombre si no es posterior al primer nodo (y a lo sumo 31 días antes); si no, el primer nodo. */
+export function fechaBaseFrac(s: Pick<SerieUsuario, "datos" | "fechaCurva">): string {
+  const primera = s.datos[0][0];
+  const f = s.fechaCurva;
+  return f && f <= primera && Date.parse(primera) - Date.parse(f) <= 31 * 864e5 ? f : primera;
+}
 
 /** Fecha (AAAA-MM-DD) de un instante en la hora de Colombia. */
 export function fechaBogota(iso: string): string {
@@ -44,7 +53,7 @@ export const etiquetaSerie = (s: SerieUsuario) =>
 export const curvaParaMotor = (s: SerieUsuario): CurvaFRACDatos => ({
   id: ID_CURVA_USUARIO,
   nombre: etiquetaSerie(s),
-  fechaBase: s.datos[0][0],
+  fechaBase: fechaBaseFrac(s),
   filas: s.datos.length,
   origen: s.archivo,
   cargada: s.cargada,
