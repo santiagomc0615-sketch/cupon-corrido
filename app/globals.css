@@ -2917,6 +2917,173 @@
     padding-bottom: 4px;
   }
 
+  /* buscar objetivo (calculadora) */
+  .obj-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .obj-frase {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 10px;
+    margin: 0;
+    font-size: 15px;
+  }
+  .obj-frase select,
+  .obj-campos select,
+  .obj-campos input,
+  .obj-valor input {
+    padding: 7px 10px;
+    border: 1px solid var(--rule);
+    border-radius: var(--r-sm);
+    background: var(--sheet);
+    color: var(--ink);
+    font: inherit;
+    font-size: 14px;
+    min-width: 0;
+  }
+  .obj-valor {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .obj-valor input {
+    width: 10ch;
+    font-family: var(--f-mono);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+  .obj-check {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--ink-2);
+  }
+  .obj-check input {
+    margin-top: 3px;
+    accent-color: var(--acento-fondo);
+  }
+  .obj-error {
+    margin: 12px 0 0;
+    padding: 10px 14px;
+    border-radius: var(--r-sm);
+    background: color-mix(in srgb, var(--warn) 10%, var(--sheet));
+    font-size: 14px;
+  }
+  .obj-respuesta {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .obj-acciones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .obj-pasos,
+  .obj-convenciones {
+    padding: 12px 14px;
+    border-radius: var(--r);
+    background: var(--sheet-2);
+  }
+  .obj-pasos h4,
+  .obj-convenciones h4,
+  .obj-plantilla h4 {
+    margin: 0 0 8px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .obj-pasos dl,
+  .obj-convenciones dl {
+    display: grid;
+    gap: 6px;
+    margin: 0 0 10px;
+  }
+  .obj-pasos dl > div,
+  .obj-convenciones dl > div {
+    display: grid;
+    grid-template-columns: minmax(120px, 200px) 1fr;
+    gap: 10px;
+    font-size: 13px;
+  }
+  .obj-pasos dt,
+  .obj-convenciones dt {
+    color: var(--ink-3);
+  }
+  .obj-pasos dd,
+  .obj-convenciones dd {
+    margin: 0;
+  }
+  .obj-formula {
+    margin: 0 0 8px;
+    font-family: var(--f-mono);
+    font-size: 12.5px;
+    overflow-wrap: anywhere;
+  }
+  .obj-preguntas {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 8px;
+  }
+  .obj-pregunta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px 12px;
+    border: 0;
+    border-radius: var(--r-sm);
+    background: var(--sheet);
+    box-shadow: var(--sombra-1), var(--brillo-borde);
+    color: var(--ink);
+    font: inherit;
+    font-size: 13.5px;
+    text-align: left;
+    cursor: pointer;
+    transition: box-shadow 160ms ease-out, transform 160ms ease-out;
+  }
+  .obj-pregunta:active {
+    transform: scale(0.98);
+  }
+  .obj-pregunta.on {
+    box-shadow: var(--sombra-1), inset 0 0 0 1px color-mix(in srgb, var(--engrave) 55%, transparent);
+  }
+  .obj-plantilla {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--rule);
+  }
+  .obj-plantilla-cab {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .obj-campos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 10px 12px;
+    align-items: end;
+  }
+  .obj-campos .w {
+    grid-column: 1 / -1;
+  }
+  tr.obj-actual th,
+  tr.obj-actual td {
+    background: color-mix(in srgb, var(--engrave) 8%, transparent);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .obj-pregunta {
+      transition: none;
+    }
+  }
+
   /* asesor */
   .advisor {
     display: grid;
