@@ -6,6 +6,7 @@
 import { useMemo, useState } from "react";
 import { Chart, nearest, type PuntoSerie } from "@/components/charts/Chart";
 import { useApp } from "@/components/providers/AppProvider";
+import { etiquetaSerie } from "@/lib/cargas-usuario/datos";
 import { Kpi, Panel } from "@/components/ui";
 import {
   aCSV,
@@ -36,7 +37,9 @@ const EJEMPLO: RefUVR[] = [
 const CLASE_SENAL = { uvr: "warn", tf: "pos", neutral: "" } as const;
 
 export function InflacionImplicita() {
-  const { snap, mk } = useApp();
+  const { snap, mk, datosMotor, datosUsuario } = useApp();
+  // Expectativas: las que cargó el usuario, si las hay (las mismas que recibe el motor).
+  const expectativas = datosMotor.exp;
   const inicial = useMemo<DatosUVR>(() => {
     const u = snap.datos.curvaUVR;
     if (u?.tes.length)
@@ -60,8 +63,8 @@ export function InflacionImplicita() {
   const { fecha, refs } = d;
   const { filas, resumen } = useMemo(() => {
     const validas = refs.filter((r) => toN(r.vencimiento) > toN(fecha) && Number.isFinite(r.tirReal));
-    return lecturaImplicita(inflacionImplicita(refsTF, { fecha, refs: validas }), snap.datos.exp, fecha);
-  }, [refsTF, fecha, refs, snap.datos.exp]);
+    return lecturaImplicita(inflacionImplicita(refsTF, { fecha, refs: validas }), expectativas, fecha);
+  }, [refsTF, fecha, refs, expectativas]);
 
   const leer = async (archivo: File) => {
     setError(null);
@@ -86,7 +89,7 @@ export function InflacionImplicita() {
   const tMax = Math.max(...filas.map((f) => f.plazo), 2);
   const expCurva: PuntoSerie[] = [];
   for (let t = 0.5; t <= tMax + 1e-9; t += 0.5) {
-    const e = expectativaPromedio(snap.datos.exp, d.fecha, t);
+    const e = expectativaPromedio(expectativas, d.fecha, t);
     if (e != null) expCurva.push([t, e]);
   }
   const meta: PuntoSerie[] = [
@@ -94,12 +97,12 @@ export function InflacionImplicita() {
     [tMax, META_INFLACION.centro],
   ];
   const desfase = Math.abs(toN(d.fecha) - toN(snap.datos.curveDate));
-  const horizonte = horizonteEncuesta(snap.datos.exp, d.fecha);
+  const horizonte = horizonteEncuesta(expectativas, d.fecha);
   const media = (xs: (number | null)[]) => {
     const v = xs.filter((x): x is number => x != null);
     return v.length ? v.reduce((s, x) => s + x, 0) / v.length : null;
   };
-  const fuenteExp = snap.fuentes.exp;
+  const fuenteExp = datosUsuario.exp ? { fuente: etiquetaSerie(datosUsuario.exp) } : snap.fuentes.exp;
 
   return (
     <Panel titulo="Inflación implícita" src={`TES TF ${F.date(snap.datos.curveDate)} · TES UVR ${F.date(d.fecha)} (${d.fuente})`}>

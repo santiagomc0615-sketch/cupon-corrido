@@ -1,6 +1,7 @@
 "use client";
+import { ID_CURVA_USUARIO } from "@/lib/cargas-usuario/datos";
 import { useDeferredValue, useMemo } from "react";
-import { CargarCurvaFrac } from "@/components/frac/CargarCurvaFrac";
+import { CargarDatos } from "@/components/cargas-usuario/CargarDatos";
 import { useApp, useCurvaNecesaria } from "@/components/providers/AppProvider";
 import { LAYOUT, OPTS, toEngine, type Campo, type EntradasUI } from "@/lib/calculadora";
 import { esError, toN, type TipoBono } from "@/lib/engine";
@@ -169,15 +170,15 @@ function Formulario() {
               <option value="">Automática: {curvaAuto ? `${curvaAuto.nombre} (${F.date(curvaAuto.fechaBase)})` : "según la fecha"}</option>
               {motor.mercado.curvasFrac.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.nombre} · {F.date(c.fechaBase)}
+                  {c.id === ID_CURVA_USUARIO ? c.nombre : `${c.nombre} · ${F.date(c.fechaBase)}`}
                 </option>
               ))}
             </select>
           </div>
         )}
-        {tipo === "IBR" && (
+        {(tipo === "IBR" || tipo === "IPC" || tipo === "UVR") && (
           <div className="f w">
-            <CargarCurvaFrac compacto />
+            <CargarDatos key={tipo} tipoInicial={tipo === "IBR" ? "frac" : "exp"} />
           </div>
         )}
       </fieldset>
